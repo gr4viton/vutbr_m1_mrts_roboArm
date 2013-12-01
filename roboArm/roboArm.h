@@ -9,9 +9,10 @@
 #define ROBOARM_H
 
 
+#include <rtapi.h>
 
 #include <windows.h>
-#include <rtapi.h>
+
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>

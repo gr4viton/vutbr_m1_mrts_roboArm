@@ -15,7 +15,13 @@ DWORD baseAddress = 0;
 //static HANDLE hLibModule = NULL;
 HMODULE hLibModule = NULL;
 /*
-typedef struct _S_servo {
+class C_servo{
+	C_
+};*/
+
+
+/*
+typedef struct {
 	DWORD max_val = 1;
 	DWORD min_val = 0;
 	DWORD mean_vals = 5;
