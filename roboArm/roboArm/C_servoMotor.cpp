@@ -75,29 +75,6 @@ int C_servoMotor::SET_dutyCycleIntervals(LARGE_INTEGER a_interval_one, LARGE_INT
 // ____________________________________________________
 // GET_ADC..
 
-/****************************************************************************
-* @function		PWM_dutyCycle
-* @brief			periodically executed function for PWM on predefined DO port .
-				Servo motors have their position regulated by pulses of different width.
-* @param[in]		void *a_struct
-				- i will not be needed
-***************/
-void RTFCNDCL C_servoMotor::PWM_dutyCycle(void *a_struct)
-{
-	// writing to a critical section should be treated wisely ! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-	// is the register critical section? I think yess
-	// mutex for individual bytes / bites of shadow-register
-	// and one core thread reading shadow-register and writing it to the true byteAdress 
-	// --- possibly event driven ---
-
-	// so RtWritePortUchar -> will become something like WriteIntentionBit which will handle the mutexes right
-	RtWritePortUchar(servoMotorByteAddress, 1<<servoMotorDigit);
-	RtSleepFt(&interval_one);
-	// You cannot write zeros everywhere
-	RtWritePortUchar((PUCHAR)(baseAddress+DO_Low_Byte), 0x00);
-	RtSleepFt(&interval_zero);
-}
-
 
 
 
@@ -108,7 +85,7 @@ void RTFCNDCL C_servoMotor::PWM_dutyCycle(void *a_struct)
 * @param[in]		
 ***************/
 int C_servoMotor::CREATE_timer(void){
-			
+			/*
 	LARGE_INTEGER min_tim_period;
 
 	LARGE_INTEGER expir_interval; // interval before first calling of routine
@@ -139,7 +116,7 @@ int C_servoMotor::CREATE_timer(void){
 	{
 		return(C_SERVOMOTOR_SETTIMERREL_ERROR);
 	}
-
+	*/
 	return(FLAWLESS_EXECUTION);
 }
 	

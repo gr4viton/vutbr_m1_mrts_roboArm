@@ -23,11 +23,11 @@ C_roboticManipulator::C_roboticManipulator(int &roboticManipulator_error)
 		true, 1,255, 5 );
 	if(ret_i != i){ 
 		roboticManipulator_error = CONSTRUCOR_ERROR_OFFSET; 	return;
-	} 
+	} /*
 	ret_i = serv[i].CREATE_timer(); // commented section!! <<<<<<<<<<<<<<<<<
 	if(ret_i!=FLAWLESS_EXECUTION){
 		roboticManipulator_error = ret_i;	return;
-	}
+	}*/
 	i++;
 	//____________________________________________________
 	// servo1
@@ -37,10 +37,6 @@ C_roboticManipulator::C_roboticManipulator(int &roboticManipulator_error)
 	if(ret_i != i){ 
 		roboticManipulator_error = CONSTRUCOR_ERROR_OFFSET; 	return;
 	} 
-	ret_i = serv[i].CREATE_timer();
-	if(ret_i!=FLAWLESS_EXECUTION){
-		roboticManipulator_error = ret_i;	return;
-	}
 	i++;
 	//____________________________________________________
 	// servo2
@@ -50,10 +46,6 @@ C_roboticManipulator::C_roboticManipulator(int &roboticManipulator_error)
 	if(ret_i != i){ 
 		roboticManipulator_error = CONSTRUCOR_ERROR_OFFSET; 	return;
 	} 
-	ret_i = serv[i].CREATE_timer();
-	if(ret_i!=FLAWLESS_EXECUTION){
-		roboticManipulator_error = ret_i;	return;
-	}
 	i++;
 	//____________________________________________________
 	// servo3
@@ -63,10 +55,6 @@ C_roboticManipulator::C_roboticManipulator(int &roboticManipulator_error)
 	if(ret_i != i){ 
 		roboticManipulator_error = CONSTRUCOR_ERROR_OFFSET; 	return;
 	} 
-	ret_i = serv[i].CREATE_timer();
-	if(ret_i!=FLAWLESS_EXECUTION){
-		roboticManipulator_error = ret_i;	return;
-	}
 	i++;
 	//____________________________________________________
 	// servo4
@@ -76,10 +64,6 @@ C_roboticManipulator::C_roboticManipulator(int &roboticManipulator_error)
 	if(ret_i != i){ 
 		roboticManipulator_error = CONSTRUCOR_ERROR_OFFSET; 	return;
 	} 
-	ret_i = serv[i].CREATE_timer();
-	if(ret_i!=FLAWLESS_EXECUTION){
-		roboticManipulator_error = ret_i;	return;
-	}
 	i++;
 	//____________________________________________________
 	// servo5
@@ -89,10 +73,6 @@ C_roboticManipulator::C_roboticManipulator(int &roboticManipulator_error)
 	if(ret_i != i){ 
 		roboticManipulator_error = CONSTRUCOR_ERROR_OFFSET; 	return;
 	} 
-	ret_i = serv[i].CREATE_timer();
-	if(ret_i!=FLAWLESS_EXECUTION){
-		roboticManipulator_error = ret_i;	return;
-	}
 	i++;
 	//for(int i=0;i<max_servo_i;i++){serv[i] = new C_servoMotor(..)		}
 	return;

@@ -46,13 +46,14 @@
 #define AD_LOWBYTE				0xd0
 #define AD_HIGHBYTE				0xd4
 #define DO_Low_Byte				0xd8
-#define DO_High_Byte			0xdc
+#define DO_High_Byte				0xdc
 
 //____________________________________________________
 // class servoMotor macros
 #define SERVOMOTOR_ADDRESS_HIGHBYTE		true
 #define SERVOMOTOR_ADDRESS_LOWBYTE		false
 
+#define SUM_SERVOMOTORS					6
 
 /* ____________________________________________________
 cislovani serv od spoda 1-6
@@ -91,6 +92,27 @@ channel |	servo		|	FDBACK	|	AI
 // free positions offset + max_servo_i
 
 
+//____________________________________________________
+// ExitProcess return value constants - ERRORS & etc
+#define SUCCESSFUL_END								0
+#define SUMFLOATS_ERROR_CMESSAGE_TOO_LONG			1
+#define SUMFLOATS_ERROR_CREATEFILE_FAIL				2
+#define SUMFLOATS_ERROR_SETFILEPOINTER_FAIL			4
+#define SUMFLOATS_ERROR_READFILE_FAIL				8
+#define SUMFLOATS_ERROR_CLOSEHANDLE_FAIL				16
+#define SUMFLOATS_ERRORSTRING_FAIL					32
+#define SUMFLOATS_ERROR_READ_BYTES_MISMATCH			64
+#define SUMFLOATS_ERROR_COULD_NOT_TERMINATE_THREAD	128
+#define SUMFLOATS_ERROR_COULD_NOT_RESUME_THREAD		256
+#define SUMFLOATS_ERROR_COULD_NOT_CHANGE_PRIORITY	512
+#define SUMFLOATS_ERROR_COULD_NOT_CREATE_THREAD		1024
+#define SUMFLOATS_ERROR_SPRINTF_S					99252
+#define SUMFLOATS_ERROR_SEVERITY_TOO_LOW				99253
+#define SUMFLOATS_ERROR_SEVERITY_TOO_BIG				99254
+
+//____________________________________________________
+#define EXITCODE_SUCCESSFUL_END					0
+#define EXITCODE_TERMINATED_BY_MAIN				1
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // external variables & classes

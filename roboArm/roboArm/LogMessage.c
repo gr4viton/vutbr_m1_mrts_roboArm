@@ -77,7 +77,7 @@ int LogMessage(int iSeverity, char *cMessage, int bBlocking){
 	if ( WriteFile(
 			Hfile,
 			(LPCVOID) DataBuffer,
-			strlen(DataBuffer),
+			(DWORD)strlen(DataBuffer),
 			(LPDWORD) &BytesWritten,
 			0
 		) == FALSE ) {

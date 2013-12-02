@@ -46,7 +46,7 @@ private:
 public: int CREATE_timer(void);
 public:	C_servoMotor(void);
 public: ~C_servoMotor(void);
-public:	void RTFCNDCL PWM_dutyCycle(void *a_struct);
+//public:	void RTFCNDCL PWM_dutyCycle(void *a_struct);
 public:	int SET_dutyCycleIntervals(LARGE_INTEGER a_interval_one, LARGE_INTEGER a_interval_zero);
 public:	int SET_constants(int a_servo_index, bool a_addressHighByte,
 		UCHAR servoMotorBit, bool a_FDBACK = false,

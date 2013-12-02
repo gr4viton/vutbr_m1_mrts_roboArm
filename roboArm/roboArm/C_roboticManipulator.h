@@ -17,8 +17,8 @@ class C_roboticManipulator{
 //____________________________________________________
 // member variables
 private:
-	static const int max_servo_i = 5;
-	C_servoMotor serv[max_servo_i+1];	
+	static const int max_servo_i = SUM_SERVOMOTORS-1;
+	C_servoMotor serv[SUM_SERVOMOTORS];	
 //____________________________________________________
 // member functions declarations
 private:		bool IS_in_bounds(int servo_i);	
