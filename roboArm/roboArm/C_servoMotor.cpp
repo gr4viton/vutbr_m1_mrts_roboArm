@@ -106,6 +106,7 @@ int C_servoMotor::CREATE_timer(void){
 	hTimer = NULL;
 	
 	// !IT IS! possible to point at a class member function in RtCreateTimer, but how?
+	/*
 	hTimer = RtCreateTimer( NULL, 0, PWM_dutyCycle, (PVOID)&periodic_input, 63, CLOCK_X );
 	//hTimer = RtCreateTimer( NULL, 0, static_cast<VOID>(PWM_dutyCycle), (PVOID)&periodic_input, 63, CLOCK_X );
 	

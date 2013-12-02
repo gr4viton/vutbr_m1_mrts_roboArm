@@ -263,29 +263,52 @@ void _cdecl main(int  argc, char **argv, char **envp)
 	LARGE_INTEGER interval_wait; 
 	
 	interval_one.QuadPart = 10000; // 1000us
-	interval_zero.QuadPart = 200000; // 0.02s = 50Hz
-	interval_wait.QuadPart = 50000000; // 5s
+	interval_zero.QuadPart = 200000 - 10000; // 0.02s = 50Hz
+	interval_wait.QuadPart = 10000000; // 1s
 
 	int j = 0;
-	int max_j = 7;
-	for(j = max_j;j>0;j--){
-		for(i = 2;i>0;i--)
-		{
-			//RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 0x80);
-			//RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 255); // big
-			//RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 127);
-			//RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 63);
-			//RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 31);
-			//RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 15); // servo 
-			//RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 7); // servo 
-			//HightByte 1<<7 = servo  1
-			RtWritePortUchar((PUCHAR)(baseAddress+DO_Low_Byte), 1<<j);
-			RtSleepFt(&interval_one);
-			RtWritePortUchar((PUCHAR)(baseAddress+DO_Low_Byte), 0x00);
-			RtSleepFt(&interval_zero);
-		}
-		printf("Servo %i/%i\n", j+1,max_j);
-		RtSleepFt(&interval_wait);
+	int max_j = 8;
+	//for(j = 0;j < max_j;j++){
+	//	for(i = 2;i>0;i--)
+	//	{
+	//		//RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 0x80);
+	//		//RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 255); // big
+	//		//RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 127);
+	//		//RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 63);
+	//		//RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 31);
+	//		//RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 15); // servo 
+	//		//RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 7); // servo 
+	//		//HightByte 1<<7 = servo  1
+	//		RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 1<<j);
+	//		RtSleepFt(&interval_one);
+	//		RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 0x00);
+	//		RtSleepFt(&interval_zero);
+	//	}
+	//	printf("Servo %i/%i\n", j,max_j);
+	//	RtSleepFt(&interval_wait);
+	//}
+	E_servos testedServo = S5;
+	int period = 200;	//Hz
+	interval_one.QuadPart = NS100_1US * 500;	// 500 us
+	interval_zero.QuadPart = NS100_1MS * 1000/period - interval_one.QuadPart; // 0.01s = 100Hz
+	interval_wait.QuadPart = NS100_1MS * 300; // 0.1s
+	for( i = 0 ; i < 200 ; i++)
+	{
+		RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 1<<testedServo);
+		RtSleepFt(&interval_one);
+		RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 0x00);
+		RtSleepFt(&interval_zero);
+	}
+
+	interval_one.QuadPart = NS100_1US * 2500;	// 2500 us
+	interval_zero.QuadPart = NS100_1MS * 1000/period - interval_one.QuadPart; // 0.01s = 100Hz
+	interval_wait.QuadPart = NS100_1MS * 300; // 0.1s
+	for( i = 0 ; i < 200 ; i++)
+	{
+		RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 1<<testedServo);
+		RtSleepFt(&interval_one);
+		RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 0x00);
+		RtSleepFt(&interval_zero);
 	}
 	// Reading Data 
 	while(1)
