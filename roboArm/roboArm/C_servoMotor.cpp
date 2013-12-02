@@ -84,7 +84,7 @@ int C_servoMotor::SET_dutyCycleIntervals(LARGE_INTEGER a_interval_one, LARGE_INT
 ***************/
 void RTFCNDCL C_servoMotor::PWM_dutyCycle(void *a_struct)
 {
-	// writing to a critical section should be treated wisely ! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+	// writing to a critical section should be treated wisely ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	// is the register critical section? I think yess
 	// mutex for individual bytes / bites of shadow-register
 	// and one core thread reading shadow-register and writing it to the true byteAdress 
@@ -129,16 +129,18 @@ int C_servoMotor::CREATE_timer(void){
 	hTimer = NULL;
 	
 	// !IT IS! possible to point at a class member function in RtCreateTimer, but how?
-	//hTimer = RtCreateTimer( NULL, 0, PWM_dutyCycle, (PVOID)&periodic_input, 63, CLOCK_X );
-	////hTimer = RtCreateTimer( NULL, 0, static_cast<VOID>(PWM_dutyCycle), (PVOID)&periodic_input, 63, CLOCK_X );
-	//
-	//if(hTimer == NULL)
-	//	return(C_SERVOMOTOR_TIMER_INVALID_HANDLE);
-	//// starts the timer
-	//if(!RtSetTimerRelative( hTimer, &expir_interval, &periodic_interval ) )
-	//{
-	//	return(C_SERVOMOTOR_SETTIMERREL_ERROR);
-	//}
+	/*
+	hTimer = RtCreateTimer( NULL, 0, PWM_dutyCycle, (PVOID)&periodic_input, 63, CLOCK_X );
+	//hTimer = RtCreateTimer( NULL, 0, static_cast<VOID>(PWM_dutyCycle), (PVOID)&periodic_input, 63, CLOCK_X );
+	
+	if(hTimer == NULL)
+		return(C_SERVOMOTOR_TIMER_INVALID_HANDLE);
+	// starts the timer
+	if(!RtSetTimerRelative( hTimer, &expir_interval, &periodic_interval ) )
+	{
+		return(C_SERVOMOTOR_SETTIMERREL_ERROR);
+	}
+	*/
 
 	return(FLAWLESS_EXECUTION);
 }

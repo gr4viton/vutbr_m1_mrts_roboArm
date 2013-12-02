@@ -58,12 +58,12 @@ void _cdecl main(int  argc, char **argv, char **envp)
 	
 	//____________________________________________________
 	// init classes for the manipulator
-	//C_roboticManipulator ROB(ret_val);
-	//if(ret_val != FLAWLESS_EXECUTION)
-	//{
-	//	//log
-	//	ExitProcess(ret_val);
-	//}
+	C_roboticManipulator ROB(ret_val);
+	if(ret_val != FLAWLESS_EXECUTION)
+	{
+		//log
+		ExitProcess(ret_val);
+	}
 
 	// TODO
 	//____________________________________________________
