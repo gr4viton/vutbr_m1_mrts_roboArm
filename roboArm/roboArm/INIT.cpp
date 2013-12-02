@@ -1,7 +1,14 @@
+/***************
+* @filename		INIT.cpp
+* @author 		xdavid10, xslizj00 @ FEEC-VUTBR 
+* @date			2013_12_02
+* @brief			file containing INIT function definitions
+***************/
 
 #include "roboArm.h"
 
-
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+// INIT_ADC
 void INIT_ADC()
 {
 	UCHAR data;
@@ -18,9 +25,32 @@ void INIT_ADC()
 }
 
 
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+/**
+ * @name 	INIT_Library
+ * @brief	function open library for communication with PIO821 card
+ * @retval	0 - function succeeded
+ * @retval	1 - loadLibrary error, communication FAILED
+ * @retval	2 - get adrees error, communication FAILED
+*/
+
+int INIT_All(){
+	int ret = 0;
+	// Load library
+	ret = INIT_Library();
+	if(ret)printf("no :(\n");		
+	else printf("Library was opened successfully :)\n");
+	
+	//____________________________________________________
+	// Initialize ADC
+	INIT_ADC();
+	return(FLAWLESS_EXECUTION);
+}
 
 int INIT_Library()
 {
+//typedef __nullterminated CONST CHAR *LPCSTR, *PCSTR;
+//typedef __nullterminated CONST WCHAR *LPCWSTR, *PCWSTR;
 	LPCSTR lpLibFileName = "dac_dll.rtdll";
 	LPCSTR lpProcName = "GetPIO821BaseAddress";
 	FARPROC functionPointer = NULL;
@@ -42,7 +72,7 @@ int INIT_Library()
 		return 2;
 	}
 	// Call function
-	baseAddress = functionPointer();
+	baseAddress = (DWORD) functionPointer();
 	printf("base = %i = hex = %x \n", baseAddress, baseAddress);
 	// Free Library 
 	FreeLibrary(hLibModule);

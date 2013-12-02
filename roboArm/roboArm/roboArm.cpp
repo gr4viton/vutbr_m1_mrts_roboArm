@@ -1,35 +1,29 @@
-//////////////////////////////////////////////////////////////////
-//
-// roboArm.c - C file
-//
-// This file was generated using the RTX Application Wizard 
-// for Visual Studio.  
-//////////////////////////////////////////////////////////////////
-    
+/***************
+* @filename		roboArm.cpp
+* @author 		xdavid10, xslizj00 @ FEEC-VUTBR 
+* @contacts		Bc. Jiøí Sliž		<xslizj00@stud.feec.vutbr.cz>
+				Bc. Daniel Davídek	<danieldavidek@gmail.com>
+* @date			2013_12_02
+* @brief		main file
+* @description	Program for communication and control of PIO821 card, connected to a robotic manipulator ROB2-6.
+				It reads the instructions from text file and sets the servo-mechanisms' angles respectively with
+				predefined interval of halt time.
+				For three of total six servos, there is time-ramp control implemented as there are feedback loop
+				conected to the module.
+***************/
+
 #include "roboArm.h"
 
+//____________________________________________________ 
 // global Variables
-//volatile static DWORD baseAddress = 0;
+
 DWORD baseAddress = 0;
-
-//static HANDLE hLibModule = NULL;
 HMODULE hLibModule = NULL;
-/*
-class C_servo{
-	C_
-};*/
 
-
-/*
-typedef struct {
-	DWORD max_val = 1;
-	DWORD min_val = 0;
-	DWORD mean_vals = 5;
-} S_servo;
-*/
-
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // mean of c values
 DWORD MEAN_adc(int channel, int gain, int c){
+	if(c==0) return(0);
 	DWORD sum=0;
 	//DWORD *vals;
 	//vals = (DWORD*)malloc(sizeof(DWORD));
@@ -43,33 +37,54 @@ DWORD MEAN_adc(int channel, int gain, int c){
 }
 
 
-
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // main
 void _cdecl main(int  argc, char **argv, char **envp)
 {
 	//double angles[6];
-	int ret = 0;
+	int ret_val = 0;
 	int i = 0;
 	UCHAR pom = 0;
 	//DWORD data;
 	int num = 5; // number_of_mean_values
-	//UCHAR StartPort = ((UCHAR)base);
 
-	printf("--------(:Clean start :)------\n");
-	// Load library
-	ret = INIT_Library();
-	if(ret)printf("no :(\n");		
-	else printf("Library was opened successfully :)\n");
+	printf("--------(: Clean start :)------\n");
+	// ____________________________________________________
+	ret_val = INIT_All();
+	if(ret_val!=FLAWLESS_EXECUTION){
+		//log
+		ExitProcess(ret_val);
+	}
+	
+	//____________________________________________________
+	// init classes for the manipulator
+	C_roboticManipulator ROB(ret_val);
+	if(ret_val != FLAWLESS_EXECUTION)
+	{
+		//log
+		ExitProcess(ret_val);
+	}
 
-	// Initialize ADC
-	INIT_ADC();
+	// TODO
+	//____________________________________________________
+	// 0) find out initial configurations for each servo in C_roboticManipulator constructor!
+	// 1) thread creation for each servo (?in C_roboticManipulator constructor?)
+	// 2) member function PWM_dutyCycle -> periodically executed in each thread
+	// 3) find out if writing to register is criticall section
 
 	
+	/*
+	// is this secure? 
+	// or I should be working only in C_roboticManipulator class to avoid encapsulation problems??
+	C_servoMotor* pServo = NULL;
+	ROB.GET_servoMotor(1, pServo);
+	pServo->PWM_dutyCycle();
+	*/
+			
 	LARGE_INTEGER interval_one; 
 	LARGE_INTEGER interval_zero; 
 	LARGE_INTEGER interval_wait; 
 	
-
 	interval_one.QuadPart = 10000; // 1000us
 	interval_zero.QuadPart = 200000; // 0.02s = 50Hz
 	interval_wait.QuadPart = 50000000; // 5s
@@ -122,23 +137,22 @@ void _cdecl main(int  argc, char **argv, char **envp)
 		RtSleep(100);
 	}
 	
+
     ExitProcess(0);
 }
 
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+// GET_ADC
 DWORD GET_ADC(UCHAR channel, UCHAR gain)
 {
-	UCHAR ready;									
-
+	UCHAR ready;	
 	UCHAR mp;
-
 	UCHAR ADlow;								
 	UCHAR ADhigh;								
-
 	DWORD val;									
 	unsigned short c;
 
 	// set gain and mux
-
 	// x|x|MUX3|MUX2|MUX1|MUX0|GAIN1|GAIN0
 	// MUX[3-0] = binary number selecting from 0to15 shifted left 2 
 	//	0b0000 0000<<2 = 0x00<<2 = 0x00 = 0<<2 = AI0
