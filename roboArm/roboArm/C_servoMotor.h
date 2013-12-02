@@ -25,9 +25,13 @@ private:
 	DWORD mean_vals; // mean of how many feedback measurements 
 	bool FDBACK;
 	//____________________________________________________
+	// timers
+	HANDLE hTimer; // handle of a timer which is connected to this servoMotor
+	int periodic_input; // parameter of timer periodic execution function
+	//____________________________________________________
 	// intervals
-	LARGE_INTEGER interval_one; 
-	LARGE_INTEGER interval_zero; 
+	LARGE_INTEGER interval_one; // will depend on duty cycle
+	LARGE_INTEGER interval_zero; // will depend on periodic time interval and duty cycle
 	// LARGE_INTEGER duty_cycle
 	
 	//____________________________________________________
@@ -39,8 +43,10 @@ private:
 	
 //____________________________________________________
 // member functions declarations
+public: int CREATE_timer(void);
 public:	C_servoMotor(void);
-public:	int PWM_dutyCycle();
+public: ~C_servoMotor(void);
+public:	void RTFCNDCL PWM_dutyCycle(void *a_struct);
 public:	int SET_dutyCycleIntervals(LARGE_INTEGER a_interval_one, LARGE_INTEGER a_interval_zero);
 public:	int SET_constants(int a_servo_index, bool a_addressHighByte,
 		UCHAR servoMotorBit, bool a_FDBACK = false,

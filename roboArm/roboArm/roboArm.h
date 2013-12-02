@@ -68,8 +68,8 @@ channel |	servo		|	FDBACK	|	AI
 //____________________________________________________
 // predefined time intervals
 // multiplicatives of [100ns]
-#define NS100_1NS			(LARGE_INTEGER)10
-//#define NS100_1NS			10
+//#define NS100_1US			(LARGE_INTEGER)10
+#define NS100_1US			10
 #define NS100_1MS			10000
 #define NS100_1S				10000000
 
@@ -78,11 +78,16 @@ channel |	servo		|	FDBACK	|	AI
 // do not use -> dividing by zero unhandled possibility -> write an inline fct?
 // #define NS100_X_HZ(x_hz)		(NS100_1S/(x_hz)) 
 
+#define CLOCK_X				CLOCK_2
+
 // ____________________________________________________
 // roboticManipulator_error
-#define FLAWLESS_EXECUTION			0
-#define SERVO_INDEX_OUT_OF_BOUNDS	1
-#define CONSTRUCOR_ERROR_OFFSET		32
+#define FLAWLESS_EXECUTION					0
+#define DESTRUCT_EVERYTHING					1
+#define SERVO_INDEX_OUT_OF_BOUNDS			2
+#define C_SERVOMOTOR_SETTIMERREL_ERROR		3
+#define C_SERVOMOTOR_TIMER_INVALID_HANDLE	4
+#define CONSTRUCOR_ERROR_OFFSET				127
 // free positions offset + max_servo_i
 
 

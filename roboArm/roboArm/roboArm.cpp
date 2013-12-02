@@ -69,6 +69,22 @@ void _cdecl main(int  argc, char **argv, char **envp)
 	//____________________________________________________
 	// 0) find out initial configurations for each servo in C_roboticManipulator constructor!
 	// 1) thread creation for each servo (?in C_roboticManipulator constructor?)
+	// --> REWRITE it as I thought it will be handled with timers, but
+	// thread handling will be better
+	
+	// writing to a critical section should be treated wisely ! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+	// is the register critical section? I think yess
+	// a) mutex for individual bytes / bites of shadow-register
+	//		and one core thread reading shadow-register and writing it to the true byteAdress 
+	// b) in each instance of class C_servoMotor there will be mutex for writing the intervals
+	//		this mutex will be set/unset with the individual servoMotors threads
+	//		and it will be read by the main thread every min_period of setting the register
+	//		-> if it is closed the thread waits to write into it until main thread opens it agein
+	// c) in each thread will add event when it wants to set/unset the byte
+	//		main thread will treat this events and write to the critical-section = register
+	// --- possibly event driven ---
+	//
+
 	// 2) member function PWM_dutyCycle -> periodically executed in each thread
 	// 3) find out if writing to register is criticall section
 
@@ -80,6 +96,8 @@ void _cdecl main(int  argc, char **argv, char **envp)
 	ROB.GET_servoMotor(1, pServo);
 	pServo->PWM_dutyCycle();
 	*/
+
+
 			
 	LARGE_INTEGER interval_one; 
 	LARGE_INTEGER interval_zero; 

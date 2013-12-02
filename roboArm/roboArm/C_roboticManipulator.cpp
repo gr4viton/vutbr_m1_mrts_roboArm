@@ -21,45 +21,79 @@ C_roboticManipulator::C_roboticManipulator(int &roboticManipulator_error)
 	ret_i = serv[i].SET_constants( i, 
 		SERVOMOTOR_ADDRESS_HIGHBYTE, 0,
 		true, 1,255, 5 );
-		if(ret_i != i){ 
-			roboticManipulator_error = i + CONSTRUCOR_ERROR_OFFSET; 
-		} 
-		i++;
+	if(ret_i != i){ 
+		roboticManipulator_error = CONSTRUCOR_ERROR_OFFSET; 	return;
+	} 
+	ret_i = serv[i].CREATE_timer(); // commented section!! <<<<<<<<<<<<<<<<<
+	if(ret_i!=FLAWLESS_EXECUTION){
+		roboticManipulator_error = ret_i;	return;
+	}
+	i++;
 	//____________________________________________________
 	// servo1
 	ret_i = serv[i].SET_constants( i, 
 		SERVOMOTOR_ADDRESS_HIGHBYTE, 1,
 		true, 1,255, 5 );
-		if(ret_i != i){ roboticManipulator_error = i + CONSTRUCOR_ERROR_OFFSET; } 
-		i++;
+	if(ret_i != i){ 
+		roboticManipulator_error = CONSTRUCOR_ERROR_OFFSET; 	return;
+	} 
+	ret_i = serv[i].CREATE_timer();
+	if(ret_i!=FLAWLESS_EXECUTION){
+		roboticManipulator_error = ret_i;	return;
+	}
+	i++;
 	//____________________________________________________
 	// servo2
 	ret_i = serv[i].SET_constants( i, 
 		SERVOMOTOR_ADDRESS_HIGHBYTE, 2,
 		true, 1,255, 5 );
-		if(ret_i != i){ roboticManipulator_error = i + CONSTRUCOR_ERROR_OFFSET; } 
-		i++;
+	if(ret_i != i){ 
+		roboticManipulator_error = CONSTRUCOR_ERROR_OFFSET; 	return;
+	} 
+	ret_i = serv[i].CREATE_timer();
+	if(ret_i!=FLAWLESS_EXECUTION){
+		roboticManipulator_error = ret_i;	return;
+	}
+	i++;
 	//____________________________________________________
 	// servo3
 	ret_i = serv[i].SET_constants( i,
 		SERVOMOTOR_ADDRESS_HIGHBYTE, 3
 		);
-		if(ret_i != i){ roboticManipulator_error = i + CONSTRUCOR_ERROR_OFFSET; } 
-		i++;
+	if(ret_i != i){ 
+		roboticManipulator_error = CONSTRUCOR_ERROR_OFFSET; 	return;
+	} 
+	ret_i = serv[i].CREATE_timer();
+	if(ret_i!=FLAWLESS_EXECUTION){
+		roboticManipulator_error = ret_i;	return;
+	}
+	i++;
 	//____________________________________________________
 	// servo4
 	ret_i = serv[i].SET_constants( i,
 		SERVOMOTOR_ADDRESS_HIGHBYTE, 4
 		);
-		if(ret_i != i){ roboticManipulator_error = i + CONSTRUCOR_ERROR_OFFSET; } 
-		i++;
+	if(ret_i != i){ 
+		roboticManipulator_error = CONSTRUCOR_ERROR_OFFSET; 	return;
+	} 
+	ret_i = serv[i].CREATE_timer();
+	if(ret_i!=FLAWLESS_EXECUTION){
+		roboticManipulator_error = ret_i;	return;
+	}
+	i++;
 	//____________________________________________________
 	// servo5
 	ret_i = serv[i].SET_constants( i,
 		SERVOMOTOR_ADDRESS_HIGHBYTE, 5
 		);
-		if(ret_i != i){ roboticManipulator_error = i + CONSTRUCOR_ERROR_OFFSET; }
-		i++;
+	if(ret_i != i){ 
+		roboticManipulator_error = CONSTRUCOR_ERROR_OFFSET; 	return;
+	} 
+	ret_i = serv[i].CREATE_timer();
+	if(ret_i!=FLAWLESS_EXECUTION){
+		roboticManipulator_error = ret_i;	return;
+	}
+	i++;
 	//for(int i=0;i<max_servo_i;i++){serv[i] = new C_servoMotor(..)		}
 	return;
 }

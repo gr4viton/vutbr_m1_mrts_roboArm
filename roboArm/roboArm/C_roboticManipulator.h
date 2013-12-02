@@ -24,7 +24,7 @@ private:
 private:		bool IS_in_bounds(int servo_i);	
 public:		C_roboticManipulator(int &roboticManipulator_error);
 public:		int SET_dutyCycleIntervals(int servo_i, LARGE_INTEGER a_interval_one, LARGE_INTEGER a_interval_zero);
-public:		int C_roboticManipulator::GET_servoMotor(int a_servo_i, C_servoMotor* servoMotor);
+public:		int GET_servoMotor(int a_servo_i, C_servoMotor* servoMotor);
 };
 
 #endif
