@@ -98,7 +98,7 @@ typedef enum {S1=2, S2=3, S3=4, S5=6, S4=5, S6=7}E_servos;
 // do not use -> dividing by zero unhandled possibility -> write an inline fct?
 // #define NS100_X_HZ(x_hz)		(NS100_1S/(x_hz)) 
 
-#define CLOCK_X				CLOCK_2
+#define CLOCK_X				CLOCK_1
 
 // ____________________________________________________
 // roboticManipulator_error
