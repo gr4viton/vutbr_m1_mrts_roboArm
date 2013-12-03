@@ -21,9 +21,9 @@
 #include <windows.h>
 #include <rtapi.h>
 
-#ifdef UNDER_RTSS
-	#include <rtssapi.h>
-#endif // UNDER_RTSS
+//#ifdef UNDER_RTSS
+//	#include <rtssapi.h>
+//#endif // UNDER_RTSS
 
 // std
 #include <iostream>
@@ -60,19 +60,45 @@ cislovani serv od spoda 1-6
 channel |	servo		|	FDBACK	|	AI   
 --------+---------------+-----------+--------
 	0	|	3(maly)		|	3		|	0
-	1	|	1(velky)		|	1		|	1
-	2	|	2(stred)		|	2		|	2
+	1	|	1(velky)	|	1		|	1
+	2	|	2(stred)	|	2		|	2
 
 
-- servo [1-6] odpovida DO [10-15]
+- servo [1-6] odpovida DO_High_Byte 1 << x
+
+		+-----------+-------+------------+
+		|			| 1<<x	|	 meze	 |
+		+-----------+-------+------------+
+		|  serva	|	x	| min-max[us]|
+		+-----------+-------+------------+
+		|	S1		|	2	|			 |
+		+-----------+-------+------------+
+		|	S2		|	3	|			 |
+		+-----------+-------+------------+
+		|	S3		|	4	|			 |
+		+-----------+-------+------------+
+		|	S4		|	6	| 500-2500	 |
+		+-----------+-------+------------+
+		|	S5		|	5	| 500-2500	 |
+		+-----------+-------+------------+
+		|	S6		|	7	| 500-2500	 |
+		+-----------+-------+------------+
 */
+typedef enum {S1=2, S2=3, S3=4, S5=6, S4=5, S6=7}E_servos;
+
+// I do have everything
+//
+//
+//
+
+
 //____________________________________________________
 // predefined time intervals
 // multiplicatives of [100ns]
 //#define NS100_1US			(LARGE_INTEGER)10
 #define NS100_1US			10
 #define NS100_1MS			10000
-#define NS100_1S				10000000
+#define NS100_1S			10000000
 
 // 50Hz = 0.02s = 200000[100ns]
 #define NS100_50HZ			NS100_1S/50

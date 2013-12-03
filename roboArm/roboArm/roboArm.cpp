@@ -124,7 +124,7 @@ void _cdecl main(int  argc, char **argv, char **envp)
 		ExitProcess(ret_val);
 	}
 
-	
+	/*
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//timer
 	HANDLE hTimer = NULL;
@@ -180,7 +180,108 @@ void _cdecl main(int  argc, char **argv, char **envp)
 	periodic_interval.QuadPart = NS100_1S*10;
 	RtSleepFt(&periodic_interval);
 	
+*/
 
+	
+// ____________________________________________________
+// 
+
+	//____________________________________________________
+	// thread creation
+	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	const int iTh_max = 1;
+	HANDLE hTh[iTh_max];
+	DWORD this_loop_ExitCode_sum = 0;
+	LPDWORD thExitCode[iTh_max];
+//	void* thread_argument[iTh_max];
+
+	// stack - set it properly small -> variable [str] in global
+	int default_priority = RT_PRIORITY_MAX - 1;
+	int wanted_priority = default_priority;
+	int thread_priority = 0;
+	int iTh = 0;
+	
+	DWORD thread_id = 0;
+
+	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	// RtCreateThread
+	for(iTh = 0; iTh<iTh_max; iTh++){
+		//____________________________________________________
+		// handle
+		RtPrintf("> Try to create multi thread %i.\n", iTh);
+		hTh[iTh] = RtCreateThread(NULL, 0, 
+			(LPTHREAD_START_ROUTINE) TIM_PWMfunction, (VOID*)iTh, CREATE_SUSPENDED, &thread_id);
+		if(hTh[iTh] == NULL){
+			RtPrintf("ERROR:\tCannot create thread %i.\n",iTh);
+			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, SUMFLOATS_ERROR_COULD_NOT_CREATE_THREAD);
+		}
+		RtPrintf("Thread %i created and suspended with priority %i.\n", iTh, RtGetThreadPriority(hTh[iTh]) );
+
+		// ____________________________________________________
+		// RtSetThreadPriority
+		wanted_priority = default_priority - iTh;
+		if( RtSetThreadPriority( hTh[iTh], wanted_priority) ){
+			thread_priority = RtGetThreadPriority(hTh[iTh]);
+			if( thread_priority == wanted_priority ){
+				RtPrintf("Priority of thread %i sucessfully set to %i\n", iTh, wanted_priority );
+			}
+			else{
+				RtPrintf("ERROR:\tCannot set thread %i priority to %i! It currently has priority %i.\n", 
+					iTh, wanted_priority , thread_priority);
+				TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, SUMFLOATS_ERROR_COULD_NOT_CHANGE_PRIORITY);
+			}
+		}
+		else{
+			RtPrintf("ERROR:\tCannot set thread %i priority to %i! It currently has priority %i.\n", 
+				iTh, wanted_priority , GetThreadPriority(hTh[iTh]) );
+			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, SUMFLOATS_ERROR_COULD_NOT_CHANGE_PRIORITY);
+		}
+
+	
+		//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		// RtResumeThread
+		if( RtResumeThread(hTh[iTh]) != 0xFFFFFFFF ){
+			RtPrintf("Succesfully resumed thread %i.\n", iTh);
+		}
+		else{
+			RtPrintf("Could not resume thread %i.\n", iTh);
+			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, SUMFLOATS_ERROR_COULD_NOT_RESUME_THREAD);
+		}
+	}
+
+	/*
+	LARGE_INTEGER sleep; 
+	sleep.QuadPart = 100000000;
+		RtSleepFt(&sleep);
+	*/
+	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	// main thread-controlling super-loop
+	int still_active_threads;
+	LARGE_INTEGER preemptive_interval; 
+	preemptive_interval.QuadPart = 100;
+	iTh = 0;
+	do{
+		still_active_threads = 0;
+		//BOOL GetExitCodeThread(HANDLE hThread, LPDWORD lpExitCode);
+		if(GetExitCodeThread(hTh[iTh], (thExitCode[iTh]) ) == FALSE){
+			RtPrintf("Function of thread %i failed, returned FALSE with exit-code %lu\n", iTh, *thExitCode);
+			break;
+		}
+		if( *thExitCode[iTh] == STILL_ACTIVE ){
+			still_active_threads++;
+		}
+		else{
+			
+		}
+		//____________________________________________________
+		// could not be executed if CPU>1 
+		RtSleepFt(&preemptive_interval);
+	}while(still_active_threads);
+	
+	for(iTh = 0; iTh<iTh_max; iTh++){
+		RtPrintf("Thread %i terminated with exit code %lu\n", iTh, *thExitCode[iTh]);
+		//printf("Thread %i sum = %f\n", iTh, static_cast<double *>(thread_argument[iTh]));
+	}
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// TODO
