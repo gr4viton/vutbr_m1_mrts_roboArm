@@ -79,7 +79,7 @@ channel |	servo		|	FDBACK	|	AI
 // do not use -> dividing by zero unhandled possibility -> write an inline fct?
 // #define NS100_X_HZ(x_hz)		(NS100_1S/(x_hz)) 
 
-#define CLOCK_X				CLOCK_2
+#define CLOCK_X				CLOCK_1
 
 // ____________________________________________________
 // roboticManipulator_error

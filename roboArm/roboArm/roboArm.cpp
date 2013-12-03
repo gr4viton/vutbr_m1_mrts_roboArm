@@ -43,8 +43,14 @@ DWORD MEAN_adc(int channel, int gain, int c){
 * @param[in]		void *a_struct
 				- i will not be needed
 ***************/
-void RTFCNDCL PWM_dutyCycle(void *a_servoMotor)
+void RTFCNDCL TIM_PWMfunction(void *a_manip)
 {
+	static int tic = 0;
+	tic++;
+	//if(tic>
+		
+	C_roboticManipulator* ROB = (C_roboticManipulator*)a_manip;
+
 	/*
 	// writing to a critical section should be treated wisely ! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 	// is the register critical section? I think yess
@@ -58,14 +64,37 @@ void RTFCNDCL PWM_dutyCycle(void *a_servoMotor)
 	// You cannot write zeros everywhere
 	RtWritePortUchar((PUCHAR)(baseAddress+DO_Low_Byte), 0x00);
 	RtSleepFt(&interval_zero);*/
+
+	/*
 	LARGE_INTEGER interval_zero; interval_zero.QuadPart = 10*NS100_1MS;
 	int i = 100;
 	while(--i){
 		RtPrintf("%i\n",i);
 		RtSleepFt(&interval_zero);
 	}
+	*/
+	ROB = NULL;
 }
 
+
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+// CLOSE_handle
+void CLOSE_handle(HANDLE handle, int error_sum){
+	if( CloseHandle(handle) == 0 ){
+		RtPrintf("Function CloseHandle failed with 0x%04x\n", GetLastError());
+		ExitThread(error_sum + SUMFLOATS_ERROR_CLOSEHANDLE_FAIL);
+	}
+	else if(error_sum != 0)
+		ExitThread(error_sum);
+	else 
+		return;
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+int CREATE_PWMtimer(void){
+	return(FLAWLESS_EXECUTION);
+}
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // main
@@ -95,6 +124,62 @@ void _cdecl main(int  argc, char **argv, char **envp)
 		ExitProcess(ret_val);
 	}
 
+	
+	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	//timer
+	HANDLE hTimer = NULL;
+
+	LARGE_INTEGER min_tim_period;
+
+	LARGE_INTEGER expir_interval; // interval before first calling of routine
+	LARGE_INTEGER periodic_interval; // interval between routines
+
+	//periodic_interval.QuadPart = NS100_50HZ/2;
+	periodic_interval.QuadPart = NS100_1US * 10;
+	expir_interval.QuadPart = NS100_1US;
+		
+	RtPrintf("Try periodic_interval against min_tim_period\n");
+	// periodic_interval must be dividable by a min_tim_period without any "rest"
+	RtGetClockTimerPeriod(CLOCK_X, &min_tim_period);
+	if ( 0 != (periodic_interval.QuadPart % min_tim_period.QuadPart ) ) 
+	{
+		RtPrintf("Periodic interval [%I64d] is not dividable by a min_tim_period [%I64d]\n",
+			periodic_interval, min_tim_period);
+		// periodic interval is not dividable by a min_tim_period
+		// log it and exit
+		ExitProcess(DESTRUCT_EVERYTHING); 
+	}
+	RtPrintf("Periodic interval IS dividable by a min_tim_period\n");
+
+	periodic_interval.QuadPart = 0;
+	
+	// !IT IS! possible to point at a class member function in RtCreateTimer, but how?
+	
+	RtPrintf("Try to create timer - RtCreateTimer\n");
+	hTimer = RtCreateTimer( NULL, 0, TIM_PWMfunction, (PVOID)&ROB, 63, CLOCK_X );
+
+	//hTimer = RtCreateTimer( NULL, 0, static_cast<VOID>(PWM_dutyCycle), (PVOID)&periodic_input, 63, CLOCK_X );
+	
+	if(hTimer == NULL)
+	{
+		RtPrintf("Invalit timer handle \n");
+		ExitProcess(C_SERVOMOTOR_TIMER_INVALID_HANDLE);
+	}
+	// starts the timer
+	RtPrintf("Timer created succesfully\n");
+	
+	RtPrintf("Try to start timer - RtSetTimerRelative\n");
+	if(!RtSetTimerRelative( hTimer, &expir_interval, &periodic_interval ) )
+	{
+		RtPrintf("RtSetTimerRelative failed\n");
+		//log
+		CLOSE_handle(hTimer,C_SERVOMOTOR_SETTIMERREL_ERROR);
+	}
+	RtPrintf("Timer started succesfully\n");
+
+	periodic_interval.QuadPart = NS100_1S*10;
+	RtSleepFt(&periodic_interval);
+	
 
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -193,6 +278,9 @@ void _cdecl main(int  argc, char **argv, char **envp)
 		RtSleep(100);
 	}
 	
+
+	CLOSE_handle(hTimer,C_SERVOMOTOR_SETTIMERREL_ERROR);
+
 
     ExitProcess(0);
 }
