@@ -54,7 +54,6 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 	time_period.QuadPart = NS100_1S / 100; // 100 Hz
 	tic_interval.QuadPart = 10; // time to wait between individual tics
 	
-	
 	int i_serv = 0;
 	C_roboticManipulator* ROB = (C_roboticManipulator*)a_manip;
 	C_servoMotor* serv = NULL;
@@ -86,7 +85,7 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 			tic.QuadPart = 0;
 		
 		// stop after first period (for debug - to terminate threads)<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-			done == false;
+			done = false;
 		}
 		RtSleepFt(&tic_interval);
 		tic.QuadPart += 1;

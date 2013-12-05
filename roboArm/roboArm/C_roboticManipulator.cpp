@@ -7,6 +7,7 @@
 
 #include "roboArm.h"
 //#include "C_roboticManipulator.h"
+//const int C_roboticManipulator::max_servo_i = SUM_SERVOMOTORS-1;
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // constructor
@@ -81,7 +82,7 @@ C_roboticManipulator::C_roboticManipulator(int &roboticManipulator_error)
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // in bounds of 0 to max_servo_i
 bool C_roboticManipulator::IS_in_bounds(int servo_i){
-	if(servo_i<0 || servo_i>max_servo_i) return(false);
+	if(servo_i<0 || servo_i>=SUM_SERVOMOTORS) return(false);
 	else return(true);
 }
 
