@@ -16,7 +16,7 @@
 class C_servoMotor{
 //____________________________________________________
 // member variables
-private:	
+public:	
 	int servo_index;
 	//____________________________________________________
 	// feedback

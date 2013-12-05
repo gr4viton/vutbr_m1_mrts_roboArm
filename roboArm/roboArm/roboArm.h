@@ -155,6 +155,11 @@ class C_roboticManipulator;
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // function headers
 DWORD	GET_ADC(UCHAR channel, UCHAR gain);
+void RTFCNDCL TIM_PWMfunction(void *a_manip);
+void CLOSE_handleAndExitThread(HANDLE handle, int error_sum);
+void TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, int error_sum);
+
+
 // INIT - funcions
 int		INIT_All();
 int		INIT_Library();

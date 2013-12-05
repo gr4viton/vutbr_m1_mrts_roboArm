@@ -22,7 +22,8 @@ HMODULE hLibModule = NULL;
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // mean of c values
-DWORD MEAN_adc(int channel, int gain, int c){
+DWORD MEAN_adc(int channel, int gain, int c)
+{
 	if(c==0) return(0);
 	DWORD sum=0;
 	//DWORD *vals;
@@ -45,34 +46,52 @@ DWORD MEAN_adc(int channel, int gain, int c){
 ***************/
 void RTFCNDCL TIM_PWMfunction(void *a_manip)
 {
-	static int tic = 0;
-	tic++;
-	//if(tic>
-		
+	LARGE_INTEGER tic_interval;
+	LARGE_INTEGER time_period;
+	LARGE_INTEGER tic;
+
+	tic.QuadPart = 0;
+	time_period.QuadPart = NS100_1S / 100; // 100 Hz
+	tic_interval.QuadPart = 10; // time to wait between individual tics
+	
+	
+	int i_serv = 0;
 	C_roboticManipulator* ROB = (C_roboticManipulator*)a_manip;
+	C_servoMotor* serv = NULL;
+	// here there will be some mutexed variable for control of this thread termination
+	bool done = false;
+	//____________________________________________________
+	// main thread loop
+	while(!done)
+	{
+		// this style is functional only for one servo at a time <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+		// - rewrite to remember whole register port and at right times write changed register 
+		for(i_serv=0; i_serv<SUM_SERVOMOTORS; i_serv++)
+		{
+			// get the pointer of ROB->serv[i_serv] into serv
+			ROB->GET_servoMotor(i_serv,serv);
 
-	/*
-	// writing to a critical section should be treated wisely ! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-	// is the register critical section? I think yess
-	// mutex for individual bytes / bites of shadow-register
-	// and one core thread reading shadow-register and writing it to the true byteAdress 
-	// --- possibly event driven ---
-
-	// so RtWritePortUchar -> will become something like WriteIntentionBit which will handle the mutexes right
-	RtWritePortUchar(servoMotorByteAddress, 1<<servoMotorDigit);
-	RtSleepFt(&interval_one);
-	// You cannot write zeros everywhere
-	RtWritePortUchar((PUCHAR)(baseAddress+DO_Low_Byte), 0x00);
-	RtSleepFt(&interval_zero);*/
-
-	/*
-	LARGE_INTEGER interval_zero; interval_zero.QuadPart = 10*NS100_1MS;
-	int i = 100;
-	while(--i){
-		RtPrintf("%i\n",i);
-		RtSleepFt(&interval_zero);
+			if(tic.QuadPart == serv->interval_one.QuadPart)
+			{// time for one has come
+				// write to the right digit
+				RtWritePortUchar(serv->servoMotorByteAddress, 1<<serv->servoMotorDigit);
+			}
+		}
+		// ____________________________________________________
+		// end of each period
+		if(tic.QuadPart == time_period.QuadPart)
+		{ // end of one period
+			// write all zeros
+			RtWritePortUchar(serv->servoMotorByteAddress, 00);
+			tic.QuadPart = 0;
+		
+		// stop after first period (for debug - to terminate threads)<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+			done == false;
+		}
+		RtSleepFt(&tic_interval);
+		tic.QuadPart += 1;
 	}
-	*/
+
 	ROB = NULL;
 }
 
@@ -80,7 +99,8 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // CLOSE_handle
-void CLOSE_handle(HANDLE handle, int error_sum){
+void CLOSE_handleAndExitThread(HANDLE handle, int error_sum)
+{
 	if( CloseHandle(handle) == 0 ){
 		RtPrintf("Function CloseHandle failed with 0x%04x\n", GetLastError());
 		ExitThread(error_sum + SUMFLOATS_ERROR_CLOSEHANDLE_FAIL);
@@ -92,23 +112,37 @@ void CLOSE_handle(HANDLE handle, int error_sum){
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-int CREATE_PWMtimer(void){
+// TERMINATE_allThreadsAndExitProcess
+void TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, int error_sum)
+{
+	for(int iTh = 0; iTh<iTh_max; iTh++){
+		if(FALSE == TerminateThread(hTh[iTh], EXITCODE_TERMINATED_BY_MAIN)){
+			error_sum += SUMFLOATS_ERROR_COULD_NOT_TERMINATE_THREAD;
+		}
+		CLOSE_handleAndExitThread(hTh[iTh],error_sum);
+	}
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+// Create all needed threads and returns a handle to an array of them
+HANDLE* CREATE_threads(void)
+{
 	return(FLAWLESS_EXECUTION);
 }
+
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // main
 void _cdecl main(int  argc, char **argv, char **envp)
 {
-	//double angles[6];
 	int ret_val = 0;
 	int i = 0;
 	UCHAR pom = 0;
-	//DWORD data;
 	int num = 5; // number_of_mean_values
 
 	printf("--------(: Clean start :)------\n");
 	// ____________________________________________________
+	// init HW
 	ret_val = INIT_All();
 	if(ret_val!=FLAWLESS_EXECUTION){
 		//log
@@ -123,79 +157,20 @@ void _cdecl main(int  argc, char **argv, char **envp)
 		//log
 		ExitProcess(ret_val);
 	}
-
-	/*
-	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	//timer
-	HANDLE hTimer = NULL;
-
-	LARGE_INTEGER min_tim_period;
-
-	LARGE_INTEGER expir_interval; // interval before first calling of routine
-	LARGE_INTEGER periodic_interval; // interval between routines
-
-	//periodic_interval.QuadPart = NS100_50HZ/2;
-	periodic_interval.QuadPart = NS100_1US * 10;
-	expir_interval.QuadPart = NS100_1US;
-		
-	RtPrintf("Try periodic_interval against min_tim_period\n");
-	// periodic_interval must be dividable by a min_tim_period without any "rest"
-	RtGetClockTimerPeriod(CLOCK_X, &min_tim_period);
-	if ( 0 != (periodic_interval.QuadPart % min_tim_period.QuadPart ) ) 
-	{
-		RtPrintf("Periodic interval [%I64d] is not dividable by a min_tim_period [%I64d]\n",
-			periodic_interval, min_tim_period);
-		// periodic interval is not dividable by a min_tim_period
-		// log it and exit
-		ExitProcess(DESTRUCT_EVERYTHING); 
-	}
-	RtPrintf("Periodic interval IS dividable by a min_tim_period\n");
-
-	periodic_interval.QuadPart = 0;
 	
-	// !IT IS! possible to point at a class member function in RtCreateTimer, but how?
-	
-	RtPrintf("Try to create timer - RtCreateTimer\n");
-	hTimer = RtCreateTimer( NULL, 0, TIM_PWMfunction, (PVOID)&ROB, 63, CLOCK_X );
 
-	//hTimer = RtCreateTimer( NULL, 0, static_cast<VOID>(PWM_dutyCycle), (PVOID)&periodic_input, 63, CLOCK_X );
-	
-	if(hTimer == NULL)
-	{
-		RtPrintf("Invalit timer handle \n");
-		ExitProcess(C_SERVOMOTOR_TIMER_INVALID_HANDLE);
-	}
-	// starts the timer
-	RtPrintf("Timer created succesfully\n");
-	
-	RtPrintf("Try to start timer - RtSetTimerRelative\n");
-	if(!RtSetTimerRelative( hTimer, &expir_interval, &periodic_interval ) )
-	{
-		RtPrintf("RtSetTimerRelative failed\n");
-		//log
-		CLOSE_handle(hTimer,C_SERVOMOTOR_SETTIMERREL_ERROR);
-	}
-	RtPrintf("Timer started succesfully\n");
-
-	periodic_interval.QuadPart = NS100_1S*10;
-	RtSleepFt(&periodic_interval);
-	
-*/
-
-	
 // ____________________________________________________
-// 
+// will be in the function CREATE_threads
 
 	//____________________________________________________
 	// thread creation
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	const int iTh_max = 1;
-	HANDLE hTh[iTh_max];
+	const int iTh_max = 1; // number of threads = for now only one
+	HANDLE hTh[iTh_max]; // array of handles to the threads
 	DWORD this_loop_ExitCode_sum = 0;
 	LPDWORD thExitCode[iTh_max];
 //	void* thread_argument[iTh_max];
 
-	// stack - set it properly small -> variable [str] in global
 	int default_priority = RT_PRIORITY_MAX - 1;
 	int wanted_priority = default_priority;
 	int thread_priority = 0;
@@ -204,13 +179,13 @@ void _cdecl main(int  argc, char **argv, char **envp)
 	DWORD thread_id = 0;
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	// RtCreateThread
+	// RtCreateThread - will be in the separate function
 	for(iTh = 0; iTh<iTh_max; iTh++){
 		//____________________________________________________
-		// handle
+		// RtCreateThread - handle creation 
 		RtPrintf("> Try to create multi thread %i.\n", iTh);
 		hTh[iTh] = RtCreateThread(NULL, 0, 
-			(LPTHREAD_START_ROUTINE) TIM_PWMfunction, (VOID*)iTh, CREATE_SUSPENDED, &thread_id);
+			(LPTHREAD_START_ROUTINE) TIM_PWMfunction, (VOID*)&ROB, CREATE_SUSPENDED, &thread_id);
 		if(hTh[iTh] == NULL){
 			RtPrintf("ERROR:\tCannot create thread %i.\n",iTh);
 			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, SUMFLOATS_ERROR_COULD_NOT_CREATE_THREAD);
@@ -236,9 +211,7 @@ void _cdecl main(int  argc, char **argv, char **envp)
 				iTh, wanted_priority , GetThreadPriority(hTh[iTh]) );
 			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, SUMFLOATS_ERROR_COULD_NOT_CHANGE_PRIORITY);
 		}
-
-	
-		//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		//____________________________________________________
 		// RtResumeThread
 		if( RtResumeThread(hTh[iTh]) != 0xFFFFFFFF ){
 			RtPrintf("Succesfully resumed thread %i.\n", iTh);
@@ -249,11 +222,9 @@ void _cdecl main(int  argc, char **argv, char **envp)
 		}
 	}
 
-	/*
-	LARGE_INTEGER sleep; 
-	sleep.QuadPart = 100000000;
-		RtSleepFt(&sleep);
-	*/
+
+//____________________________________________________
+// will be in main
 	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// main thread-controlling super-loop
 	int still_active_threads;
@@ -283,38 +254,6 @@ void _cdecl main(int  argc, char **argv, char **envp)
 		//printf("Thread %i sum = %f\n", iTh, static_cast<double *>(thread_argument[iTh]));
 	}
 
-	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	// TODO
-	//____________________________________________________
-	// 0) find out initial configurations for each servo in C_roboticManipulator constructor!
-	// 1) thread creation for each servo (?in C_roboticManipulator constructor?)
-	// --> REWRITE it as I thought it will be handled with timers, but
-	// thread handling will be better
-	
-	// writing to a critical section should be treated wisely ! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-	// is the register critical section? I think yess
-	// a) mutex for individual bytes / bites of shadow-register
-	//		and one core thread reading shadow-register and writing it to the true byteAdress 
-	// b) in each instance of class C_servoMotor there will be mutex for writing the intervals
-	//		this mutex will be set/unset with the individual servoMotors threads
-	//		and it will be read by the main thread every min_period of setting the register
-	//		-> if it is closed the thread waits to write into it until main thread opens it agein
-	// c) in each thread will add event when it wants to set/unset the byte
-	//		main thread will treat this events and write to the critical-section = register
-	// --- possibly event driven ---
-	//
-
-	// 2) member function PWM_dutyCycle -> periodically executed in each thread
-	// 3) find out if writing to register is criticall section
-
-	
-	/*
-	// is this secure? 
-	// or I should be working only in C_roboticManipulator class to avoid encapsulation problems??
-	C_servoMotor* pServo = NULL;
-	ROB.GET_servoMotor(1, pServo);
-	pServo->PWM_dutyCycle();
-	*/
 
 	
 			
@@ -355,33 +294,13 @@ void _cdecl main(int  argc, char **argv, char **envp)
 	// Reading Data 
 	while(1)
 	{
-		/*
-			MEAN_adc(0,0,num);
-			//MEAN_adc(1,0,num);
-			//MEAN_adc(2,0,num);
-		/**/
 		RtPrintf("FDBACK[1,2,3] = %5u;\t\t%5u;\t\t%5u;\n",
 			MEAN_adc(0,0,num),
 			MEAN_adc(1,0,num),
 			MEAN_adc(2,0,num)
 			);
-		//*/
-/*
-		data = GET_ADC(0);
-		RtPrintf("FDBACK1=%5u\t",data);
-		data = GET_ADC(1);
-		RtPrintf("FDBACK2=%5u\t",data);
-		data = GET_ADC(2);
-
-		RtPrintf("FDBACK3=%5u\n",data);	
-*/
-
 		RtSleep(100);
 	}
-	
-
-	CLOSE_handle(hTimer,C_SERVOMOTOR_SETTIMERREL_ERROR);
-
 
     ExitProcess(0);
 }
@@ -436,3 +355,44 @@ DWORD GET_ADC(UCHAR channel, UCHAR gain)
 	return val;
 }
 
+
+
+
+
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+// do not delete until last release
+
+	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	// TODO
+	//____________________________________________________
+	// 0) find out initial configurations for each servo in C_roboticManipulator constructor!
+	// # done
+	// 1) thread creation for each servo (?in C_roboticManipulator constructor?)
+	// --> REWRITE it as I thought it will be handled with timers, but
+	// thread handling will be better
+	
+	// writing to a critical section should be treated wisely ! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+	// is the register critical section? I think yess
+	// a) mutex for individual bytes / bites of shadow-register
+	//		and one core thread reading shadow-register and writing it to the true byteAdress 
+	// b) in each instance of class C_servoMotor there will be mutex for writing the intervals
+	//		this mutex will be set/unset with the individual servoMotors threads
+	//		and it will be read by the main thread every min_period of setting the register
+	//		-> if it is closed the thread waits to write into it until main thread opens it agein
+	// c) in each thread will add event when it wants to set/unset the byte
+	//		main thread will treat this events and write to the critical-section = register
+	// --- possibly event driven ---
+	//
+
+	// 2) member function PWM_dutyCycle -> periodically executed in each thread
+	// 3) find out if writing to register is criticall section
+
+	
+	/*
+	// is this secure? 
+	// or I should be working only in C_roboticManipulator class to avoid encapsulation problems??
+	C_servoMotor* pServo = NULL;
+	ROB.GET_servoMotor(1, pServo);
+	pServo->PWM_dutyCycle();
+	*/
