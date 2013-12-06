@@ -44,10 +44,6 @@
 #define DEBUG
 #define DEBUGGING_WITHOUT_HW
 
-#define CLOCK_X					CLOCK_2
-#define SUM_THREADS				1
-#define SUM_SERVOMOTORS			6
-
 //____________________________________________________
 // addresses
 #define AD_GAIN					0xe0
@@ -59,6 +55,9 @@
 #define DO_Low_Byte				0xd8
 #define DO_High_Byte				0xdc
 
+//____________________________________________________
+// class servoMotor macros
+#define SUM_SERVOMOTORS					6
 
 /* ____________________________________________________
 cislovani serv od spoda 1-6
@@ -90,6 +89,7 @@ channel |	servo		|	FDBACK	|	AI
 		+-----------+-------+------------+
 */
 typedef enum {S1=2, S2=3, S3=4, S5=6, S4=5, S6=7}E_servos;
+
 //____________________________________________________
 // predefined time intervals
 // multiplicatives of [100ns]
@@ -103,6 +103,7 @@ typedef enum {S1=2, S2=3, S3=4, S5=6, S4=5, S6=7}E_servos;
 // do not use -> dividing by zero unhandled possibility -> write an inline fct?
 // #define NS100_X_HZ(x_hz)		(NS100_1S/(x_hz)) 
 
+#define CLOCK_X				CLOCK_2
 
 // ____________________________________________________
 // roboticManipulator_error
@@ -135,8 +136,8 @@ typedef enum {S1=2, S2=3, S3=4, S5=6, S4=5, S6=7}E_servos;
 #define ERROR_SEVERITY_TOO_BIG						99254
 
 //____________________________________________________
-#define EXITCODE_SUCCESSFUL_END						0
-#define EXITCODE_TERMINATED_BY_MAIN					1
+#define EXITCODE_SUCCESSFUL_END					0
+#define EXITCODE_TERMINATED_BY_MAIN				1
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // external variables & classes
@@ -155,16 +156,14 @@ class C_roboticManipulator;
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // function declarations of roboArm.cpp
 DWORD	GET_ADC(UCHAR channel, UCHAR gain);
+void RTFCNDCL TIM_PWMfunction(void *a_manip);
+void CLOSE_handleAndExitThread(HANDLE handle, int error_sum);
+void TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, int error_sum);
 //____________________________________________________
 // function declarations of non-headered .cpp files
 // INIT.cpp
 int		INIT_All();
 int		INIT_Library();
 void		INIT_ADC();
-// thread_functions.cpp
-int CREATE_threads(HANDLE* hTh, const int iTh_max, C_roboticManipulator* ROB);
-void RTFCNDCL TIM_PWMfunction(void *a_manip);
-void CLOSE_handleAndExitThread(HANDLE handle, int error_sum);
-void TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, int error_sum);
 
 #endif
