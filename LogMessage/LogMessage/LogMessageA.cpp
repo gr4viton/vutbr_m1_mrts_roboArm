@@ -1,8 +1,20 @@
+/***************
+@filename		LogMessage.cpp
+@author 		xdavid10, xslizj00 @ FEEC-VUTBR 
+@contacts		Bc. Jiøí Sliž		<xslizj00@stud.feec.vutbr.cz>
+				Bc. Daniel Davídek	<danieldavidek@gmail.com>
+@date			2013_12_02
+@brief			Log message class
+@description	Class C_CircBuffer implements circular buffer and provides read/write operations.
+				Class C_LogMessageA uses C_CircBuffer and provides methods for asynchronous logging using mutex.
+***************/
+
 #include "LogMessageA.h"
 
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-//								C_CircBuffer
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+/****************************************************************************
+@class	C_CircBuffer
+@brief	circular buffer class
+***************/
 // Constructor C_CircBuffer
 C_CircBuffer::C_CircBuffer()
 {
@@ -82,9 +94,10 @@ unsigned int C_CircBuffer::Read(char* out)
 	return 0;
 }
 
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-//								C_LogMessageA
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+/****************************************************************************
+@class	C_CircBuffer
+@brief	circular buffer class
+***************/
 // Constructor C_LogMessageA
 C_LogMessageA::C_LogMessageA()
 {
@@ -158,7 +171,7 @@ unsigned int C_LogMessageA::WriteBuffToFile()
 	}
 	sprintf_s(DataBuffer,512,"%02d.%02d.%04d %02d:%02d:%02d.%03d %02d: %s \r\n",
 		(int)SystemTime.wDay,(int)SystemTime.wMonth,(int)SystemTime.wYear,
-		(int)SystemTime.wHour,(int)SystemTime.wMinute,(int)SystemTime.wSecond, (int)SystemTime.wMilliseconds ,//(int)SystemTime.wMilliseconds,
+		(int)SystemTime.wHour,(int)SystemTime.wMinute,(int)SystemTime.wSecond, (int)SystemTime.wMilliseconds ,
 		actSeverity,cMessage);
 
 	// CreateFile
