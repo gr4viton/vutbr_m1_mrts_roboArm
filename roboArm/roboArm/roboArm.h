@@ -57,9 +57,6 @@
 
 //____________________________________________________
 // class servoMotor macros
-#define SERVOMOTOR_ADDRESS_HIGHBYTE		true
-#define SERVOMOTOR_ADDRESS_LOWBYTE		false
-
 #define SUM_SERVOMOTORS					6
 
 /* ____________________________________________________
@@ -102,10 +99,11 @@ typedef enum {S1=2, S2=3, S3=4, S5=6, S4=5, S6=7}E_servos;
 
 // 50Hz = 0.02s = 200000[100ns]
 #define NS100_50HZ			NS100_1S/50
+#define NS100_100HZ			NS100_1S/100
 // do not use -> dividing by zero unhandled possibility -> write an inline fct?
 // #define NS100_X_HZ(x_hz)		(NS100_1S/(x_hz)) 
 
-#define CLOCK_X				CLOCK_1
+#define CLOCK_X				CLOCK_2
 
 // ____________________________________________________
 // roboticManipulator_error

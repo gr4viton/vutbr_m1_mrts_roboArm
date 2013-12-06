@@ -37,8 +37,6 @@ public:
 	
 	//____________________________________________________
 	// addresses
-	bool addressHighByte; // if true set address for HighByte, otherwise LowByte
-	PUCHAR servoMotorByteAddress; // byte in the register for this servoMotor
 	UCHAR servoMotorDigit; // in case it is different from servo_index
 	// which bit from the byte of the address of DO is for this servoMotor
 	
@@ -47,8 +45,10 @@ public:
 public:	C_servoMotor(void);
 public: ~C_servoMotor(void);
 public:	int SET_dutyCycleIntervals(LARGE_INTEGER a_interval_one, LARGE_INTEGER a_interval_zero);
-public:	int SET_constants(int a_servo_index, bool a_addressHighByte,
-		UCHAR servoMotorBit, bool a_FDBACK = false,
+public: void SET_intervalZero(LARGE_INTEGER a_interval_zero);
+
+public:	int SET_constants(int a_servo_index,
+		UCHAR servoMotorDigit, bool a_FDBACK = false,
 		DWORD a_min_val = 0, DWORD a_max_val = 255, DWORD a_mean_vals = 5
 		);
 //____________________________________________________

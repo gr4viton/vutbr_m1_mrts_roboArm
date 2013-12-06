@@ -19,66 +19,70 @@
 C_roboticManipulator::C_roboticManipulator(int &roboticManipulator_error)
 {
 	roboticManipulator_error = FLAWLESS_EXECUTION;
+	
+	DOport_ByteAddress = (PUCHAR)(baseAddress + DO_High_Byte);
+	WRITE_portUchar(DOport_ByteAddress,0);
+	
+	//PWM_period.QuadPart = NS100_1S / 100; // 1/100 s = 100 Hz
+	PWM_period.QuadPart = NS100_1S / 1; // 1/1 s = 1 Hz
+
+	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//set constants for individual servos
 	int i=0;
 	int ret_i;
 	//____________________________________________________
 	// servo0
-	ret_i = serv[i].SET_constants( i, 
-		SERVOMOTOR_ADDRESS_HIGHBYTE, 0,
+	ret_i = serv[i].SET_constants( i, 0,
 		true, 1,255, 5 );
 	if(ret_i != i){ 
 		roboticManipulator_error = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
-	} /*
-	ret_i = serv[i].CREATE_timer(); // commented section!! <<<<<<<<<<<<<<<<<
-	if(ret_i!=FLAWLESS_EXECUTION){
-		roboticManipulator_error = ret_i;	return;
-	}*/
+	} 
+	serv[i].SET_intervalZero(PWM_period);
 	i++;
 	//____________________________________________________
 	// servo1
-	ret_i = serv[i].SET_constants( i, 
-		SERVOMOTOR_ADDRESS_HIGHBYTE, 1,
+	ret_i = serv[i].SET_constants( i, 1,
 		true, 1,255, 5 );
 	if(ret_i != i){ 
 		roboticManipulator_error = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
 	} 
+	serv[i].SET_intervalZero(PWM_period);
 	i++;
 	//____________________________________________________
 	// servo2
-	ret_i = serv[i].SET_constants( i, 
-		SERVOMOTOR_ADDRESS_HIGHBYTE, 2,
+	ret_i = serv[i].SET_constants( i, 2,
 		true, 1,255, 5 );
 	if(ret_i != i){ 
 		roboticManipulator_error = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
 	} 
+	serv[i].SET_intervalZero(PWM_period);
 	i++;
 	//____________________________________________________
 	// servo3
-	ret_i = serv[i].SET_constants( i,
-		SERVOMOTOR_ADDRESS_HIGHBYTE, 3
+	ret_i = serv[i].SET_constants( i, 3
 		);
 	if(ret_i != i){ 
 		roboticManipulator_error = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
 	} 
+	serv[i].SET_intervalZero(PWM_period);
 	i++;
 	//____________________________________________________
 	// servo4
-	ret_i = serv[i].SET_constants( i,
-		SERVOMOTOR_ADDRESS_HIGHBYTE, 4
+	ret_i = serv[i].SET_constants( i, 4
 		);
 	if(ret_i != i){ 
 		roboticManipulator_error = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
 	} 
+	serv[i].SET_intervalZero(PWM_period);
 	i++;
 	//____________________________________________________
 	// servo5
-	ret_i = serv[i].SET_constants( i,
-		SERVOMOTOR_ADDRESS_HIGHBYTE, 5
+	ret_i = serv[i].SET_constants( i, 5
 		);
 	if(ret_i != i){ 
 		roboticManipulator_error = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
 	} 
+	serv[i].SET_intervalZero(PWM_period);
 	i++;
 	//for(int i=0;i<max_servo_i;i++){serv[i] = new C_servoMotor(..)		}
 	return;
@@ -137,8 +141,9 @@ int C_roboticManipulator::GET_servoMotor(int a_servo_i, C_servoMotor** servoMoto
 @param[out]	
 @return		
 ***************/
-VOID C_roboticManipulator::SET_portUchar(PUCHAR a_port_address, UCHAR a_port_data)
+void C_roboticManipulator::WRITE_portUchar(PUCHAR a_port_address, UCHAR a_port_data)
 {	
+	DOport_lastValue = a_port_data;
 #ifndef DEBUGGING_WITHOUT_HW
 	RtWritePortUchar(PUCHAR Port, UCHAR Data);
 	return;
@@ -146,6 +151,17 @@ VOID C_roboticManipulator::SET_portUchar(PUCHAR a_port_address, UCHAR a_port_dat
 	printf("address= 0x%08x | data= 0x%08x\n", a_port_address, a_port_data);
 }
 
+/****************************************************************************
+@function	RESET_DOport
+@brief		Writes zeros into DO port
+@param[in]	
+@param[out]	
+@return		
+***************/
+void C_roboticManipulator::RESET_DOport()
+{	
+	WRITE_portUchar(DOport_ByteAddress,(UCHAR)0);
+}
 
 /****************************************************************************
 @function	SET_bitUchar
@@ -157,7 +173,14 @@ VOID C_roboticManipulator::SET_portUchar(PUCHAR a_port_address, UCHAR a_port_dat
 @param[out]	
 @return		
 ***************/
-VOID C_roboticManipulator::SET_bitUchar(PUCHAR a_port_address, UCHAR a_port_bit)
+void C_roboticManipulator::SET_DOportBitUchar(UCHAR a_port_bit)
 {	
-
+	if(DOport_lastValue && 1<<a_port_bit)
+	{ // the port byt is already SET
+		return;
+	}
+	else
+	{
+		WRITE_portUchar(DOport_ByteAddress, DOport_lastValue || 1<<a_port_bit);
+	}
 }

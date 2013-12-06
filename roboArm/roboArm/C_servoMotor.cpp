@@ -26,31 +26,36 @@ C_servoMotor::C_servoMotor(void)
 ***************/
 int C_servoMotor::SET_constants(
 	int a_servo_index,
-	bool a_addressHighByte,
 	UCHAR a_servoMotorDigit,
 	bool a_FDBACK,
 	DWORD a_min_val, DWORD a_max_val, DWORD a_mean_vals
 	)
 {
+	// warning: should not change constants -> it resets intervals
 	interval_one.QuadPart = 0;
 	interval_zero.QuadPart = 0;
 	// stop the PWM function and timers!!
 
-
-	addressHighByte = a_addressHighByte,
 	FDBACK = a_FDBACK;
 	min_val = a_min_val;
 	max_val = a_max_val;
 	mean_vals = a_mean_vals;
 	servo_index = a_servo_index;
 	servoMotorDigit = a_servoMotorDigit;
-
-	if(addressHighByte == SERVOMOTOR_ADDRESS_HIGHBYTE)
-		servoMotorByteAddress = (PUCHAR)(baseAddress + DO_High_Byte);
-	else
-		servoMotorByteAddress = (PUCHAR)(baseAddress + DO_Low_Byte);
-
 	return(servo_index);
+}
+
+/****************************************************************************
+@function	SET_intervalZero
+@brief		
+@param[in]	
+@param[out]	
+@return		
+***************/
+void C_servoMotor::SET_intervalZero(LARGE_INTEGER a_interval_zero)
+{
+	interval_zero.QuadPart = a_interval_zero.QuadPart;
+	return;
 }
 
 /****************************************************************************
