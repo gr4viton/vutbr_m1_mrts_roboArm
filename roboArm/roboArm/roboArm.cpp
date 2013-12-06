@@ -1,11 +1,11 @@
 /***************
 @filename		roboArm.cpp
-@author 		xdavid10, xslizj00 @ FEEC-VUTBR 
+@author 			xdavid10, xslizj00 @ FEEC-VUTBR 
 @contacts		Bc. Jiøí Sliž		<xslizj00@stud.feec.vutbr.cz>
 				Bc. Daniel Davídek	<danieldavidek@gmail.com>
 @date			2013_12_02
-@brief		main file
-@description	Program for communication and control of PIO821 card, connected to a robotic manipulator ROB2-6.
+@brief			main file
+@description		Program for communication and control of PIO821 card, connected to a robotic manipulator ROB2-6.
 				It reads the instructions from text file and sets the servo-mechanisms' angles respectively with
 				predefined interval of halt time.
 				For three of total six servos, there is time-ramp control implemented as there are feedback loop
@@ -40,132 +40,6 @@ DWORD MEAN_adc(UCHAR channel, UCHAR gain, int c)
 	return(sum/c);
 }
 
-
-/****************************************************************************
-@function	CLOSE_handleAndExitThread
-@brief		
-@param[in]	
-@param[out]	
-@return		
-***************/
-void CLOSE_handleAndExitThread(HANDLE handle, int error_sum)
-{
-	if( CloseHandle(handle) == 0 ){
-		RtPrintf("Function CloseHandle failed with 0x%04x\n", GetLastError());
-		ExitThread(error_sum + ERROR_CLOSEHANDLE_FAIL);
-	}
-	else if(error_sum != 0)
-		ExitThread(error_sum);
-	else 
-		return;
-}
-
-
-
-/****************************************************************************
-@function		PWM_dutyCycle
-@brief			Function of thread writing into the DO register 
-				in the main loop there are tic waitings
-				if the number of them is same as PWM_period -> new period starts
-				-> every new period zeros are written on all ports
-				-> when the number of tics is the same as interval_zero of serv[x]
-				---> one is written to its bit in register
-				Servo motors have their position regulated by pulses of different width.
-@param[in]		void *a_struct
-				- i will not be needed
-***************/
-void RTFCNDCL TIM_PWMfunction(void *a_manip)
-{
-	LARGE_INTEGER tim1; tim1.QuadPart = 0;
-	LARGE_INTEGER tim2; tim2.QuadPart = 0;
-	RtGetClockTime(CLOCK_X,&tim1);
-
-	LARGE_INTEGER tic_interval;
-	LARGE_INTEGER PWM_period;
-	LARGE_INTEGER tic;
-
-	tic.QuadPart = 0;
-	//PWM_period.QuadPart = NS100_1S / 100; // 1/100 s = 100 Hz
-	PWM_period.QuadPart = NS100_1S / 1; // 1/1 s = 1 Hz
-	RtGetClockTimerPeriod(CLOCK_X, &tic_interval); // time to wait between individual tics
-	
-	int i_serv = 0;
-	C_roboticManipulator* ROB = (C_roboticManipulator*)a_manip;
-	C_servoMotor* serv = NULL; // = new C_servoMotor();
-	// here there will be some mutexed variable for control of this thread termination
-	bool done = false;
-	//____________________________________________________
-	// main thread loop
-	ROB->RESET_DOport();
-	while(!done)
-	{
-		// this style is functional only for one servo at a time <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-		// - rewrite to remember whole register port and at right times write changed register 
-		for(i_serv=0; i_serv<SUM_SERVOMOTORS; i_serv++)
-		{
-			// get the pointer of ROB->serv[i_serv] into serv
-			ROB->GET_servoMotor(i_serv, &serv);
-
-			if(tic.QuadPart >= serv->interval_zero.QuadPart)
-			{ // time for one has come
-				// write to the right digit
-				ROB->SET_DOportBitUchar(serv->servoMotorDigit);
-			}
-		}
-		// ____________________________________________________
-		// iteration & tic-waiting
-		RtSleepFt(&tic_interval);
-		//RtPrintf("tic=%I64d/%I64d\n",tic,PWM_period);
-		tic.QuadPart += tic_interval.QuadPart;
-		// ____________________________________________________
-		// end of each period
-		if(tic.QuadPart >= PWM_period.QuadPart)
-		{ // end of one period
-			ROB->RESET_DOport();
-			tic.QuadPart = 0;
-		
-			RtGetClockTime(CLOCK_X,&tim2);
-			tim2.QuadPart = tim2.QuadPart-tim1.QuadPart;
-			printf("PWM_period = %I64d [100ns] = %I64d [1s]  \n",tim2.QuadPart, tim2.QuadPart / NS100_1S);
-			RtGetClockTime(CLOCK_X,&tim1);
-		// stop after first period (for debug - to terminate threads)<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-			//done = true;
-		}
-	}
-
-	ROB = NULL;
-}
-
-
-/****************************************************************************
-@function	TERMINATE_allThreadsAndExitProcess
-@brief
-@param[in]
-@param[out]
-@return
-***************/
-void TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, int error_sum)
-{
-	for(int iTh = 0; iTh<iTh_max; iTh++){
-		if(FALSE == TerminateThread(hTh[iTh], EXITCODE_TERMINATED_BY_MAIN)){
-			error_sum += ERROR_COULD_NOT_TERMINATE_THREAD;
-		}
-		CLOSE_handleAndExitThread(hTh[iTh],error_sum);
-	}
-}
-
-/****************************************************************************
-@function	CREATE_threads
-@brief		Create all needed threads and returns a handle to an array of them
-@param[in]
-@param[out]
-@return
-***************/
-HANDLE* CREATE_threads(void)
-{
-	return(FLAWLESS_EXECUTION);
-}
-
 /****************************************************************************
 @function	main
 @brief
@@ -193,80 +67,22 @@ void _cdecl main(int,char**,char**)
 		//log
 		ExitProcess(ret_val);
 	}
-// ____________________________________________________
-// will be in the function CREATE_threads
 
 	//____________________________________________________
 	// thread creation
-	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	const int iTh_max = 1; // number of threads = for now only one
-	HANDLE hTh[iTh_max]; // array of handles to the threads
-	//DWORD this_loop_ExitCode_sum = 0;
+	//const int iTh_max = SUM_THREADS; // number of threads = for now only one
+	HANDLE hTh[SUM_THREADS]; // array of handles to the threads
+	CREATE_threads(hTh, SUM_THREADS, &ROB);
 
-	LPDWORD thExitCode[iTh_max];
-//	void* thread_argument[iTh_max];
-
-	int default_priority = RT_PRIORITY_MAX - 1;
-	int wanted_priority = default_priority;
-	int thread_priority = 0;
-	int iTh = 0;
 	
-	DWORD thread_id = 0;
-
-	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	// RtCreateThread - will be in the separate function
-	for(iTh = 0; iTh<iTh_max; iTh++){
-		//____________________________________________________
-		// RtCreateThread - handle creation 
-		RtPrintf("> Try to create multi thread %i.\n", iTh);
-		hTh[iTh] = RtCreateThread(NULL, 0, 
-			(LPTHREAD_START_ROUTINE) TIM_PWMfunction, (VOID*)&ROB, CREATE_SUSPENDED, &thread_id);
-		if(hTh[iTh] == NULL){
-			RtPrintf("ERROR:\tCannot create thread %i.\n",iTh);
-			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_CREATE_THREAD);
-		}
-		RtPrintf("Thread %i created and suspended with priority %i.\n", iTh, RtGetThreadPriority(hTh[iTh]) );
-
-		// ____________________________________________________
-		// RtSetThreadPriority
-		wanted_priority = default_priority - iTh;
-		if( RtSetThreadPriority( hTh[iTh], wanted_priority) ){
-			thread_priority = RtGetThreadPriority(hTh[iTh]);
-			if( thread_priority == wanted_priority ){
-				RtPrintf("Priority of thread %i sucessfully set to %i\n", iTh, wanted_priority );
-			}
-			else{
-				RtPrintf("ERROR:\tCannot set thread %i priority to %i! It currently has priority %i.\n", 
-					iTh, wanted_priority , thread_priority);
-				TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_CHANGE_PRIORITY);
-			}
-		}
-		else{
-			RtPrintf("ERROR:\tCannot set thread %i priority to %i! It currently has priority %i.\n", 
-				iTh, wanted_priority , GetThreadPriority(hTh[iTh]) );
-			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_CHANGE_PRIORITY);
-		}
-		//____________________________________________________
-		// RtResumeThread
-		if( RtResumeThread(hTh[iTh]) != 0xFFFFFFFF ){
-			RtPrintf("Succesfully resumed thread %i.\n", iTh);
-		}
-		else{
-			RtPrintf("Could not resume thread %i.\n", iTh);
-			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_RESUME_THREAD);
-		}
-	}
-
-
-//____________________________________________________
-// will be in main
 	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// main thread-controlling super-loop
+	LPDWORD thExitCode[SUM_THREADS];
 
 	int still_active_threads;
 	LARGE_INTEGER preemptive_interval; 
 	preemptive_interval.QuadPart = 100;
-	iTh = 0;
+	int iTh = 0;
 	do{
 		still_active_threads = 0;
 		//BOOL GetExitCodeThread(HANDLE hThread, LPDWORD lpExitCode);
@@ -285,7 +101,7 @@ void _cdecl main(int,char**,char**)
 		RtSleepFt(&preemptive_interval);
 	}while(still_active_threads);
 	
-	for(iTh = 0; iTh<iTh_max; iTh++){
+	for(iTh = 0; iTh<SUM_THREADS; iTh++){
 		RtPrintf("Thread %i terminated with exit code %lu\n", iTh, *thExitCode[iTh]);
 		//printf("Thread %i sum = %f\n", iTh, static_cast<double *>(thread_argument[iTh]));
 	}
