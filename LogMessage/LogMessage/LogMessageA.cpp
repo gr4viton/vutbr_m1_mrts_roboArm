@@ -1,4 +1,4 @@
-#include "LogMessageA.hpp"
+#include "LogMessageA.h"
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //								C_CircBuffer
@@ -17,6 +17,12 @@ C_CircBuffer::C_CircBuffer()
 C_CircBuffer::~C_CircBuffer()
 {
 	delete buf;
+}
+
+bool C_CircBuffer::IsEmpthy()
+{
+	if(freeSpace == LENGTH_OF_BUFF)return TRUE;
+	else return FALSE;
 }
 
 char C_CircBuffer::ReadOne()
@@ -98,6 +104,7 @@ C_LogMessageA::~C_LogMessageA()
 unsigned int C_LogMessageA::PushMessage(char* in, int iSeverity)
 {
 	actSeverity = iSeverity;
+	while(!buf->IsEmpthy())Sleep(50);
 	RtWaitForSingleObject(hMutex,INFINITE); // wait to own hMutex
 	// Critical section
 	buf->Write(in);

@@ -6,7 +6,6 @@
 // for Visual Studio.  
 //////////////////////////////////////////////////////////////////
 #include "main.h"
-C_LogMessageA CLogMsg;
 HANDLE hThread;
 C_LogMessageA logMsg;	
 
@@ -69,6 +68,8 @@ void  _cdecl main(int  argc, char **argv, char **envp)
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //		Test asyn. log message
 	logMsg.PushMessage("Test message 1", SEVERITY_MAX - 1);
+	logMsg.PushMessage("Test message 2", SEVERITY_MAX - 1);
+	logMsg.PushMessage("Test message 3", SEVERITY_MAX - 1);
 	Sleep(100);
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -32,8 +32,9 @@ public:
 	// Destructor
 	~C_CircBuffer();
 
-	unsigned int  Write(char *in);
+	unsigned int Write(char *in);
 	unsigned int Read(char* out);
+	bool IsEmpthy();
 };
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
