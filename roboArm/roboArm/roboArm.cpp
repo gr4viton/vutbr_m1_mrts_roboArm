@@ -1,11 +1,11 @@
 /***************
-* @filename		roboArm.cpp
-* @author 		xdavid10, xslizj00 @ FEEC-VUTBR 
-* @contacts		Bc. Jiøí Sliž		<xslizj00@stud.feec.vutbr.cz>
+@filename		roboArm.cpp
+@author 		xdavid10, xslizj00 @ FEEC-VUTBR 
+@contacts		Bc. Jiøí Sliž		<xslizj00@stud.feec.vutbr.cz>
 				Bc. Daniel Davídek	<danieldavidek@gmail.com>
-* @date			2013_12_02
-* @brief		main file
-* @description	Program for communication and control of PIO821 card, connected to a robotic manipulator ROB2-6.
+@date			2013_12_02
+@brief		main file
+@description	Program for communication and control of PIO821 card, connected to a robotic manipulator ROB2-6.
 				It reads the instructions from text file and sets the servo-mechanisms' angles respectively with
 				predefined interval of halt time.
 				For three of total six servos, there is time-ramp control implemented as there are feedback loop
@@ -20,9 +20,12 @@
 DWORD baseAddress = 0;
 HMODULE hLibModule = NULL;
 
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-// mean of c values
-DWORD MEAN_adc(int channel, int gain, int c)
+/****************************************************************************
+@function		MEAN_adc
+@brief			mean of c measured values
+@param[in]		
+***************/
+DWORD MEAN_adc(UCHAR channel, UCHAR gain, int c)
 {
 	if(c==0) return(0);
 	DWORD sum=0;
@@ -37,11 +40,38 @@ DWORD MEAN_adc(int channel, int gain, int c)
 	return(sum/c);
 }
 
+
 /****************************************************************************
-* @function		PWM_dutyCycle
-* @brief			periodically executed function for PWM on predefined DO port .
+@function	CLOSE_handleAndExitThread
+@brief		
+@param[in]	
+@param[out]	
+@return		
+***************/
+void CLOSE_handleAndExitThread(HANDLE handle, int error_sum)
+{
+	if( CloseHandle(handle) == 0 ){
+		RtPrintf("Function CloseHandle failed with 0x%04x\n", GetLastError());
+		ExitThread(error_sum + ERROR_CLOSEHANDLE_FAIL);
+	}
+	else if(error_sum != 0)
+		ExitThread(error_sum);
+	else 
+		return;
+}
+
+
+
+/****************************************************************************
+@function		PWM_dutyCycle
+@brief			Function of thread writing into the DO register 
+				in the main loop there are tic waitings
+				if the number of them is same as time_period -> new period starts
+				-> every new period zeros are written on all ports
+				-> when the number of tics is the same as interval_zero of serv[x]
+				---> one is written to its bit in register
 				Servo motors have their position regulated by pulses of different width.
-* @param[in]		void *a_struct
+@param[in]		void *a_struct
 				- i will not be needed
 ***************/
 void RTFCNDCL TIM_PWMfunction(void *a_manip)
@@ -52,15 +82,17 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 
 	tic.QuadPart = 0;
 	time_period.QuadPart = NS100_1S / 100; // 100 Hz
-	tic_interval.QuadPart = 10; // time to wait between individual tics
+	tic_interval.QuadPart = 100; // time to wait between individual tics
 	
 	int i_serv = 0;
 	C_roboticManipulator* ROB = (C_roboticManipulator*)a_manip;
-	C_servoMotor* serv = NULL;
+	C_servoMotor* serv = NULL; // = new C_servoMotor();
 	// here there will be some mutexed variable for control of this thread termination
 	bool done = false;
 	//____________________________________________________
 	// main thread loop
+	ROB->SET_portUchar((PUCHAR)(baseAddress + DO_Low_Byte), 0x00);
+	ROB->SET_portUchar((PUCHAR)(baseAddress + DO_High_Byte), 0x00);
 	while(!done)
 	{
 		// this style is functional only for one servo at a time <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -68,12 +100,13 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 		for(i_serv=0; i_serv<SUM_SERVOMOTORS; i_serv++)
 		{
 			// get the pointer of ROB->serv[i_serv] into serv
-			ROB->GET_servoMotor(i_serv,serv);
+			ROB->GET_servoMotor(i_serv, &serv);
 
-			if(tic.QuadPart == serv->interval_one.QuadPart)
+			serv;
+			if(tic.QuadPart == serv->interval_zero.QuadPart)
 			{// time for one has come
 				// write to the right digit
-				RtWritePortUchar(serv->servoMotorByteAddress, 1<<serv->servoMotorDigit);
+				ROB->SET_bitUchar(serv->servoMotorByteAddress, 1<<serv->servoMotorDigit);
 			}
 		}
 		// ____________________________________________________
@@ -81,13 +114,15 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 		if(tic.QuadPart == time_period.QuadPart)
 		{ // end of one period
 			// write all zeros
-			RtWritePortUchar(serv->servoMotorByteAddress, 00);
+			ROB->SET_portUchar((PUCHAR)(baseAddress + DO_Low_Byte), 0x00);
+			ROB->SET_portUchar((PUCHAR)(baseAddress + DO_High_Byte), 0x00);
 			tic.QuadPart = 0;
 		
 		// stop after first period (for debug - to terminate threads)<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 			done = false;
 		}
 		RtSleepFt(&tic_interval);
+		//RtPrintf("tic=%I64d/%I64d\n",tic,time_period);
 		tic.QuadPart += 1;
 	}
 
@@ -95,50 +130,46 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 }
 
 
-
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-// CLOSE_handle
-void CLOSE_handleAndExitThread(HANDLE handle, int error_sum)
-{
-	if( CloseHandle(handle) == 0 ){
-		RtPrintf("Function CloseHandle failed with 0x%04x\n", GetLastError());
-		ExitThread(error_sum + SUMFLOATS_ERROR_CLOSEHANDLE_FAIL);
-	}
-	else if(error_sum != 0)
-		ExitThread(error_sum);
-	else 
-		return;
-}
-
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-// TERMINATE_allThreadsAndExitProcess
+/****************************************************************************
+@function	TERMINATE_allThreadsAndExitProcess
+@brief
+@param[in]
+@param[out]
+@return
+***************/
 void TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, int error_sum)
 {
 	for(int iTh = 0; iTh<iTh_max; iTh++){
 		if(FALSE == TerminateThread(hTh[iTh], EXITCODE_TERMINATED_BY_MAIN)){
-			error_sum += SUMFLOATS_ERROR_COULD_NOT_TERMINATE_THREAD;
+			error_sum += ERROR_COULD_NOT_TERMINATE_THREAD;
 		}
 		CLOSE_handleAndExitThread(hTh[iTh],error_sum);
 	}
 }
 
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-// Create all needed threads and returns a handle to an array of them
+/****************************************************************************
+@function	CREATE_threads
+@brief		Create all needed threads and returns a handle to an array of them
+@param[in]
+@param[out]
+@return
+***************/
 HANDLE* CREATE_threads(void)
 {
 	return(FLAWLESS_EXECUTION);
 }
 
-
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-// main
-void _cdecl main(int  argc, char **argv, char **envp)
+/****************************************************************************
+@function	main
+@brief
+@param[in]
+@param[out]
+@return
+***************/
+//void _cdecl main(int  argc, char **argv, char **envp)
+void _cdecl main(int,char**,char**)
 {
 	int ret_val = 0;
-	int i = 0;
-	UCHAR pom = 0;
-	int num = 5; // number_of_mean_values
-
 	printf("--------(: Clean start :)------\n");
 	// ____________________________________________________
 	// init HW
@@ -146,8 +177,7 @@ void _cdecl main(int  argc, char **argv, char **envp)
 	if(ret_val!=FLAWLESS_EXECUTION){
 		//log
 		ExitProcess(ret_val);
-	}
-	
+	}	
 	//____________________________________________________
 	// init classes for the manipulator
 	C_roboticManipulator ROB(ret_val);
@@ -156,8 +186,6 @@ void _cdecl main(int  argc, char **argv, char **envp)
 		//log
 		ExitProcess(ret_val);
 	}
-	
-
 // ____________________________________________________
 // will be in the function CREATE_threads
 
@@ -166,7 +194,8 @@ void _cdecl main(int  argc, char **argv, char **envp)
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	const int iTh_max = 1; // number of threads = for now only one
 	HANDLE hTh[iTh_max]; // array of handles to the threads
-	DWORD this_loop_ExitCode_sum = 0;
+	//DWORD this_loop_ExitCode_sum = 0;
+
 	LPDWORD thExitCode[iTh_max];
 //	void* thread_argument[iTh_max];
 
@@ -187,7 +216,7 @@ void _cdecl main(int  argc, char **argv, char **envp)
 			(LPTHREAD_START_ROUTINE) TIM_PWMfunction, (VOID*)&ROB, CREATE_SUSPENDED, &thread_id);
 		if(hTh[iTh] == NULL){
 			RtPrintf("ERROR:\tCannot create thread %i.\n",iTh);
-			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, SUMFLOATS_ERROR_COULD_NOT_CREATE_THREAD);
+			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_CREATE_THREAD);
 		}
 		RtPrintf("Thread %i created and suspended with priority %i.\n", iTh, RtGetThreadPriority(hTh[iTh]) );
 
@@ -202,13 +231,13 @@ void _cdecl main(int  argc, char **argv, char **envp)
 			else{
 				RtPrintf("ERROR:\tCannot set thread %i priority to %i! It currently has priority %i.\n", 
 					iTh, wanted_priority , thread_priority);
-				TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, SUMFLOATS_ERROR_COULD_NOT_CHANGE_PRIORITY);
+				TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_CHANGE_PRIORITY);
 			}
 		}
 		else{
 			RtPrintf("ERROR:\tCannot set thread %i priority to %i! It currently has priority %i.\n", 
 				iTh, wanted_priority , GetThreadPriority(hTh[iTh]) );
-			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, SUMFLOATS_ERROR_COULD_NOT_CHANGE_PRIORITY);
+			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_CHANGE_PRIORITY);
 		}
 		//____________________________________________________
 		// RtResumeThread
@@ -217,7 +246,7 @@ void _cdecl main(int  argc, char **argv, char **envp)
 		}
 		else{
 			RtPrintf("Could not resume thread %i.\n", iTh);
-			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, SUMFLOATS_ERROR_COULD_NOT_RESUME_THREAD);
+			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_RESUME_THREAD);
 		}
 	}
 
@@ -226,6 +255,7 @@ void _cdecl main(int  argc, char **argv, char **envp)
 // will be in main
 	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// main thread-controlling super-loop
+
 	int still_active_threads;
 	LARGE_INTEGER preemptive_interval; 
 	preemptive_interval.QuadPart = 100;
@@ -256,6 +286,7 @@ void _cdecl main(int  argc, char **argv, char **envp)
 
 	
 			
+	
 	LARGE_INTEGER interval_one; 
 	LARGE_INTEGER interval_zero; 
 	LARGE_INTEGER interval_wait; 
@@ -263,9 +294,10 @@ void _cdecl main(int  argc, char **argv, char **envp)
 	interval_one.QuadPart = 10000; // 1000us
 	interval_zero.QuadPart = 200000 - 10000; // 0.02s = 50Hz
 	interval_wait.QuadPart = 10000000; // 1s
-
-	int j = 0;
-	int max_j = 8;
+	
+	int i = 0;
+//	int j = 0;
+//	int max_j = 8;
 
 	E_servos testedServo = S5;
 	int period = 200;	//Hz
@@ -290,8 +322,9 @@ void _cdecl main(int  argc, char **argv, char **envp)
 		RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 0x00);
 		RtSleepFt(&interval_zero);
 	}
+	int num = 5; // number_of_mean_values
 	// Reading Data 
-	while(1)
+	while(num)
 	{
 		RtPrintf("FDBACK[1,2,3] = %5u;\t\t%5u;\t\t%5u;\n",
 			MEAN_adc(0,0,num),
@@ -304,8 +337,13 @@ void _cdecl main(int  argc, char **argv, char **envp)
     ExitProcess(0);
 }
 
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-// GET_ADC
+/****************************************************************************
+@function	GET_ADC
+@brief
+@param[in]
+@param[out]
+@return
+***************/
 DWORD GET_ADC(UCHAR channel, UCHAR gain)
 {
 	UCHAR ready;	

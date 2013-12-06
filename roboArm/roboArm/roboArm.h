@@ -1,12 +1,12 @@
 /***************
-* @filename		INIT.cpp
-* @author 		xdavid10, xslizj00 @ FEEC-VUTBR 
-* @date			2013_12_02
-* @brief			file containing INIT function definitions
+@filename		INIT.cpp
+@author 		xdavid10, xslizj00 @ FEEC-VUTBR 
+@date			2013_12_02
+@brief			file containing INIT function definitions
 ***************/
 /**
- * @description Program for communication with PIO821 card and read values of servo angles.
- * @authors Bc. Jiøí Sliž <xslizj00@stud.feec.vutbr.cz> and Bc. 
+ @description Program for communication with PIO821 card and read values of servo angles.
+ @authors Bc. Jiøí Sliž <xslizj00@stud.feec.vutbr.cz> and Bc. 
  *
  *
  */
@@ -19,11 +19,15 @@
 // win & RTX
 #include <SDKDDKVer.h>
 #include <windows.h>
-#include <rtapi.h>
+#include <rtapi.h> // must be after windows.h
 
-//#ifdef UNDER_RTSS
-//	#include <rtssapi.h>
-//#endif // UNDER_RTSS
+// linker error
+// vs2008 - LNK2019 -> it means vs does not know the RT functions
+// - probably bad including header of declaration of RT functions
+#ifdef UNDER_RTSS
+	#include <rtssapi.h>
+#endif // UNDER_RTSS
+
 
 // std
 #include <iostream>
@@ -37,6 +41,9 @@
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // setup defines and macros
+#define DEBUG
+#define DEBUGGING_WITHOUT_HW
+
 //____________________________________________________
 // addresses
 #define AD_GAIN					0xe0
@@ -60,8 +67,8 @@ cislovani serv od spoda 1-6
 channel |	servo		|	FDBACK	|	AI   
 --------+---------------+-----------+--------
 	0	|	3(maly)		|	3		|	0
-	1	|	1(velky)	|	1		|	1
-	2	|	2(stred)	|	2		|	2
+	1	|	1(velky)		|	1		|	1
+	2	|	2(stred)		|	2		|	2
 
 
 - servo [1-6] odpovida DO_High_Byte 1 << x
@@ -69,7 +76,7 @@ channel |	servo		|	FDBACK	|	AI
 		+-----------+-------+------------+
 		|			| 1<<x	|	 meze	 |
 		+-----------+-------+------------+
-		|  serva	|	x	| min-max[us]|
+		|  serva		|	x	| min-max[us]|
 		+-----------+-------+------------+
 		|	S1		|	2	|			 |
 		+-----------+-------+------------+
@@ -86,19 +93,12 @@ channel |	servo		|	FDBACK	|	AI
 */
 typedef enum {S1=2, S2=3, S3=4, S5=6, S4=5, S6=7}E_servos;
 
-// I do have everything
-//
-//
-//
-
-
 //____________________________________________________
 // predefined time intervals
 // multiplicatives of [100ns]
-//#define NS100_1US			(LARGE_INTEGER)10
-#define NS100_1US			10
-#define NS100_1MS			10000
-#define NS100_1S			10000000
+#define NS100_1US		10
+#define NS100_1MS		10000
+#define NS100_1S	 		10000000
 
 // 50Hz = 0.02s = 200000[100ns]
 #define NS100_50HZ			NS100_1S/50
@@ -109,32 +109,33 @@ typedef enum {S1=2, S2=3, S3=4, S5=6, S4=5, S6=7}E_servos;
 
 // ____________________________________________________
 // roboticManipulator_error
-#define FLAWLESS_EXECUTION					0
-#define DESTRUCT_EVERYTHING					1
-#define SERVO_INDEX_OUT_OF_BOUNDS			2
-#define C_SERVOMOTOR_SETTIMERREL_ERROR		3
-#define C_SERVOMOTOR_TIMER_INVALID_HANDLE	4
-#define CONSTRUCOR_ERROR_OFFSET				127
+#define FLAWLESS_EXECUTION						0
+#define DESTRUCT_EVERYTHING						1
+#define ERR_SERVO_INDEX_OUT_OF_BOUNDS			2
+#define ERR_C_SERVOMOTOR_SETTIMERREL_ERROR		3
+#define ERR_C_SERVOMOTOR_TIMER_INVALID_HANDLE	4
+#define ERR_INIT_CANNOT_LOAD_LIBRARY				5
+#define ERR_CONSTRUCOR_ERROR_OFFSET				127
 // free positions offset + max_servo_i
 
 
 //____________________________________________________
 // ExitProcess return value constants - ERRORS & etc
 #define SUCCESSFUL_END								0
-#define SUMFLOATS_ERROR_CMESSAGE_TOO_LONG			1
-#define SUMFLOATS_ERROR_CREATEFILE_FAIL				2
-#define SUMFLOATS_ERROR_SETFILEPOINTER_FAIL			4
-#define SUMFLOATS_ERROR_READFILE_FAIL				8
-#define SUMFLOATS_ERROR_CLOSEHANDLE_FAIL				16
+#define ERROR_CMESSAGE_TOO_LONG						1
+#define ERROR_CREATEFILE_FAIL						2
+#define ERROR_SETFILEPOINTER_FAIL					4
+#define ERROR_READFILE_FAIL							8
+#define ERROR_CLOSEHANDLE_FAIL						16
 #define SUMFLOATS_ERRORSTRING_FAIL					32
-#define SUMFLOATS_ERROR_READ_BYTES_MISMATCH			64
-#define SUMFLOATS_ERROR_COULD_NOT_TERMINATE_THREAD	128
-#define SUMFLOATS_ERROR_COULD_NOT_RESUME_THREAD		256
-#define SUMFLOATS_ERROR_COULD_NOT_CHANGE_PRIORITY	512
-#define SUMFLOATS_ERROR_COULD_NOT_CREATE_THREAD		1024
-#define SUMFLOATS_ERROR_SPRINTF_S					99252
-#define SUMFLOATS_ERROR_SEVERITY_TOO_LOW				99253
-#define SUMFLOATS_ERROR_SEVERITY_TOO_BIG				99254
+#define ERROR_READ_BYTES_MISMATCH					64
+#define ERROR_COULD_NOT_TERMINATE_THREAD				128
+#define ERROR_COULD_NOT_RESUME_THREAD				256
+#define ERROR_COULD_NOT_CHANGE_PRIORITY				512
+#define ERROR_COULD_NOT_CREATE_THREAD				1024
+#define ERROR_SPRINTF_S								99252
+#define ERROR_SEVERITY_TOO_LOW						99253
+#define ERROR_SEVERITY_TOO_BIG						99254
 
 //____________________________________________________
 #define EXITCODE_SUCCESSFUL_END					0
@@ -145,6 +146,8 @@ typedef enum {S1=2, S2=3, S3=4, S5=6, S4=5, S6=7}E_servos;
 extern DWORD baseAddress;
 extern HMODULE hLibModule;
 
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+// class declarations
 class C_servoMotor;
 class C_roboticManipulator;
 
@@ -153,14 +156,14 @@ class C_roboticManipulator;
 #include "C_roboticManipulator.h"
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-// function headers
+// function declarations of roboArm.cpp
 DWORD	GET_ADC(UCHAR channel, UCHAR gain);
 void RTFCNDCL TIM_PWMfunction(void *a_manip);
 void CLOSE_handleAndExitThread(HANDLE handle, int error_sum);
 void TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, int error_sum);
-
-
-// INIT - funcions
+//____________________________________________________
+// function declarations of non-headered .cpp files
+// INIT.cpp
 int		INIT_All();
 int		INIT_Library();
 void		INIT_ADC();
