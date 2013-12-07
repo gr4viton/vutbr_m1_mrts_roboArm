@@ -1,3 +1,10 @@
+/***************
+@project  
+@filename 
+@author   
+@date     
+@brief    Logging module for MRTS aplications
+***************/
 /**
  @description Logging module for MRTS aplications
  @author Bc. Jiøí Sliž <xslizj00@stud.feec.vutbr.cz>

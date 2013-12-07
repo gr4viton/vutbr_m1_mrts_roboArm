@@ -1,0 +1,45 @@
+/***************
+@project  roboArm
+@filename returnCodeDefines.h
+@author   xdavid10, xslizj00 @ FEEC-VUTBR 
+@date     2013_12_02
+@brief    file containing definition of return codes from threads and functions
+***************/
+
+#ifndef C_RETURNCODEDEFINES_H
+#define C_RETURNCODEDEFINES_H
+
+// ____________________________________________________
+// roboticManipulator_error
+#define FLAWLESS_EXECUTION						0
+#define DESTRUCT_EVERYTHING						1
+#define ERR_SERVO_INDEX_OUT_OF_BOUNDS			2
+#define ERR_C_SERVOMOTOR_SETTIMERREL_ERROR		3
+#define ERR_C_SERVOMOTOR_TIMER_INVALID_HANDLE	4
+#define ERR_INIT_CANNOT_LOAD_LIBRARY				5
+#define ERR_CONSTRUCOR_ERROR_OFFSET				127
+// free positions offset + max_servo_i
+
+//____________________________________________________
+// ExitProcess return value constants - ERRORS & etc
+#define SUCCESSFUL_END								0
+#define ERROR_CMESSAGE_TOO_LONG						1
+#define ERROR_CREATEFILE_FAIL						2
+#define ERROR_SETFILEPOINTER_FAIL					4
+#define ERROR_READFILE_FAIL							8
+#define ERROR_CLOSEHANDLE_FAIL						16
+#define SUMFLOATS_ERRORSTRING_FAIL					32
+#define ERROR_READ_BYTES_MISMATCH					64
+#define ERROR_COULD_NOT_TERMINATE_THREAD				128
+#define ERROR_COULD_NOT_RESUME_THREAD				256
+#define ERROR_COULD_NOT_CHANGE_PRIORITY				512
+#define ERROR_COULD_NOT_CREATE_THREAD				1024
+#define ERROR_SPRINTF_S								99252
+#define ERROR_SEVERITY_TOO_LOW						99253
+#define ERROR_SEVERITY_TOO_BIG						99254
+
+//____________________________________________________
+#define EXITCODE_SUCCESSFUL_END					0
+#define EXITCODE_TERMINATED_BY_MAIN				1
+
+#endif

@@ -1,12 +1,12 @@
 /***************
-@filename		INIT.cpp
-@author 		xdavid10, xslizj00 @ FEEC-VUTBR 
-@date			2013_12_02
-@brief			file containing INIT function definitions
+@project  roboArm
+@filename INIT.cpp
+@author   xdavid10, xslizj00 @ FEEC-VUTBR 
+@date     2013_12_02
+@brief    file containing INIT function definitions
 ***************/
 
 #include "roboArm.h"
-
 
 /****************************************************************************
 @function		INIT_All

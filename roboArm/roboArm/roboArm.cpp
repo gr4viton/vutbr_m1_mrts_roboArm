@@ -1,15 +1,14 @@
 /***************
-@filename		roboArm.cpp
-@author 		xdavid10, xslizj00 @ FEEC-VUTBR 
-@contacts		Bc. Jiøí Sliž		<xslizj00@stud.feec.vutbr.cz>
-				Bc. Daniel Davídek	<danieldavidek@gmail.com>
-@date			2013_12_02
-@brief		main file
-@description	Program for communication and control of PIO821 card, connected to a robotic manipulator ROB2-6.
-				It reads the instructions from text file and sets the servo-mechanisms' angles respectively with
-				predefined interval of halt time.
-				For three of total six servos, there is time-ramp control implemented as there are feedback loop
-				conected to the module.
+@project  roboArm
+@filename roboArm.cpp
+@author   xdavid10, xslizj00 @ FEEC-VUTBR 
+@date     2013_12_07
+@brief    main file
+		Program for communication and control of PIO821 card, connected to a robotic manipulator ROB2-6.
+		*	It reads the instructions from text file and sets the servo-mechanisms' angles respectively with
+			predefined interval of halt time.
+		*	For three of total six servos, there is time-ramp control implemented as there are feedback loop
+			conected to the module.
 ***************/
 
 #include "roboArm.h"
@@ -19,6 +18,8 @@
 
 DWORD baseAddress = 0;
 HMODULE hLibModule = NULL;
+char str[CHUNK_LINES*CHARS_PER_LINE+CZERO] = ""; 
+
 
 /****************************************************************************
 @function		MEAN_adc
@@ -40,6 +41,33 @@ DWORD MEAN_adc(UCHAR channel, UCHAR gain, int c)
 	return(sum/c);
 }
 
+/****************************************************************************
+@function	CLOSE_handleAndExitThread
+@brief		
+@param[in]	
+@param[out]	
+@return		
+***************/
+int CLOSE_handleAndReturn(HANDLE handle, int error_sum)
+{
+#ifdef DEBUG
+	RtPrintf("Try to CloseHandle.\n");
+#endif
+	if( CloseHandle(handle) == 0 )
+	{
+		RtPrintf("Function CloseHandle failed with 0x%04x\n", GetLastError());
+		return(error_sum + ERROR_CLOSEHANDLE_FAIL);
+	}
+	else 
+	{
+		printf("Successfully closed handle\n");
+		if(error_sum != 0)
+			return(error_sum);
+		else 
+			return(FLAWLESS_EXECUTION);
+	}
+}
+
 
 /****************************************************************************
 @function	CLOSE_handleAndExitThread
@@ -50,16 +78,10 @@ DWORD MEAN_adc(UCHAR channel, UCHAR gain, int c)
 ***************/
 void CLOSE_handleAndExitThread(HANDLE handle, int error_sum)
 {
-	if( CloseHandle(handle) == 0 ){
-		RtPrintf("Function CloseHandle failed with 0x%04x\n", GetLastError());
-		ExitThread(error_sum + ERROR_CLOSEHANDLE_FAIL);
-	}
-	else if(error_sum != 0)
-		ExitThread(error_sum);
-	else 
-		return;
+	error_sum = CLOSE_handleAndReturn(handle,error_sum);
+	printf("Exiting thread with error_sum %8i\n", error_sum);
+	ExitThread(error_sum);
 }
-
 
 
 /****************************************************************************

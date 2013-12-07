@@ -1,8 +1,9 @@
 /***************
-@filename		C_servoMotor.cpp
-@author 		xdavid10, xslizj00 @ FEEC-VUTBR 
-@date			2013_12_02
-@brief			file containing member function definitions of class C_servoMotor
+@project  roboArm
+@filename C_servoMotor.cpp
+@author   xdavid10, xslizj00 @ FEEC-VUTBR 
+@date     2013_12_02
+@brief    file containing member function definitions of class C_servoMotor
 ***************/
 
 #include "roboArm.h"

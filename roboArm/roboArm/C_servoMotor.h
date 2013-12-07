@@ -1,9 +1,10 @@
 /***************
-@filename		C_servoMotor.h 
-@author 		xdavid10, xslizj00 @ FEEC-VUTBR 
-@date			2013_12_02
-@brief			file containing C_servoMotor class definition  
-				= member function and member variables declarations
+@project  roboArm
+@filename C_servoMotor.h 
+@author   xdavid10, xslizj00 @ FEEC-VUTBR 
+@date     2013_12_02
+@brief    file containing C_servoMotor class definition  
+			= member function and member variables declarations
 ***************/
 
 #ifndef C_SERVOMOTOR_H

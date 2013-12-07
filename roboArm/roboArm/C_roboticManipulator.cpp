@@ -1,8 +1,9 @@
 /***************
-@filename		C_roboticManipulator.cpp
-@author 		xdavid10, xslizj00 @ FEEC-VUTBR 
-@date			2013_12_02
-@brief			file containing member function definitions of class C_roboticManipulator
+@project  roboArm
+@filename C_roboticManipulator.cpp
+@author   xdavid10, xslizj00 @ FEEC-VUTBR 
+@date     2013_12_02
+@brief    file containing member function definitions of class C_roboticManipulator
 ***************/
 
 #include "roboArm.h"
