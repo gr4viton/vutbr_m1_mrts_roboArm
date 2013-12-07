@@ -34,7 +34,7 @@ int C_servoMotor::SET_constants(
 {
 	// warning: should not change constants -> it resets intervals
 	interval_one.QuadPart = 0;
-	interval_zero.QuadPart = 0;
+	intervalZero.QuadPart = 0;
 	// stop the PWM function and timers!!
 
 	FDBACK = a_FDBACK;
@@ -53,25 +53,13 @@ int C_servoMotor::SET_constants(
 @param[out]	
 @return		
 ***************/
-void C_servoMotor::SET_intervalZero(LARGE_INTEGER a_interval_zero)
+void C_servoMotor::SET_intervalZero(LARGE_INTEGER a_intervalZero)
 {
-	interval_zero.QuadPart = a_interval_zero.QuadPart;
+	intervalZero.QuadPart = a_intervalZero.QuadPart;
 	return;
 }
 
-/****************************************************************************
-@function		SET_dutyCycleIntervals
-@brief			
-				Servo motors have their position regulated by pulses of different width.
-@param[in]		
-***************/
-int C_servoMotor::SET_dutyCycleIntervals(LARGE_INTEGER a_interval_one, LARGE_INTEGER a_interval_zero)
-{
-	interval_one.QuadPart = a_interval_one.QuadPart;
-	interval_zero.QuadPart = a_interval_zero.QuadPart;
-	return(FLAWLESS_EXECUTION);
-}
-	
+
 	
 /****************************************************************************
 @function		~C_servoMotor
@@ -96,3 +84,25 @@ C_servoMotor::~C_servoMotor(void)
 
 // ____________________________________________________
 // GET_ADC..
+
+
+
+
+
+
+
+
+/****************************************************************************
+@function		SET_dutyCycleIntervals
+@brief			
+				Servo motors have their position regulated by pulses of different width.
+@param[in]		
+***************/
+/*
+int C_servoMotor::SET_dutyCycleIntervals(LARGE_INTEGER a_interval_one, LARGE_INTEGER a_intervalZero)
+{
+	interval_one.QuadPart = a_interval_one.QuadPart;
+	intervalZero.QuadPart = a_intervalZero.QuadPart;
+	return(FLAWLESS_EXECUTION);
+}
+	*/

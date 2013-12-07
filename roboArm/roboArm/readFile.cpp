@@ -65,7 +65,7 @@ int	PARSE_controlString(C_roboticManipulator* a_manip){
 	int int_from_char = 0;
 	LARGE_INTEGER LI_value ; LI_value.QuadPart = 0;
 	std::size_t found_position = 0; // index of found control chars
-	char *control_chars_string = "W=>";
+	char control_chars_string[] = "W=>";
 	char found_control_char = '\0';
 	
 
@@ -114,7 +114,7 @@ int	PARSE_controlString(C_roboticManipulator* a_manip){
 			i_serv = char2num( token[found_position-1] );			
 			if(i_serv == ERROR_IS_NOT_NUMBER)
 			{ // i_serv is not a number
-				printf("Parsed servo index is not a number in string \"%s\"\n",token);
+				printf("Parsed servo index is not a number in string \"%s\"\n",token.c_str());
 #ifndef IGNORE_NOT_NUMBER_ANGLE_IN_CONTROL_FILE //if NOT defined
 				return(ERROR_IS_NOT_NUMBER);
 #endif		
@@ -124,30 +124,42 @@ int	PARSE_controlString(C_roboticManipulator* a_manip){
 			{ // i_serv is a number
 				error_sum = ROB->IS_in_bounds(i_serv);
 				if( error_sum == FLAWLESS_EXECUTION)
-				{
+				{ // i_serv is in bounds
+					
 					// token = (string) angle
-					token = token.substr(found_position+1);
+					//token = std::string(token.substr(found_position+1));
+					std::string str_angle = token.substr(found_position+1);
+					//token.append('\0');
 					bool done = false;
 					int_value = 0;
 					//____________________________________________________
 					// parse angle string into int
-					int i = 0;
-					while(!done){
-						int_from_char = char2num( token[i] );
-						if(int_from_char == ERROR_IS_NOT_NUMBER) 
-						{
-							done = true;
-							printf("One of digits from angle [%s] is not a number!\n",token);
-							return(ERROR_IS_NOT_NUMBER);
+					std::size_t i = 0;
+					std::size_t str_angle_size = str_angle.size();
+					if(str_angle.length()!=0)
+					{
+						while(!done){
+							int_from_char = char2num( str_angle[i] );
+							if(int_from_char == ERROR_IS_NOT_NUMBER) 
+							{
+								done = true;
+								printf("One of digits from angle [%s] is not a number!\n",token.c_str());
+								return(ERROR_IS_NOT_NUMBER);
+							}
+							int_value*=10;
+							int_value+=int_from_char;
+							i++;
+							if(i >= str_angle_size) done = true;
 						}
-						int_value*=10;
-						int_value+=int_from_char;
-						i++;
-					}
 					//____________________________________________________
 					// int_value = (int) angle
 					ROB->CONVERT_angle2int_zero(int_value, i_serv, &LI_value);
 					ROB->phases.back().SET_servIntervalZero(i_serv,	&LI_value);
+					}
+					else
+					{ // token is empty
+						return(error_sum);
+					}
 				}
 				else
 				{ //i_serv is out of bounds 
@@ -158,12 +170,12 @@ int	PARSE_controlString(C_roboticManipulator* a_manip){
 		// wrap
 		
 		//std::cout << token << std::endl;
-		printf("token = \"%s\"\n", token);
+		printf("token = \"%s\"\n", token.c_str());
 		controlString.erase(0, pos + delimiter.length());
 	}
 	// last
   //  std::cout << controlString << std::endl;
-	printf("%s\n",controlString);
+	printf("%s\n",controlString.c_str());
 
 	ROB->RESET_DOport();
 	ROB = NULL;

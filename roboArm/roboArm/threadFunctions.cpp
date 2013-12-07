@@ -8,7 +8,7 @@
 				in the main loop there are tic waitings
 				if the number of them is same as PWM_period -> new period starts
 				-> every new period zeros are written on all ports
-				-> when the number of tics is the same as interval_zero of serv[x]
+				-> when the number of tics is the same as intervalZero of serv[x]
 				---> one is written to its bit in register
 				Servo motors have their position regulated by pulses of different width.
 @param[in]		void *a_struct
@@ -46,7 +46,7 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 			// get the pointer of ROB->serv[i_serv] into serv
 			ROB->GET_servoMotor(i_serv, &serv);
 
-			if(tic.QuadPart >= serv->interval_zero.QuadPart)
+			if(tic.QuadPart >= serv->intervalZero.QuadPart)
 			{ // time for one has come
 				// write to the right digit
 				ROB->SET_DOportBitUchar(serv->servoMotorDigit);

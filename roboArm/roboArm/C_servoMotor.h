@@ -33,7 +33,7 @@ public:
 	//____________________________________________________
 	// intervals
 	LARGE_INTEGER interval_one; // will depend on duty cycle
-	LARGE_INTEGER interval_zero; // will depend on periodic time interval and duty cycle
+	LARGE_INTEGER intervalZero; // will depend on periodic time interval and duty cycle
 	// LARGE_INTEGER duty_cycle
 	
 	//____________________________________________________
@@ -45,8 +45,8 @@ public:
 // declaration of external defined member functions 
 public:	C_servoMotor(void);
 public: ~C_servoMotor(void);
-public:	int SET_dutyCycleIntervals(LARGE_INTEGER a_interval_one, LARGE_INTEGER a_interval_zero);
-public: void SET_intervalZero(LARGE_INTEGER a_interval_zero);
+//public:	int SET_dutyCycleIntervals(LARGE_INTEGER a_interval_one, LARGE_INTEGER a_intervalZero);
+public: void SET_intervalZero(LARGE_INTEGER a_intervalZero);
 
 public:	int SET_constants(int a_servo_index,
 		UCHAR servoMotorDigit, bool a_FDBACK = false,
@@ -55,7 +55,7 @@ public:	int SET_constants(int a_servo_index,
 //____________________________________________________
 // other member function definitions
 		/*
-public: LARGE_INTEGER GET_interval_zero(){return(interval_zero);}
+public: LARGE_INTEGER GET_intervalZero(){return(intervalZero);}
 public: LARGE_INTEGER GET_interval_one(){return(interval_one);}
 */
 };

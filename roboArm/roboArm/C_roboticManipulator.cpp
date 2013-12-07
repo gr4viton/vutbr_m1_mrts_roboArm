@@ -19,10 +19,10 @@
 			into bounds of servo [a_serv] intervals [min_val, max_val]
 				can be rewriten to be faster with external pre-counted variables
 @param[in]  
-@param[out] (LARGE_INTEGER*) a_interval_zero
+@param[out] (LARGE_INTEGER*) a_intervalZero
 @return     error_sum
 ************/
-int C_roboticManipulator::CONVERT_angle2int_zero(int a_angle, int a_i_serv, LARGE_INTEGER* a_interval_zero)
+int C_roboticManipulator::CONVERT_angle2int_zero(int a_angle, int a_i_serv, LARGE_INTEGER* a_intervalZero)
 {
 	float relative = 0 ; // from f0.0 to f1.0
 	relative = (a_angle - angle_min)/((float)(angle_max - angle_min));
@@ -42,7 +42,7 @@ int C_roboticManipulator::CONVERT_angle2int_zero(int a_angle, int a_i_serv, LARG
 		return(ERROR_ANGLE_OUT_OF_BOUNDS);
 #endif
 	}
-	a_interval_zero->QuadPart = (DWORD)( 
+	a_intervalZero->QuadPart = (DWORD)( 
 		serv[a_i_serv].min_val + relative * (serv[a_i_serv].max_val - serv[a_i_serv].min_val)
 		);
 	return(FLAWLESS_EXECUTION);
@@ -285,9 +285,9 @@ void C_spatialConfiguration::SET_servIntervalZero(int a_i_serv, LARGE_INTEGER *a
 int C_roboticManipulator::SET_dutyCycleIntervals(
 	int a_servo_i, 
 	LARGE_INTEGER a_interval_one, 
-	LARGE_INTEGER a_interval_zero)
+	LARGE_INTEGER a_intervalZero)
 {
 	if(!IS_in_bounds(a_servo_i)) return(ERR_SERVO_INDEX_OUT_OF_BOUNDS);
-	serv[a_servo_i].SET_dutyCycleIntervals(a_interval_one,a_interval_zero);
+	serv[a_servo_i].SET_dutyCycleIntervals(a_interval_one,a_intervalZero);
 	return(FLAWLESS_EXECUTION);
 }*/
