@@ -56,6 +56,11 @@ HANDLE* CREATE_threads(void)
 	return(FLAWLESS_EXECUTION);
 }
 
+void EXIT_process(int error_sum){
+	printf("Exiting process with error_sum %i\n",error_sum);
+	ExitProcess(error_sum);
+}
+
 /****************************************************************************
 @function	main
 @brief
@@ -71,7 +76,7 @@ void _cdecl main(int  argc, char **argv)
 	{// argc should be 2 for correct execution
 		printf("You must specify the control txt file! Run:\n");
 		printf("$ %s <control_file_path>\n", argv[0]);
-		ExitProcess(ERROR_CONTROLFILE_PATH_NOT_SPECIFIED);
+		EXIT_process(ERROR_CONTROLFILE_PATH_NOT_SPECIFIED);
 	}
 	// We assume argv[1] is a filename to open
 	
@@ -80,7 +85,7 @@ void _cdecl main(int  argc, char **argv)
 	{
 		if( i>=MAX_PATH ) 
 		{
-			ExitProcess(ERROR_FILE_PATH_STRING_TOO_LONG);
+			EXIT_process(ERROR_FILE_PATH_STRING_TOO_LONG);
 		}
 	}
 	printf("Control-file: %s\n",argv[1]);
@@ -91,8 +96,8 @@ void _cdecl main(int  argc, char **argv)
 	printf("Starting initialization process.");
 	error_sum = INIT_All();
 	if(error_sum!=FLAWLESS_EXECUTION){
-		//log
-		ExitProcess(error_sum);
+		printf("Initialization process failed with error_sum %i", error_sum);
+		EXIT_process(error_sum);
 	}	
 	//____________________________________________________
 	// init classes for the manipulator
@@ -101,7 +106,7 @@ void _cdecl main(int  argc, char **argv)
 	if(error_sum != FLAWLESS_EXECUTION)
 	{
 		printf("Initialization of robotic manipulator failed with error_sum %i\n", error_sum);
-		ExitProcess(error_sum);
+		EXIT_process(error_sum);
 	}
 
 	//____________________________________________________
@@ -204,12 +209,14 @@ void _cdecl main(int  argc, char **argv)
 	for(iTh = 0; iTh<iTh_max; iTh++){
 		RtPrintf("Thread %i terminated with exit code %lu\n", iTh, *thExitCode[iTh]);
 		//printf("Thread %i sum = %f\n", iTh, static_cast<double *>(thread_argument[iTh]));
-	}
-
-
+	}			
 	
-			
-	
+
+	//    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	//  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	// only debugging
+
 	LARGE_INTEGER interval_one; 
 	LARGE_INTEGER interval_zero; 
 	LARGE_INTEGER interval_wait; 
@@ -257,7 +264,9 @@ void _cdecl main(int  argc, char **argv)
 		RtSleep(100);
 	}
 
-    ExitProcess(0);
+	//____________________________________________________
+	// everything should be unallocated and closed
+    EXIT_process(FLAWLESS_EXECUTION);
 }
 
 /****************************************************************************
