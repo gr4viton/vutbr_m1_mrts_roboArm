@@ -23,6 +23,7 @@ int INIT_All(){
 #ifndef DEBUGGING_WITHOUT_HW //if NOT defined
 		return(ERR_INIT_CANNOT_LOAD_LIBRARY);	
 #endif
+		printf("Continuing as DEBUGGING_WITHOUT_HW was defined!\n");
 	}
 	else 
 		printf("Library was opened successfully :)\n");

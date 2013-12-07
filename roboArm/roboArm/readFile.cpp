@@ -10,35 +10,43 @@
 
 
 /****************************************************************************
-@function   
-@brief      routine for reading out control txt file 
-			parse out the parameters for individual phases
+@function   READ_patialConfigurationFromFile
+@brief      	parsing out the parameters for individual phases from the string [str]
 @param[in]  
 @param[out] 
-@return     	on Success
-				= FLAWLESS_EXECUTION
-			on Error
-				= error_sum of ERRORS defined in returnCodeDefines.h
+@return     	on Success	= FLAWLESS_EXECUTION
+			on Error		= error_sum of ERRORS defined in returnCodeDefines.h
 ***************/
-int readFile( ){
-	//____________________________________________________
-	// variables
-	//BOOL ret_val = FALSE;
-	HANDLE hFile;
-	//int i=0;
-	
-	//DWORD last_err = 0;
+int READ_patialConfigurationFromFile(C_roboticManipulator* a_ROB ){
+	READ_file();
+	//return(a_ROB->CONVERT_angle2int_zero(i);
+	return(1);
+}
+
+/****************************************************************************
+@function   READ_file
+@brief      routine for reading out control txt file into string [str]
+@param[in]  
+@param[out] 
+@return     	on Success	= FLAWLESS_EXECUTION
+			on Error		= error_sum of ERRORS defined in returnCodeDefines.h
+***************/
+int READ_file(void){
 	int error_sum = 0;
-	//____________________________________________________
-	// Reading control
-	//string 
-	
+	HANDLE hFile = NULL;
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// CreateFile - for read handle 
 #ifdef DEBUG_PRINT_READ_FUNCTIONS
 	RtPrintf("Try to CreateFile.\n");
 #endif
-	hFile = CreateFile((LPCSTR)CONTROL_FILE_PATH, GENERIC_READ, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	// CONST CHAR * = LPCSTR 
+	const char file_path[] = "D:\\EDUC\\m1\\R_MRTS\\float.txt";
+	// try lenght of string file_path 
+	for(int i=0; file_path[i] != '\0'; i++)
+	{
+		if( i>=MAX_PATH ) return(ERROR_FILE_PATH_STRING_TOO_LONG);
+	}
+	hFile = CreateFile(file_path, GENERIC_READ, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hFile == INVALID_HANDLE_VALUE) { // Failed CreateFile
 		error_sum = ERROR_CREATEFILE_FAIL;
 		//LogMessage()
@@ -77,8 +85,11 @@ int readFile( ){
 	// ReadFile
 
 	//DWORD file_current_byte = file_begin_byte;
-	unsigned long max = 0;
-	DWORD bytes2get = max - 1;
+	//unsigned long max = 0;
+	//max - 1;
+
+	//DWORD bytes2get = FILE_MAX_CHARS;
+	DWORD bytes2get = 100;
 	
 	//DWORD digit[NUM_OF_DIGITS]; 
 	
@@ -105,6 +116,7 @@ int readFile( ){
 	RtPrintf("bytes_got = %lu\n", bytes_got);	
 #endif
 	str[bytes_got+1] = 0;
+	printf("[FILE_START]\n%s\n[FILE_END]",str);
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// CloseHandle

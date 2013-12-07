@@ -51,10 +51,12 @@
 // if angle in file is out of bounds do not exit but convert it to limit instead and continue
 #define CUT_OFF_OUT_OF_BOUNDS_IN_FILE 
 
+#define CLOCK_X				CLOCK_1
 //____________________________________________________
 // file path
-//#define CONTROL_FILE_PATH L"D:\\EDUC\\m1\\R_MRTS\\proj_robo_ruka\\GIT\\roboArm\\control.txt"
-#define CONTROL_FILE_PATH		L"D:\\EDUC\\m1\\R_MRTS\\proj_robo_ruka\\GIT\\roboArm\\control.txt"
+//#define CONTROL_FILE_PATH		L"D:\\EDUC\\m1\\R_MRTS\\proj_robo_ruka\\GIT\\roboArm\\control2.txt"
+//#define CONTROL_FILE_PATH		L"D:\\EDUC\\m1\\R_MRTS\\proj_robo_ruka\\GIT\\roboArm\\control.txt"
+#define CONTROL_FILE_PATH		L"D:\\EDUC\\m1\\R_MRTS\\float.txt"
 #define FILE_MAX_CHARS			100000
 
 //____________________________________________________
@@ -71,6 +73,10 @@
 #define CHUNK_LINES				9000
 
 //____________________________________________________
+// class servoMotor macros
+#define SUM_SERVOMOTORS					6
+
+//____________________________________________________
 // reading constants
 // end character lenght (\0)
 #define CZERO						1 
@@ -81,9 +87,6 @@
 //#define DEFAULT_STACK_SIZE			8192
 
 
-//____________________________________________________
-// class servoMotor macros
-#define SUM_SERVOMOTORS					6
 
 
 /* ____________________________________________________
@@ -142,7 +145,6 @@ typedef enum {S1=2, S2=3, S3=4, S5=6, S4=5, S6=7}E_servos;
 // do not use -> dividing by zero unhandled possibility -> write an inline fct?
 // #define NS100_X_HZ(x_hz)		(NS100_1S/(x_hz)) 
 
-#define CLOCK_X				CLOCK_2
 
 
 
@@ -176,5 +178,8 @@ void TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, int error_sum)
 int		INIT_All();
 int		INIT_Library();
 void		INIT_ADC();
+//readFile.cpp
 
+int READ_patialConfigurationFromFile(C_roboticManipulator* a_ROB);
+int READ_file(void);
 #endif

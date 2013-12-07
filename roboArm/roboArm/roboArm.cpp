@@ -20,7 +20,6 @@ DWORD baseAddress = 0;
 HMODULE hLibModule = NULL;
 char str[FILE_MAX_CHARS+CZERO] = ""; 
 
-
 /****************************************************************************
 @function		MEAN_adc
 @brief			mean of c measured values
@@ -199,7 +198,7 @@ HANDLE* CREATE_threads(void)
 void _cdecl main(int,char**,char**)
 {
 	int ret_val = 0;
-	printf("--------(: Clean start :)------\n");
+	printf("_________________________(: Clean start :)___________________________\n");
 	// ____________________________________________________
 	// init HW
 	ret_val = INIT_All();
@@ -215,6 +214,12 @@ void _cdecl main(int,char**,char**)
 		//log
 		ExitProcess(ret_val);
 	}
+
+	//____________________________________________________
+	// read phases from file
+	READ_patialConfigurationFromFile(&ROB);
+
+
 // ____________________________________________________
 // will be in the function CREATE_threads
 
