@@ -154,12 +154,24 @@ int		READ_spatialConfigurationFromFile(C_roboticManipulator* a_ROB, char* a_file
 int		READ_file(char* a_filePath);
 int		MOVE_pointerOrReturn(HANDLE hFile, LONG distance2move, DWORD* file_current_byte, DWORD MoveMethod);
 int		CLOSE_handleAndReturn(HANDLE handle, int error_sum);
+int		PARSE_controlString(void);
 
 // threadFunctions.cpp
 void		RTFCNDCL TIM_PWMfunction(void *a_manip);
 void		TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, int error_sum);
 void		CLOSE_handleAndExitThread(HANDLE handle, int error_sum);
+
+
+
 #endif
+
+
+
+
+
+
+
+
 
 
 //____________________________________________________

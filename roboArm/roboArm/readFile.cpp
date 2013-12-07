@@ -8,7 +8,6 @@
 
 #include "roboArm.h"
 
-
 /****************************************************************************
 @function   READ_patialConfigurationFromFile
 @brief      	parsing out the parameters for individual phases from the string [str]
@@ -16,10 +15,27 @@
 @param[out] 
 @return     	on Success	= FLAWLESS_EXECUTION
 			on Error		= error_sum of ERRORS defined in returnCodeDefines.h
-***************/
-int	READ_spatialConfigurationFromFile(C_roboticManipulator* a_ROB, char* a_filePath){
-	READ_file(a_filePath);
-	//parse
+************/
+int	READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_filePath){
+	int error_sum = 0;
+	//____________________________________________________
+	// read control file into string
+	error_sum = READ_file(a_filePath);
+	if(error_sum != FLAWLESS_EXECUTION)
+	{
+		delete[] Gstr;
+		printf("READ_file failed with error_sum %i\n", error_sum);
+		return(error_sum);
+	}
+	//____________________________________________________
+	// parse control string into individual phases
+	error_sum = PARSE_controlString(&(*a_manip));
+	if(error_sum != FLAWLESS_EXECUTION)
+	{
+		delete[] Gstr;
+		printf("READ_file failed with error_sum %i\n", error_sum);
+		return(error_sum);
+	}
 	// AFTER creation of new prvek in array of C_spatialConf you must copy non-changed angles from previous phase
 	delete[] Gstr;
 	//return(a_ROB->CONVERT_angle2int_zero(i);
@@ -27,9 +43,25 @@ int	READ_spatialConfigurationFromFile(C_roboticManipulator* a_ROB, char* a_fileP
 }
 
 /****************************************************************************
+@function   PARSE_controlString
+@brief      parse control string into individual phases
+			stored in linear list in [ROB] instance of C_roboticManipulator
+@param[in]  
+@param[out] 
+@return     
+************/
+int	PARSE_controlString(C_roboticManipulator* a_manip){
+	C_roboticManipulator* ROB = (C_roboticManipulator*)a_manip;
+	ROB->RESET_DOport();
+	ROB = NULL;
+	return(FLAWLESS_EXECUTION);
+}
+
+
+/****************************************************************************
 @function   READ_file
 @brief      routine for reading out control txt file into string [str]
-@param[in]  
+@param[in]  (char*)a_filePath
 @param[out] 
 @return     	on Success	= FLAWLESS_EXECUTION
 			on Error		= error_sum of ERRORS defined in returnCodeDefines.h
@@ -91,7 +123,7 @@ int READ_file(char* a_filePath){
 
 #ifdef DEBUG_PRINT_READ_FUNCTIONS
 //	RtPrintf("Try to READ_chunk [%lu bytes] from file.\n",bytes2get);
-	RtPrintf("Try to ReadFile. Read whole file [%lu bytes] from [%s], \n", a_filePath, bytes2get);
+	RtPrintf("Try to ReadFile. Read whole file [%lu bytes] from [%s], \n", bytes2get, a_filePath);
 #endif
 	DWORD bytes_got;
 	// BOOL ReadFile(HANDLE hFile, LPVOID lpBuffer, DWORD nbytes2get, LPDWORD lpbytes_got, LPOVERLAPPED lpOverlapped);
