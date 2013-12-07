@@ -39,6 +39,8 @@
 #define ERROR_SEVERITY_TOO_BIG						99254
 
 #define ERROR_ANGLE_OUT_OF_BOUNDS					99255
+#define ERROR_CONTROLFILE_PATH_NOT_SPECIFIED			99256
+
 //____________________________________________________
 #define EXITCODE_SUCCESSFUL_END					0
 #define EXITCODE_TERMINATED_BY_MAIN				1

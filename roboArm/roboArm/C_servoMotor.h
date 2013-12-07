@@ -24,7 +24,7 @@ public:
 	// feedback
 	DWORD min_val;
 	DWORD max_val; 
-	DWORD mean_vals; // mean of how many feedback measurements 
+	DWORD mean_vals; // compute mean from sum of feedback measurements 
 	bool FDBACK;
 	//____________________________________________________
 	// timers

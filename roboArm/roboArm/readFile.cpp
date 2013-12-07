@@ -17,10 +17,13 @@
 @return     	on Success	= FLAWLESS_EXECUTION
 			on Error		= error_sum of ERRORS defined in returnCodeDefines.h
 ***************/
-int READ_patialConfigurationFromFile(C_roboticManipulator* a_ROB ){
-	READ_file();
+int	READ_spatialConfigurationFromFile(C_roboticManipulator* a_ROB, char* a_filePath){
+	READ_file(a_filePath);
+	//parse
+	// AFTER creation of new prvek in array of C_spatialConf you must copy non-changed angles from previous phase
+	delete[] Gstr;
 	//return(a_ROB->CONVERT_angle2int_zero(i);
-	return(1);
+	return(FLAWLESS_EXECUTION);
 }
 
 /****************************************************************************
@@ -31,7 +34,7 @@ int READ_patialConfigurationFromFile(C_roboticManipulator* a_ROB ){
 @return     	on Success	= FLAWLESS_EXECUTION
 			on Error		= error_sum of ERRORS defined in returnCodeDefines.h
 ***************/
-int READ_file(void){
+int READ_file(char* a_filePath){
 	int error_sum = 0;
 	HANDLE hFile = NULL;
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -40,15 +43,10 @@ int READ_file(void){
 	RtPrintf("Try to CreateFile.\n");
 #endif
 	// CONST CHAR * = LPCSTR 
-	const char file_path[] = "D:\\EDUC\\m1\\R_MRTS\\float.txt";
-	// try lenght of string file_path 
-	for(int i=0; file_path[i] != '\0'; i++)
-	{
-		if( i>=MAX_PATH ) return(ERROR_FILE_PATH_STRING_TOO_LONG);
-	}
-	hFile = CreateFile(file_path, GENERIC_READ, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	//char file_path[] = "D:\\EDUC\\m1\\R_MRTS\\float.txt";
+
+	hFile = CreateFile(a_filePath, GENERIC_READ, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hFile == INVALID_HANDLE_VALUE) { // Failed CreateFile
-		error_sum = ERROR_CREATEFILE_FAIL;
 		//LogMessage()
 		// ifdef
 		RtPrintf("Function CreateFile failed with 0x%04x - INVALID_HANDLE_VALUE\n", GetLastError());
@@ -60,26 +58,19 @@ int READ_file(void){
 	
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// SetFilePointer
-	/*
 	DWORD file_end_byte = 0;
-	DWORD file_begin_byte = 0;
-	//SET_byte_pointer
 #ifdef DEBUG_PRINT_READ_FUNCTIONS
 	RtPrintf("Try to SetFilePointer to FILE_END:\n");
 #endif
+	error_sum = MOVE_pointerOrReturn(hFile, 0, &file_end_byte, FILE_END);
+	if(error_sum != FLAWLESS_EXECUTION)	return(error_sum);
 	
-	file_end_byte = SetFilePointer(hFile, 0, NULL, FILE_END);
-	if (file_end_byte == INVALID_SET_FILE_POINTER) {// Failed to SetFilePointer
-		RtPrintf("Function SetFilePointer failed with 0x%04x\n", GetLastError());		
-		CLOSE_handleAndReturn(hFile, SUMFLOATS_ERROR_SETFILEPOINTER_FAIL);
-	}
-
-	MOVE_pointer(hFile, 0, &file_end_byte, FILE_END);
+	DWORD file_begin_byte = 0;
 #ifdef DEBUG_PRINT_READ_FUNCTIONS
 	RtPrintf("Try to SetFilePointer to FILE_BEGIN:\n");
 #endif
-	MOVE_pointer(hFile, 0, &file_begin_byte, FILE_BEGIN);
-	*/
+	error_sum = MOVE_pointerOrReturn(hFile, 0, &file_begin_byte, FILE_BEGIN);
+	if(error_sum != FLAWLESS_EXECUTION)	return(error_sum);
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// ReadFile
@@ -89,19 +80,15 @@ int READ_file(void){
 	//max - 1;
 
 	//DWORD bytes2get = FILE_MAX_CHARS;
-	DWORD bytes2get = 100;
-	
-	//DWORD digit[NUM_OF_DIGITS]; 
-	
-	//int str_len = 1;
-	
+	DWORD bytes2get = file_end_byte;
+	Gstr = new char[file_end_byte+1];
 #ifdef DEBUG_PRINT_READ_FUNCTIONS
 //	RtPrintf("Try to READ_chunk [%lu bytes] from file.\n",bytes2get);
-	RtPrintf("Try to ReadFile. Read whole file: [%s]\n", CONTROL_FILE_PATH);
+	RtPrintf("Try to ReadFile. Read whole file: [%s], [%lu bytes]\n", a_filePath, bytes2get);
 #endif
 	DWORD bytes_got;
 	// BOOL ReadFile(HANDLE hFile, LPVOID lpBuffer, DWORD nbytes2get, LPDWORD lpbytes_got, LPOVERLAPPED lpOverlapped);
-	if (	 FALSE == ReadFile( hFile, (LPVOID) (str), bytes2get, &bytes_got, NULL) ) 
+	if (	 FALSE == ReadFile( hFile, (LPVOID) (Gstr), bytes2get, &bytes_got, NULL) ) 
 	{ // Failed to ReadFile
 		RtPrintf("ERROR:\tFunction ReadFile failed with 0x%04x - returned FALSE\n", GetLastError());
 		return(CLOSE_handleAndReturn(hFile, ERROR_READFILE_FAIL));
@@ -115,12 +102,66 @@ int READ_file(void){
 #ifdef DEBUG_PRINT_READ_FUNCTIONS
 	RtPrintf("bytes_got = %lu\n", bytes_got);	
 #endif
-	str[bytes_got+1] = 0;
-	printf("[FILE_START]\n%s\n[FILE_END]",str);
+	Gstr[bytes_got+1] = 0;
+	printf("[FILE_START]\n%s\n[FILE_END]",Gstr);
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// CloseHandle
 	CLOSE_handleAndReturn(hFile, FLAWLESS_EXECUTION);	
 
+	return(FLAWLESS_EXECUTION);
+}
+
+
+
+/****************************************************************************
+@function   CLOSE_handleAndReturn
+@brief      
+@param[in]  
+@param[out] 
+@return     
+************/
+int CLOSE_handleAndReturn(HANDLE handle, int error_sum)
+{
+#ifdef DEBUG
+	RtPrintf("Try to CloseHandle.\n");
+#endif
+	if( CloseHandle(handle) == 0 )
+	{
+		RtPrintf("Function CloseHandle failed with 0x%04x\n", GetLastError());
+		return(error_sum + ERROR_CLOSEHANDLE_FAIL);
+	}
+	else 
+	{
+		printf("Successfully closed handle\n");
+		if(error_sum != 0)
+			return(error_sum);
+		else 
+			return(FLAWLESS_EXECUTION);
+	}
+}
+
+/****************************************************************************
+@function   MOVE_pointer
+@brief      function moves the pointer in handled file 
+			to distance relative to current position
+@param[in]  
+@param[out] 
+@return     error_sum
+************/
+int MOVE_pointerOrReturn(HANDLE hFile, LONG distance2move, DWORD* file_current_byte, DWORD MoveMethod=FILE_CURRENT)
+{
+#ifdef DEBUG_PRINT_READ_FUNCTIONS
+	RtPrintf("Try to SetFilePointer.\n");
+#endif
+	*file_current_byte = SetFilePointer(hFile, distance2move, NULL, MoveMethod);
+	if (*file_current_byte == INVALID_SET_FILE_POINTER) 
+	{ // Failed to SetFilePointer
+		RtPrintf("Function SetFilePointer failed with 0x%04x\n", GetLastError());		
+		return(CLOSE_handleAndReturn(hFile, ERROR_SETFILEPOINTER_FAIL));
+	}
+#ifdef DEBUG_PRINT_READ_FUNCTIONS
+	RtPrintf("file_current_byte = %lu\n",*file_current_byte);
+#endif
 	return(FLAWLESS_EXECUTION);
 }

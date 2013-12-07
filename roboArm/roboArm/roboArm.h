@@ -89,49 +89,6 @@
 
 
 
-/* ____________________________________________________
-indexes of servmotors HW from the bottom one [1-6]
-channel |	servo		|	FDBACK	|	AI   
---------+---------------+-----------+--------
-	0	|	3(maly)		|	3		|	0
-	1	|	1(velky)		|	1		|	1
-	2	|	2(stred)		|	2		|	2
-
-
-- servo S[1-6] is on address bit DO_High_Byte 1 << x
-
-		+-----------+-------+------------+
-		|			| 1<<x	|  interval	 |
-		+-----------+-------+------------+
-		|  servo		|	x	| min-max[us]|
-		+-----------+-------+------------+
-		|	S1		|	2	|			 |
-		+-----------+-------+------------+
-		|	S2		|	3	|			 |
-		+-----------+-------+------------+
-		|	S3		|	4	|			 |
-		+-----------+-------+------------+
-		|	S4		|	6	| 500-2500	 |
-		+-----------+-------+------------+
-		|	S5		|	5	| 500-2500	 |
-		+-----------+-------+------------+
-		|	S6		|	7	| 500-2500	 |
-		+-----------+-------+------------+
-*/
-typedef enum {S1=2, S2=3, S3=4, S5=6, S4=5, S6=7}E_servos;
-
-//____________________________________________________
-// addresses of control bytes in register
-#define AD_GAIN					0xe0
-#define AD_MODE_CONTROLL			0xe4
-#define AD_SOFT_TRIGGER_START	0xe8
-#define AD_STATUS				0xec
-#define AD_LOWBYTE				0xd0
-#define AD_HIGHBYTE				0xd4
-#define DO_Low_Byte				0xd8
-#define DO_High_Byte				0xdc
-
-
 //____________________________________________________
 // predefined time intervals
 // multiplicatives of [100ns]
@@ -145,41 +102,85 @@ typedef enum {S1=2, S2=3, S3=4, S5=6, S4=5, S6=7}E_servos;
 // do not use -> dividing by zero unhandled possibility -> write an inline fct?
 // #define NS100_X_HZ(x_hz)		(NS100_1S/(x_hz)) 
 
+//____________________________________________________
+// addresses of control bytes in register
+#define AD_GAIN					0xe0
+#define AD_MODE_CONTROLL			0xe4
+#define AD_SOFT_TRIGGER_START	0xe8
+#define AD_STATUS				0xec
+#define AD_LOWBYTE				0xd0
+#define AD_HIGHBYTE				0xd4
+#define DO_Low_Byte				0xd8
+#define DO_High_Byte				0xdc
 
-
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+// typedefs
+//____________________________________________________
+// defines connection of real physical position indexing (SX) to port address DO bit of each servoMotor
+typedef enum {S1=2, S2=3, S3=4, S5=6, S4=5, S6=7}E_servos;
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // external variables & classes
-extern DWORD baseAddress;
-extern HMODULE hLibModule;
-extern char str[]; 
+extern DWORD baseAddress;	//roboArm.cpp
+extern HMODULE hLibModule;	//roboArm.cpp
+extern char* Gstr;			//roboArm.cpp
+//extern char str[]; 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // class declarations
 class C_servoMotor;
 class C_roboticManipulator;
 
-// this project classes headerfiles
+// classes headerfiles (for proper linking)
 #include "C_servoMotor.h"
 #include "C_roboticManipulator.h"
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // function declarations of roboArm.cpp
+void _cdecl main(int  argc, char **argv);
 DWORD	GET_ADC(UCHAR channel, UCHAR gain);
-void RTFCNDCL TIM_PWMfunction(void *a_manip);
+HANDLE* CREATE_threads(void);
 
-int CLOSE_handleAndReturn(HANDLE handle, int error_sum);
-void CLOSE_handleAndExitThread(HANDLE handle, int error_sum);
-
-void TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, int error_sum);
 //____________________________________________________
 // function declarations of non-headered .cpp files
 // INIT.cpp
 int		INIT_All();
 int		INIT_Library();
 void		INIT_ADC();
-//readFile.cpp
 
-int READ_patialConfigurationFromFile(C_roboticManipulator* a_ROB);
-int READ_file(void);
+// readFile.cpp
+int		READ_spatialConfigurationFromFile(C_roboticManipulator* a_ROB, char* a_filePath);
+int		READ_file(char* a_filePath);
+int		MOVE_pointerOrReturn(HANDLE hFile, LONG distance2move, DWORD* file_current_byte, DWORD MoveMethod);
+int		CLOSE_handleAndReturn(HANDLE handle, int error_sum);
+
+// threadFunctions.cpp
+void		RTFCNDCL TIM_PWMfunction(void *a_manip);
+void		TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, int error_sum);
+void		CLOSE_handleAndExitThread(HANDLE handle, int error_sum);
 #endif
+
+
+//____________________________________________________
+// tables of indexation
+/*
+Control pin of servo S[1-6] is on address bit DO_High_Byte 1 << x
+			| 1<<x	|  interval	 |
++-----------+-------+------------+
+	servo	|	x	| min-max[us]|
++-----------+-------+------------+
+	S1		|	2	|			 |
+	S2		|	3	|			 |
+	S3		|	4	|			 |
+	S4		|	6	| 500-2500	 |
+	S5		|	5	| 500-2500	 |
+	S6		|	7	| 500-2500	 |
+
+	
+indexes of servmotors HW from the biggest bottom one [1-6]
+channel |	servo		|	FDBACK[b]	|	AI[b]   
+--------+---------------+-----------+--------
+	0	|	3(maly)		|	3			|	0
+	1	|	1(velky)		|	1			|	1
+	2	|	2(stred)		|	2			|	2
+*/
