@@ -3,7 +3,7 @@
 @author 		xdavid10, xslizj00 @ FEEC-VUTBR 
 @contacts		Bc. Jiøí Sliž		<xslizj00@stud.feec.vutbr.cz>
 				Bc. Daniel Davídek	<danieldavidek@gmail.com>
-@date			2013_12_02
+@date			2013_12_07
 @brief			Log message class
 @description	Class C_CircBuffer implements circular buffer and provides read/write operations.
 				Class C_LogMessageA uses C_CircBuffer and provides methods for asynchronous logging using mutex.
@@ -105,6 +105,8 @@ C_LogMessageA::C_LogMessageA()
 	buf = new C_CircBuffer();
 	// init mutex
 	hMutex = RtCreateMutex(NULL, FALSE, HMUTEX_SHARED_NAME);
+
+	bLogging = false;
 }
 
 // Destructor C_LogMessageA
@@ -116,6 +118,7 @@ C_LogMessageA::~C_LogMessageA()
 
 unsigned int C_LogMessageA::PushMessage(char* in, int iSeverity)
 {
+	if(!bLogging)return 1;
 	actSeverity = iSeverity;
 	while(!buf->IsEmpthy())Sleep(50);
 	RtWaitForSingleObject(hMutex,INFINITE); // wait to own hMutex
@@ -128,6 +131,8 @@ unsigned int C_LogMessageA::PushMessage(char* in, int iSeverity)
 
 unsigned int C_LogMessageA::WriteBuffToFile()
 {
+	if(!bLogging)return 10;
+
 	CHAR cMessage[LENGTH_OF_BUFF];
 	unsigned int err = 0;
 	RtWaitForSingleObject(hMutex,INFINITE); // wait to own hMutex

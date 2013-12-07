@@ -13,8 +13,6 @@ C_LogMessageA logMsg;
 ULONG RTFCNDCL ThreadHandler(void *nContext);
 ULONG RTFCNDCL ThreadHandler2(void *nContext);
 
-bool bLogThreadRun = FALSE;
-
 void  _cdecl main(int  argc, char **argv, char **envp)
 {
 	//// Test C_CircBuffer
@@ -31,7 +29,7 @@ void  _cdecl main(int  argc, char **argv, char **envp)
 
 	//	printf("%s", pStr);
 	//}	
-	bLogThreadRun = TRUE;
+	logMsg.LoggingStart();
 	hThread1 = CreateThread(0, 0, ThreadHandler, NULL, CREATE_SUSPENDED, 0);
 	// Handle thread creation fail
 	if(hThread1 == NULL)
@@ -106,7 +104,7 @@ void  _cdecl main(int  argc, char **argv, char **envp)
 	Sleep(50);
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-bLogThreadRun = FALSE;	
+	logMsg.LoggingStop();
 	// Waiting for thread end
 	bool allThreadsEnded;
 	DWORD ExitCode;
@@ -160,7 +158,7 @@ bLogThreadRun = FALSE;
 
 ULONG RTFCNDCL ThreadHandler(void *nContext) 
 {
-	while(bLogThreadRun)
+	while(logMsg.GetState())
 	{
 		logMsg.WriteBuffToFile();
 		Sleep(10);
