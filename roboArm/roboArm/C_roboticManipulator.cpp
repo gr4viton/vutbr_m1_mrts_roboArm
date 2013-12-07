@@ -19,15 +19,16 @@
 			into bounds of servo [a_serv] intervals [min_val, max_val]
 				can be rewriten to be faster with external pre-counted variables
 @param[in]  
-@param[out] 
+@param[out] (LARGE_INTEGER*) a_interval_zero
 @return     error_sum
 ************/
-int C_roboticManipulator::CONVERT_angle2int_zero(int a_angle, C_servoMotor* a_serv, LARGE_INTEGER* a_interval_zero){
+int C_roboticManipulator::CONVERT_angle2int_zero(int a_angle, int a_i_serv, LARGE_INTEGER* a_interval_zero)
+{
 	float relative = 0 ; // from f0.0 to f1.0
 	relative = (a_angle - angle_min)/((float)(angle_max - angle_min));
 	if(relative>1)
 	{
-#ifdef CUT_OFF_OUT_OF_BOUNDS_IN_FILE //IF NOT DEFINED
+#ifdef CUT_OFF_OUT_OF_BOUNDS_ANGLE_IN_CONTROL_FILE //IF NOT DEFINED
 		relative = 1; 
 #else
 		return(ERROR_ANGLE_OUT_OF_BOUNDS);
@@ -35,16 +36,17 @@ int C_roboticManipulator::CONVERT_angle2int_zero(int a_angle, C_servoMotor* a_se
 	}
 	else if(relative <0)
 	{
-#ifdef CUT_OFF_OUT_OF_BOUNDS_IN_FILE //IF NOT DEFINED
+#ifdef CUT_OFF_OUT_OF_BOUNDS_ANGLE_IN_CONTROL_FILE //IF NOT DEFINED
 		relative = 0; 
 #else
 		return(ERROR_ANGLE_OUT_OF_BOUNDS);
 #endif
 	}
-	a_interval_zero->QuadPart = (DWORD)(relative*(a_serv->max_val - a_serv->min_val) + a_serv->min_val);
+	a_interval_zero->QuadPart = (DWORD)( 
+		serv[a_i_serv].min_val + relative * (serv[a_i_serv].max_val - serv[a_i_serv].min_val)
+		);
 	return(FLAWLESS_EXECUTION);
 }
-
 
 /****************************************************************************
 @function   C_roboticManipulator
@@ -135,27 +137,11 @@ C_roboticManipulator::C_roboticManipulator(int &roboticManipulator_error)
 @param[out]
 @return
 ***************/
-bool C_roboticManipulator::IS_in_bounds(int servo_i){
-	if(servo_i<0 || servo_i>=SUM_SERVOMOTORS) return(false);
-	else return(true);
+int C_roboticManipulator::IS_in_bounds(int servo_i){
+	if(servo_i<0 || servo_i>=SUM_SERVOMOTORS) return(ERR_SERVO_INDEX_OUT_OF_BOUNDS);
+	else return(FLAWLESS_EXECUTION);
 }
 
-/****************************************************************************
-@function	SET_dutyCycleIntervals
-@brief
-@param[in]
-@param[out]
-@return
-***************/
-int C_roboticManipulator::SET_dutyCycleIntervals(
-	int a_servo_i, 
-	LARGE_INTEGER a_interval_one, 
-	LARGE_INTEGER a_interval_zero)
-{
-	if(!IS_in_bounds(a_servo_i)) return(ERR_SERVO_INDEX_OUT_OF_BOUNDS);
-	serv[a_servo_i].SET_dutyCycleIntervals(a_interval_one,a_interval_zero);
-	return(FLAWLESS_EXECUTION);
-}
 
 /****************************************************************************
 @function	GET_servoMotor
@@ -231,16 +217,33 @@ void C_roboticManipulator::SET_DOportBitUchar(UCHAR a_port_bit)
 
 /****************************************************************************
 @function   C_spatialConfiguration
+@brief      constructor - implicite
+@param[in]  
+@param[out] 
+@return     
+************/
+C_spatialConfiguration::C_spatialConfiguration(void){
+	phaseInterval.QuadPart = 0;
+	for(int i=0; i<SUM_SERVOMOTORS; i++)
+	{
+		servIntervalZeroChanged[i] = false;
+		servIntervalZero[i].QuadPart = 0;
+	}
+}
+
+/****************************************************************************
+@function   C_spatialConfiguration
 @brief      constructor - input parameters values => member variables
 @param[in]  
 @param[out] 
 @return     
 ************/
-C_spatialConfiguration::C_spatialConfiguration(LARGE_INTEGER* a_phase_interval, LARGE_INTEGER* a_serv_interval_zero){
-	phase_interval.QuadPart = a_phase_interval->QuadPart;
+C_spatialConfiguration::C_spatialConfiguration(LARGE_INTEGER* a_phaseInterval, LARGE_INTEGER* a_servIntervalZero){
+	phaseInterval.QuadPart = a_phaseInterval->QuadPart;
 	for(int i=0; i<SUM_SERVOMOTORS; i++)
 	{
-		serv_interval_zero[i].QuadPart = a_serv_interval_zero[i].QuadPart;
+		servIntervalZeroChanged[i] = true;
+		servIntervalZero[i].QuadPart = a_servIntervalZero[i].QuadPart;
 	}
 }
 
@@ -252,5 +255,39 @@ C_spatialConfiguration::C_spatialConfiguration(LARGE_INTEGER* a_phase_interval, 
 @return     
 ************/
 C_spatialConfiguration::~C_spatialConfiguration(void){
-	//nope delete[] serv_interval_zero;
+	//nope delete[] servIntervalZero;
 }
+
+/****************************************************************************
+@function   SET_servIntervalZero
+@brief      
+@param[in]  
+@param[out] 
+@return     
+************/
+void C_spatialConfiguration::SET_servIntervalZero(int a_i_serv, LARGE_INTEGER *a_servIntervalZero)
+{
+	servIntervalZero[a_i_serv].QuadPart = a_servIntervalZero->QuadPart;
+	servIntervalZeroChanged[a_i_serv] = true;
+}
+
+
+
+
+/****************************************************************************
+@function	SET_dutyCycleIntervals
+@brief
+@param[in]
+@param[out]
+@return
+***************/
+/*
+int C_roboticManipulator::SET_dutyCycleIntervals(
+	int a_servo_i, 
+	LARGE_INTEGER a_interval_one, 
+	LARGE_INTEGER a_interval_zero)
+{
+	if(!IS_in_bounds(a_servo_i)) return(ERR_SERVO_INDEX_OUT_OF_BOUNDS);
+	serv[a_servo_i].SET_dutyCycleIntervals(a_interval_one,a_interval_zero);
+	return(FLAWLESS_EXECUTION);
+}*/

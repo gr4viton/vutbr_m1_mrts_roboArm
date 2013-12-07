@@ -18,7 +18,7 @@
 
 DWORD baseAddress = 0;
 HMODULE hLibModule = NULL;
-char* Gstr = NULL;
+char* G_controlString = NULL;
 //char str[FILE_MAX_CHARS+CZERO] = ""; 
 
 
