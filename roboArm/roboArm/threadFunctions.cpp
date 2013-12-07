@@ -16,38 +16,50 @@
 ***************/
 void RTFCNDCL TIM_PWMfunction(void *a_manip)
 {
+	//____________________________________________________
+	// time measurement
 	LARGE_INTEGER tim1; tim1.QuadPart = 0;
 	LARGE_INTEGER tim2; tim2.QuadPart = 0;
 	RtGetClockTime(CLOCK_X,&tim1);
 
-	LARGE_INTEGER tic_interval;
-	LARGE_INTEGER PWM_period;
-	LARGE_INTEGER tic;
+	//____________________________________________________
+	// PWM tics creation
+	LARGE_INTEGER PWM_period;	// how often to write position - restart tic
+	LARGE_INTEGER tic;			// iterating variable
+	LARGE_INTEGER tic_interval;	// how long does one tic take
 
 	tic.QuadPart = 0;
 	//PWM_period.QuadPart = NS100_1S / 100; // 1/100 s = 100 Hz
-	PWM_period.QuadPart = NS100_1S / 1; // 1/1 s = 1 Hz
-	RtGetClockTimerPeriod(CLOCK_X, &tic_interval); // time to wait between individual tics
+	PWM_period.QuadPart = NS100_1S / 1;				// 1/1 s = 1 Hz
+	RtGetClockTimerPeriod(CLOCK_X, &tic_interval);	// time to wait between individual tics
 	
 	int i_serv = 0;
 	C_roboticManipulator* ROB = (C_roboticManipulator*)a_manip;
-	C_servoMotor* serv = NULL; // = new C_servoMotor();
-	// here there will be some mutexed variable for control of this thread termination
+	C_servoMotor* serv = NULL;
+
+	// here there will be some mutexed variable for control of this thread termination ??
 	bool done = false;
+	int error_sum = 0;
 	//____________________________________________________
 	// main thread loop
 	ROB->RESET_DOport();
 	while(!done)
 	{
-		// this style is functional only for one servo at a time <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-		// - rewrite to remember whole register port and at right times write changed register 
+		// ask each servo if this tic the interval zero has passed = time [to write 1]
 		for(i_serv=0; i_serv<SUM_SERVOMOTORS; i_serv++)
 		{
 			// get the pointer of ROB->serv[i_serv] into serv
-			ROB->GET_servoMotor(i_serv, &serv);
-
+			error_sum = ROB->GET_servoMotor(i_serv, &serv);
+			if(error_sum != FLAWLESS_EXECUTION)
+			{
+				serv = NULL;
+				ROB = NULL;
+				printf("Could not get servoMotor[%i] pointer\n", i_serv);
+				printf("Terminating thread with error_sum %i\n", error_sum);
+				ExitThread(error_sum);
+			}
 			if(tic.QuadPart >= serv->intervalZero.QuadPart)
-			{ // time for one has come
+			{ // time for writing 1 has come
 				// write to the right digit
 				ROB->SET_DOportBitUchar(serv->servoMotorDigit);
 			}
@@ -66,7 +78,7 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 		
 			RtGetClockTime(CLOCK_X,&tim2);
 			tim2.QuadPart = tim2.QuadPart-tim1.QuadPart;
-			printf("PWM_period = %I64d [100ns] = %I64d [1s]  \n",tim2.QuadPart, tim2.QuadPart / NS100_1S);
+			printf("PWM_period = %I64d [100ns] = %I64d [1s]  \n", tim2.QuadPart, tim2.QuadPart / NS100_1S);
 			RtGetClockTime(CLOCK_X,&tim1);
 		// stop after first period (for debug - to terminate threads)<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 			//done = true;

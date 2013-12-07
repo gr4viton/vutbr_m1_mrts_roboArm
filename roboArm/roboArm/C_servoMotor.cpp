@@ -10,9 +10,10 @@
 //#include "C_servoMotor.h"
 
 /****************************************************************************
-@function		C_servoMotor
-@brief			constructor
-				Servo motors have their position regulated by pulses of different width.
+@function	C_servoMotor
+@class		C_servoMotor
+@brief		constructor
+			Servo motors have their position regulated by pulses of different width.
 @param[in]		
 ***************/
 C_servoMotor::C_servoMotor(void)
@@ -20,9 +21,10 @@ C_servoMotor::C_servoMotor(void)
 {return;}
 
 /****************************************************************************
-@function		SET_constants
+@function	SET_constants
+@class		C_servoMotor
 @brief			
-				Servo motors have their position regulated by pulses of different width.
+			Servo motors have their position regulated by pulses of different width.
 @param[in]		
 ***************/
 int C_servoMotor::SET_constants(
@@ -48,6 +50,7 @@ int C_servoMotor::SET_constants(
 
 /****************************************************************************
 @function	SET_intervalZero
+@class		C_servoMotor
 @brief		
 @param[in]	
 @param[out]	
@@ -62,9 +65,10 @@ void C_servoMotor::SET_intervalZero(LARGE_INTEGER a_intervalZero)
 
 	
 /****************************************************************************
-@function		~C_servoMotor
-@brief			destructor
-				Servo motors have their position regulated by pulses of different width.
+@function	~C_servoMotor
+@class		C_servoMotor
+@brief		destructor
+			Servo motors have their position regulated by pulses of different width.
 @param[in]		-
 ***************/
 C_servoMotor::~C_servoMotor(void)
@@ -93,9 +97,10 @@ C_servoMotor::~C_servoMotor(void)
 
 
 /****************************************************************************
-@function		SET_dutyCycleIntervals
-@brief			
-				Servo motors have their position regulated by pulses of different width.
+@function	SET_dutyCycleIntervals
+@class		C_servoMotor
+@brief		
+			Servo motors have their position regulated by pulses of different width.
 @param[in]		
 ***************/
 /*

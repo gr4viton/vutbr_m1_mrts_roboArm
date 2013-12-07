@@ -3,7 +3,7 @@
 @filename C_roboticManipulator.h
 @author   xdavid10, xslizj00 @ FEEC-VUTBR 
 @date     2013_12_02
-@brief    file containing C_roboticManipulator & C_spatialConfiguration class definitions  
+@brief    file containing C_roboticManipulator class definition 
 			= member functions and member variables declarations
 ***************/
 
@@ -13,37 +13,9 @@
 #include "roboArm.h"
 //#include <rtapi.h> // LNK2019 problem? nope
 
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-/****************************************************************************
-@class		C_spatialConfiguration
-@brief      
-@param[in]  
-@param[out] 
-@return     
-***********/
-class C_spatialConfiguration{
-//____________________________________________________
-// member variables
-public:
-	LARGE_INTEGER phaseInterval;
-	LARGE_INTEGER servIntervalZero[SUM_SERVOMOTORS]; // intervalZeros for each servo in this phase
-	bool servIntervalZeroChanged[SUM_SERVOMOTORS]; // if it was changed after constructor = true
-//____________________________________________________
-// declaration of external defined member functions 
-public:	C_spatialConfiguration(void);
-public:	C_spatialConfiguration(LARGE_INTEGER* a_phaseInterval, LARGE_INTEGER* a_servIntervalZero);
-public: ~C_spatialConfiguration(void);
-public: void SET_servIntervalZero(int a_i_serv, LARGE_INTEGER *a_servIntervalZero);
-};
-
-
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 /****************************************************************************
 @class		C_roboticManipulator
 @brief      
-@param[in]  
-@param[out] 
-@return     
 ***************/
 class C_roboticManipulator{
 //____________________________________________________
@@ -62,7 +34,9 @@ public:
 public:		int IS_in_bounds(int servo_i);	
 public:		C_roboticManipulator(int &roboticManipulator_error);
 //public:		int SET_dutyCycleIntervals(int servo_i, LARGE_INTEGER a_interval_one, LARGE_INTEGER a_intervalZero);
+
 public:		int GET_servoMotor(int a_servo_i, C_servoMotor** servoMotor);
+//public:		int GET_servoMotor(int a_servo_i, C_servoMotor* servoMotor);
 			
 public:		void WRITE_portUchar(PUCHAR a_port_address, UCHAR a_port_data);
 public:		void RESET_DOport();

@@ -136,11 +136,13 @@ extern char* G_controlString;			//roboArm.cpp
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // class declarations
 class C_servoMotor;
+class C_spatialConfiguration;
 class C_roboticManipulator;
 
 // classes headerfiles (for proper linking)
 #include "C_servoMotor.h"
 #include "C_roboticManipulator.h"
+#include "C_spatialConfiguration.h"
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // function declarations of roboArm.cpp
