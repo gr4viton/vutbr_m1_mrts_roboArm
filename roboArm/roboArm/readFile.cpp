@@ -63,14 +63,14 @@ int READ_file(char* a_filePath){
 	RtPrintf("Try to SetFilePointer to FILE_END:\n");
 #endif
 	error_sum = MOVE_pointerOrReturn(hFile, 0, &file_end_byte, FILE_END);
-	if(error_sum != FLAWLESS_EXECUTION)	return(error_sum);
+	if(error_sum != FLAWLESS_EXECUTION)	return(CLOSE_handleAndReturn(hFile, error_sum));
 	
 	DWORD file_begin_byte = 0;
 #ifdef DEBUG_PRINT_READ_FUNCTIONS
 	RtPrintf("Try to SetFilePointer to FILE_BEGIN:\n");
 #endif
 	error_sum = MOVE_pointerOrReturn(hFile, 0, &file_begin_byte, FILE_BEGIN);
-	if(error_sum != FLAWLESS_EXECUTION)	return(error_sum);
+	if(error_sum != FLAWLESS_EXECUTION)	return(CLOSE_handleAndReturn(hFile, error_sum));
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// ReadFile
@@ -81,10 +81,17 @@ int READ_file(char* a_filePath){
 
 	//DWORD bytes2get = FILE_MAX_CHARS;
 	DWORD bytes2get = file_end_byte;
-	Gstr = new char[file_end_byte+1];
+	try	{
+		Gstr = new char[file_end_byte+1];
+	}
+	catch (std::exception & e) {
+		printf("Allocation of char array in READ_file failed with exception:\n%s\n", e.what());
+		return(CLOSE_handleAndReturn(hFile, ERROR_BAD_DYNAMIC_ALLOCATION));
+	}
+
 #ifdef DEBUG_PRINT_READ_FUNCTIONS
 //	RtPrintf("Try to READ_chunk [%lu bytes] from file.\n",bytes2get);
-	RtPrintf("Try to ReadFile. Read whole file: [%s], [%lu bytes]\n", a_filePath, bytes2get);
+	RtPrintf("Try to ReadFile. Read whole file [%lu bytes] from [%s], \n", a_filePath, bytes2get);
 #endif
 	DWORD bytes_got;
 	// BOOL ReadFile(HANDLE hFile, LPVOID lpBuffer, DWORD nbytes2get, LPDWORD lpbytes_got, LPOVERLAPPED lpOverlapped);
@@ -144,7 +151,8 @@ int CLOSE_handleAndReturn(HANDLE handle, int error_sum)
 /****************************************************************************
 @function   MOVE_pointer
 @brief      function moves the pointer in handled file 
-			to distance relative to current position
+			to distance relative to current position/ absolute to start 
+			as defined by [MoveMethod]
 @param[in]  
 @param[out] 
 @return     error_sum

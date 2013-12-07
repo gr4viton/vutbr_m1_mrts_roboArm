@@ -9,6 +9,17 @@
 #ifndef C_RETURNCODEDEFINES_H
 #define C_RETURNCODEDEFINES_H
 
+// divide into three sections
+
+// function error code
+// FERROR_
+
+// thread error code
+// TERROR_
+
+// process error code
+// PERROR_
+
 // ____________________________________________________
 // roboticManipulator_error
 #define FLAWLESS_EXECUTION						0
@@ -40,6 +51,7 @@
 
 #define ERROR_ANGLE_OUT_OF_BOUNDS					99255
 #define ERROR_CONTROLFILE_PATH_NOT_SPECIFIED			99256
+#define ERROR_BAD_DYNAMIC_ALLOCATION					99257
 
 //____________________________________________________
 #define EXITCODE_SUCCESSFUL_END					0

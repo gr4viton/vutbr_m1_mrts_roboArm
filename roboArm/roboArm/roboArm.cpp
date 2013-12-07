@@ -101,7 +101,7 @@ void _cdecl main(int  argc, char **argv)
 	}	
 	//____________________________________________________
 	// init classes for the manipulator
-	printf("> Try to initialize robotic manipulator\m");
+	printf("> Try to initialize robotic manipulator\n");
 	C_roboticManipulator ROB(error_sum);
 	if(error_sum != FLAWLESS_EXECUTION)
 	{
@@ -216,7 +216,7 @@ void _cdecl main(int  argc, char **argv)
 	//  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// only debugging
-
+#ifndef DEBUGGING_WITHOUT_HW
 	LARGE_INTEGER interval_one; 
 	LARGE_INTEGER interval_zero; 
 	LARGE_INTEGER interval_wait; 
@@ -263,7 +263,7 @@ void _cdecl main(int  argc, char **argv)
 			);
 		RtSleep(100);
 	}
-
+#endif
 	//____________________________________________________
 	// everything should be unallocated and closed
     EXIT_process(FLAWLESS_EXECUTION);
