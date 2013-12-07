@@ -1,22 +1,58 @@
 /***************
-@project  roboArm
-@filename C_roboticManipulator.cpp
-@author   xdavid10, xslizj00 @ FEEC-VUTBR 
-@date     2013_12_02
-@brief    file containing member function definitions of class C_roboticManipulator
+@project		roboArm
+@filename	C_roboticManipulator.cpp
+@author		xdavid10, xslizj00 @ FEEC-VUTBR 
+@date		2013_12_02
+@brief		file containing member function definitions 
+			of classes C_roboticManipulator & C_spatialConfiguration
 ***************/
 
 #include "roboArm.h"
 //#include "C_roboticManipulator.h"
-//const int C_roboticManipulator::max_servo_i = SUM_SERVOMOTORS-1;
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+// C_roboticManipulator - member function definitions
 
 /****************************************************************************
-@function	C_roboticManipulator
-@brief		constructor
-@param[in]
-@param[out]
-@return
-***************/
+@function   CONVERT_angle2int_zero
+@brief      converts the value of angle of bounds [angle_min, angle_max]
+			into bounds of servo [a_serv] intervals [min_val, max_val]
+				can be rewriten to be faster with external pre-counted variables
+@param[in]  
+@param[out] 
+@return     error_sum
+************/
+int C_roboticManipulator::CONVERT_angle2int_zero(int a_angle, C_servoMotor* a_serv, LARGE_INTEGER* a_interval_zero){
+	float relative = 0 ; // from f0.0 to f1.0
+	relative = (a_angle - angle_min)/((float)(angle_max - angle_min));
+	if(relative>1)
+	{
+#ifdef CUT_OFF_OUT_OF_BOUNDS_IN_FILE //IF NOT DEFINED
+		relative = 1; 
+#else
+		return(ERROR_ANGLE_OUT_OF_BOUNDS);
+#endif
+	}
+	else if(relative <0)
+	{
+#ifdef CUT_OFF_OUT_OF_BOUNDS_IN_FILE //IF NOT DEFINED
+		relative = 0; 
+#else
+		return(ERROR_ANGLE_OUT_OF_BOUNDS);
+#endif
+	}
+	a_interval_zero->QuadPart = (DWORD)(relative*(a_serv->max_val - a_serv->min_val) + a_serv->min_val);
+	return(FLAWLESS_EXECUTION);
+}
+
+
+/****************************************************************************
+@function   C_roboticManipulator
+@brief      constructor
+@param[in]  
+@param[out] 
+@return     
+************/
 C_roboticManipulator::C_roboticManipulator(int &roboticManipulator_error)
 {
 	roboticManipulator_error = FLAWLESS_EXECUTION;
@@ -26,6 +62,9 @@ C_roboticManipulator::C_roboticManipulator(int &roboticManipulator_error)
 	
 	//PWM_period.QuadPart = NS100_1S / 100; // 1/100 s = 100 Hz
 	PWM_period.QuadPart = NS100_1S / 1; // 1/1 s = 1 Hz
+	
+	angle_min = 0;
+	angle_max = 1800;
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//set constants for individual servos
@@ -184,4 +223,34 @@ void C_roboticManipulator::SET_DOportBitUchar(UCHAR a_port_bit)
 	{
 		WRITE_portUchar(DOport_ByteAddress, DOport_lastValue || 1<<a_port_bit);
 	}
+}
+
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+// C_spatialConfiguration - member function definitions
+
+/****************************************************************************
+@function   C_spatialConfiguration
+@brief      constructor - input parameters values => member variables
+@param[in]  
+@param[out] 
+@return     
+************/
+C_spatialConfiguration::C_spatialConfiguration(LARGE_INTEGER* a_phase_interval, LARGE_INTEGER* a_serv_interval_zero){
+	phase_interval.QuadPart = a_phase_interval->QuadPart;
+	for(int i=0; i<SUM_SERVOMOTORS; i++)
+	{
+		serv_interval_zero[i].QuadPart = a_serv_interval_zero[i].QuadPart;
+	}
+}
+
+/****************************************************************************
+@function   ~C_spatialConfiguration
+@brief      destructor
+@param[in]  
+@param[out] 
+@return     
+************/
+C_spatialConfiguration::~C_spatialConfiguration(void){
+	//nope delete[] serv_interval_zero;
 }

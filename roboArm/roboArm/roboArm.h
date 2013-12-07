@@ -48,12 +48,14 @@
 #define DEBUGGING_WITHOUT_HW
 #define DEBUG_PRINT_READ_FUNCTIONS
 
+// if angle in file is out of bounds do not exit but convert it to limit instead and continue
+#define CUT_OFF_OUT_OF_BOUNDS_IN_FILE 
 
 //____________________________________________________
 // file path
 //#define CONTROL_FILE_PATH L"D:\\EDUC\\m1\\R_MRTS\\proj_robo_ruka\\GIT\\roboArm\\control.txt"
-#define CONTROL_FILE_PATH L"D:\\EDUC\\m1\\R_MRTS\\proj_robo_ruka\\GIT\\roboArm\\control.txt"
-
+#define CONTROL_FILE_PATH		L"D:\\EDUC\\m1\\R_MRTS\\proj_robo_ruka\\GIT\\roboArm\\control.txt"
+#define FILE_MAX_CHARS			100000
 
 //____________________________________________________
 // reading control
@@ -148,7 +150,7 @@ typedef enum {S1=2, S2=3, S3=4, S5=6, S4=5, S6=7}E_servos;
 // external variables & classes
 extern DWORD baseAddress;
 extern HMODULE hLibModule;
-extern char str[CHUNK_LINES*CHARS_PER_LINE+CZERO]; 
+extern char str[]; 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // class declarations

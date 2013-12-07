@@ -18,7 +18,7 @@
 
 DWORD baseAddress = 0;
 HMODULE hLibModule = NULL;
-char str[CHUNK_LINES*CHARS_PER_LINE+CZERO] = ""; 
+char str[FILE_MAX_CHARS+CZERO] = ""; 
 
 
 /****************************************************************************
@@ -42,12 +42,12 @@ DWORD MEAN_adc(UCHAR channel, UCHAR gain, int c)
 }
 
 /****************************************************************************
-@function	CLOSE_handleAndExitThread
-@brief		
-@param[in]	
-@param[out]	
-@return		
-***************/
+@function   CLOSE_handleAndExitThread
+@brief      
+@param[in]  
+@param[out] 
+@return     
+************/
 int CLOSE_handleAndReturn(HANDLE handle, int error_sum)
 {
 #ifdef DEBUG
