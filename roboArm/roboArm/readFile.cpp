@@ -23,7 +23,7 @@ int	READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_fil
 	error_sum = READ_file(a_filePath);
 	if(error_sum != FLAWLESS_EXECUTION)
 	{
-		delete[] Gstr;
+		delete[] G_controlString;
 		printf("READ_file failed with error_sum %i\n", error_sum);
 		return(error_sum);
 	}
@@ -32,12 +32,12 @@ int	READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_fil
 	error_sum = PARSE_controlString(&(*a_manip));
 	if(error_sum != FLAWLESS_EXECUTION)
 	{
-		delete[] Gstr;
+		delete[] G_controlString;
 		printf("READ_file failed with error_sum %i\n", error_sum);
 		return(error_sum);
 	}
 	// AFTER creation of new prvek in array of C_spatialConf you must copy non-changed angles from previous phase
-	delete[] Gstr;
+	delete[] G_controlString;
 	//return(a_ROB->CONVERT_angle2int_zero(i);
 	return(FLAWLESS_EXECUTION);
 }
@@ -52,6 +52,131 @@ int	READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_fil
 ************/
 int	PARSE_controlString(C_roboticManipulator* a_manip){
 	C_roboticManipulator* ROB = (C_roboticManipulator*)a_manip;
+	
+	std::string controlString = std::string(G_controlString);
+	std::string delimiter = ";";
+	size_t pos = 0; // position of a char in string
+	std::string token = "";
+
+	//first phase
+	ROB->phases.push_back(C_spatialConfiguration());
+	int i_serv = 0;
+	int int_value = 0;
+	int int_from_char = 0;
+	LARGE_INTEGER LI_value ; LI_value.QuadPart = 0;
+	std::size_t found_position = 0; // index of found control chars
+	char control_chars_string[] = "W=>";
+	char found_control_char = '\0';
+	
+
+	while ((pos = controlString.find(delimiter)) != std::string::npos) 
+	{
+		int error_sum = FLAWLESS_EXECUTION;
+		token = controlString.substr(0, pos);
+		//____________________________________________________
+		// Wtime
+		found_control_char = '\0';
+		// search for individual control_chars in token string
+		for(int i=0; control_chars_string[i]!='\0'; i++)
+		{
+			found_position = token.find_first_of(control_chars_string[i]);
+			if(found_position != std::string::npos) 
+			{ // found some control_char in token string
+				found_control_char = control_chars_string[i];
+				break;
+			}
+			else
+			{ // did not find control_chars_string[i] in token string
+				if(control_chars_string[i+1]=='\0')
+				{ // did not found any control char -> bad or void line
+					error_sum = ERROR_INCONSISTENT_FILE_LINE;
+				}
+			}
+		}
+
+		if(error_sum == ERROR_INCONSISTENT_FILE_LINE){
+#ifndef IGNORE_INCONSISTENT_FILE_LINE //if NOT defined
+			return(ERROR_INCONSISTENT_FILE_LINE);
+#endif
+			//ifdef -> continue with next token
+			continue;
+		}
+
+		switch(found_control_char){
+		//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		case('W'): // phase waiting time = end of this phase -> create another one
+			
+			//ROB->phases.back().phaseInterval = 
+			ROB->phases.push_back(C_spatialConfiguration());
+			break;
+		//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		case('='): // i_serv=angle
+			i_serv = char2num( token[found_position-1] );			
+			if(i_serv == ERROR_IS_NOT_NUMBER)
+			{ // i_serv is not a number
+				printf("Parsed servo index is not a number in string \"%s\"\n",token.c_str());
+#ifndef IGNORE_NOT_NUMBER_ANGLE_IN_CONTROL_FILE //if NOT defined
+				return(ERROR_IS_NOT_NUMBER);
+#endif		
+				printf("Continuing with next servo, because IGNORE_NOT_NUMBER_ANGLE_IN_CONTROL_FILE is defined\n");
+			}
+			else
+			{ // i_serv is a number
+				error_sum = ROB->IS_in_bounds(i_serv);
+				if( error_sum == FLAWLESS_EXECUTION)
+				{ // i_serv is in bounds
+					
+					// token = (string) angle
+					//token = std::string(token.substr(found_position+1));
+					std::string str_angle = token.substr(found_position+1);
+					//token.append('\0');
+					bool done = false;
+					int_value = 0;
+					//____________________________________________________
+					// parse angle string into int
+					std::size_t i = 0;
+					std::size_t str_angle_size = str_angle.size();
+					if(str_angle.length()!=0)
+					{
+						while(!done){
+							int_from_char = char2num( str_angle[i] );
+							if(int_from_char == ERROR_IS_NOT_NUMBER) 
+							{
+								done = true;
+								printf("One of digits from angle [%s] is not a number!\n",token.c_str());
+								return(ERROR_IS_NOT_NUMBER);
+							}
+							int_value*=10;
+							int_value+=int_from_char;
+							i++;
+							if(i >= str_angle_size) done = true;
+						}
+					//____________________________________________________
+					// int_value = (int) angle
+					ROB->CONVERT_angle2int_zero(int_value, i_serv, &LI_value);
+					ROB->phases.back().SET_servIntervalZero(i_serv,	&LI_value);
+					}
+					else
+					{ // token is empty
+						return(error_sum);
+					}
+				}
+				else
+				{ //i_serv is out of bounds 
+					return(error_sum);
+				}
+			}
+		}
+		// wrap
+		
+		//std::cout << token << std::endl;
+		printf("token = \"%s\"\n", token.c_str());
+		controlString.erase(0, pos + delimiter.length());
+	}
+	// last
+  //  std::cout << controlString << std::endl;
+	printf("%s\n",controlString.c_str());
+
 	ROB->RESET_DOport();
 	ROB = NULL;
 	return(FLAWLESS_EXECUTION);
@@ -114,7 +239,7 @@ int READ_file(char* a_filePath){
 	//DWORD bytes2get = FILE_MAX_CHARS;
 	DWORD bytes2get = file_end_byte;
 	try	{
-		Gstr = new char[file_end_byte+1];
+		G_controlString = new char[file_end_byte+1];
 	}
 	catch (std::exception & e) {
 		printf("Allocation of char array in READ_file failed with exception:\n%s\n", e.what());
@@ -127,7 +252,7 @@ int READ_file(char* a_filePath){
 #endif
 	DWORD bytes_got;
 	// BOOL ReadFile(HANDLE hFile, LPVOID lpBuffer, DWORD nbytes2get, LPDWORD lpbytes_got, LPOVERLAPPED lpOverlapped);
-	if (	 FALSE == ReadFile( hFile, (LPVOID) (Gstr), bytes2get, &bytes_got, NULL) ) 
+	if (	 FALSE == ReadFile( hFile, (LPVOID) (G_controlString), bytes2get, &bytes_got, NULL) ) 
 	{ // Failed to ReadFile
 		RtPrintf("ERROR:\tFunction ReadFile failed with 0x%04x - returned FALSE\n", GetLastError());
 		return(CLOSE_handleAndReturn(hFile, ERROR_READFILE_FAIL));
@@ -141,8 +266,8 @@ int READ_file(char* a_filePath){
 #ifdef DEBUG_PRINT_READ_FUNCTIONS
 	RtPrintf("bytes_got = %lu\n", bytes_got);	
 #endif
-	Gstr[bytes_got+1] = 0;
-	printf("[FILE_START]\n%s\n[FILE_END]",Gstr);
+	G_controlString[bytes_got] = '\0';
+	printf("[FILE_START]\n%s\n[FILE_END]",G_controlString);
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// CloseHandle
@@ -204,4 +329,19 @@ int MOVE_pointerOrReturn(HANDLE hFile, LONG distance2move, DWORD* file_current_b
 	RtPrintf("file_current_byte = %lu\n",*file_current_byte);
 #endif
 	return(FLAWLESS_EXECUTION);
+}
+
+/****************************************************************************
+@function   char2num
+@brief      
+@param[in]  
+@param[out] 
+@return     
+************/
+int char2num(char ch){
+	int digit = (int)ch - (int)('0');
+	if(digit<0 || digit>9)
+		return(ERROR_IS_NOT_NUMBER);
+	else
+		return(digit);
 }

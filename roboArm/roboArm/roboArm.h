@@ -30,15 +30,19 @@
 //#endif // UNDER_RTSS
 
 // std
-#include <iostream>
+//#include <iostream>
 #include <stdio.h>
-#include <string.h>
-#include <ctype.h>
+//#include <string.h>
+#include <string>
+//#include <iostream>
+//#include <ctype.h>
 #include <exception> // for [new] allocation
 //#include <conio.h>
 //#include <stdlib.h>
 //#include <math.h>
 //#include <errno.h>
+
+#include <list> // for ROB->phase-list
 
 // return codes
 #include "returnCodeDefines.h"
@@ -50,7 +54,9 @@
 #define DEBUG_PRINT_READ_FUNCTIONS
 
 // if angle in file is out of bounds do not exit but convert it to limit instead and continue
-#define CUT_OFF_OUT_OF_BOUNDS_IN_FILE 
+#define CUT_OFF_OUT_OF_BOUNDS_ANGLE_IN_CONTROL_FILE 
+#define IGNORE_NOT_NUMBER_ANGLE_IN_CONTROL_FILE
+#define IGNORE_INCONSISTENT_FILE_LINE
 
 #define CLOCK_X				CLOCK_1
 //____________________________________________________
@@ -124,17 +130,19 @@ typedef enum {S1=2, S2=3, S3=4, S5=6, S4=5, S6=7}E_servos;
 // external variables & classes
 extern DWORD baseAddress;	//roboArm.cpp
 extern HMODULE hLibModule;	//roboArm.cpp
-extern char* Gstr;			//roboArm.cpp
+extern char* G_controlString;			//roboArm.cpp
 //extern char str[]; 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // class declarations
 class C_servoMotor;
+class C_spatialConfiguration;
 class C_roboticManipulator;
 
 // classes headerfiles (for proper linking)
 #include "C_servoMotor.h"
 #include "C_roboticManipulator.h"
+#include "C_spatialConfiguration.h"
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // function declarations of roboArm.cpp
@@ -152,9 +160,11 @@ void		INIT_ADC();
 // readFile.cpp
 int		READ_spatialConfigurationFromFile(C_roboticManipulator* a_ROB, char* a_filePath);
 int		READ_file(char* a_filePath);
+int		PARSE_controlString(C_roboticManipulator* a_manip);
 int		MOVE_pointerOrReturn(HANDLE hFile, LONG distance2move, DWORD* file_current_byte, DWORD MoveMethod);
 int		CLOSE_handleAndReturn(HANDLE handle, int error_sum);
 int		PARSE_controlString(void);
+int		char2num(char ch);
 
 // threadFunctions.cpp
 void		RTFCNDCL TIM_PWMfunction(void *a_manip);

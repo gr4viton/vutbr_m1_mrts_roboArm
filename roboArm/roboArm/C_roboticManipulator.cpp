@@ -1,33 +1,32 @@
-/***************
+/***********
 @project		roboArm
 @filename	C_roboticManipulator.cpp
 @author		xdavid10, xslizj00 @ FEEC-VUTBR 
 @date		2013_12_02
 @brief		file containing member function definitions 
-			of classes C_roboticManipulator & C_spatialConfiguration
-***************/
+			of classes C_roboticManipulator 
+***********/
 
 #include "roboArm.h"
 //#include "C_roboticManipulator.h"
 
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-// C_roboticManipulator - member function definitions
-
 /****************************************************************************
 @function   CONVERT_angle2int_zero
+@class		C_roboticManipulator
 @brief      converts the value of angle of bounds [angle_min, angle_max]
 			into bounds of servo [a_serv] intervals [min_val, max_val]
 				can be rewriten to be faster with external pre-counted variables
 @param[in]  
-@param[out] 
+@param[out] (LARGE_INTEGER*) a_intervalZero
 @return     error_sum
 ************/
-int C_roboticManipulator::CONVERT_angle2int_zero(int a_angle, C_servoMotor* a_serv, LARGE_INTEGER* a_interval_zero){
+int C_roboticManipulator::CONVERT_angle2int_zero(int a_angle, int a_i_serv, LARGE_INTEGER* a_intervalZero)
+{
 	float relative = 0 ; // from f0.0 to f1.0
 	relative = (a_angle - angle_min)/((float)(angle_max - angle_min));
 	if(relative>1)
 	{
-#ifdef CUT_OFF_OUT_OF_BOUNDS_IN_FILE //IF NOT DEFINED
+#ifdef CUT_OFF_OUT_OF_BOUNDS_ANGLE_IN_CONTROL_FILE //IF NOT DEFINED
 		relative = 1; 
 #else
 		return(ERROR_ANGLE_OUT_OF_BOUNDS);
@@ -35,19 +34,21 @@ int C_roboticManipulator::CONVERT_angle2int_zero(int a_angle, C_servoMotor* a_se
 	}
 	else if(relative <0)
 	{
-#ifdef CUT_OFF_OUT_OF_BOUNDS_IN_FILE //IF NOT DEFINED
+#ifdef CUT_OFF_OUT_OF_BOUNDS_ANGLE_IN_CONTROL_FILE //IF NOT DEFINED
 		relative = 0; 
 #else
 		return(ERROR_ANGLE_OUT_OF_BOUNDS);
 #endif
 	}
-	a_interval_zero->QuadPart = (DWORD)(relative*(a_serv->max_val - a_serv->min_val) + a_serv->min_val);
+	a_intervalZero->QuadPart = (DWORD)( 
+		serv[a_i_serv].min_val + relative * (serv[a_i_serv].max_val - serv[a_i_serv].min_val)
+		);
 	return(FLAWLESS_EXECUTION);
 }
 
-
 /****************************************************************************
 @function   C_roboticManipulator
+@class		C_roboticManipulator
 @brief      constructor
 @param[in]  
 @param[out] 
@@ -130,49 +131,40 @@ C_roboticManipulator::C_roboticManipulator(int &roboticManipulator_error)
 
 /****************************************************************************
 @function	IS_in_bounds
+@class		C_roboticManipulator
 @brief		in bounds of 0 to max_servo_i
 @param[in]
 @param[out]
 @return
 ***************/
-bool C_roboticManipulator::IS_in_bounds(int servo_i){
-	if(servo_i<0 || servo_i>=SUM_SERVOMOTORS) return(false);
-	else return(true);
+int C_roboticManipulator::IS_in_bounds(int servo_i){
+	if(servo_i<0 || servo_i>=SUM_SERVOMOTORS) return(ERR_SERVO_INDEX_OUT_OF_BOUNDS);
+	else return(FLAWLESS_EXECUTION);
 }
 
-/****************************************************************************
-@function	SET_dutyCycleIntervals
-@brief
-@param[in]
-@param[out]
-@return
-***************/
-int C_roboticManipulator::SET_dutyCycleIntervals(
-	int a_servo_i, 
-	LARGE_INTEGER a_interval_one, 
-	LARGE_INTEGER a_interval_zero)
-{
-	if(!IS_in_bounds(a_servo_i)) return(ERR_SERVO_INDEX_OUT_OF_BOUNDS);
-	serv[a_servo_i].SET_dutyCycleIntervals(a_interval_one,a_interval_zero);
-	return(FLAWLESS_EXECUTION);
-}
 
 /****************************************************************************
 @function	GET_servoMotor
+@class		C_roboticManipulator
 @brief
 @param[in]
 @param[out]
 @return
 ***************/
 int C_roboticManipulator::GET_servoMotor(int a_servo_i, C_servoMotor** servoMotor)
+//int C_roboticManipulator::GET_servoMotor(int a_servo_i, C_servoMotor* servoMotor)
 {
-	if(!IS_in_bounds(a_servo_i)) return(ERR_SERVO_INDEX_OUT_OF_BOUNDS);
-	else *servoMotor = &serv[a_servo_i];
-	return(FLAWLESS_EXECUTION);
+	int error_sum = IS_in_bounds(a_servo_i);
+	if(error_sum != FLAWLESS_EXECUTION) 
+		return(error_sum);
+	else 
+		*servoMotor = &serv[a_servo_i];
+	return(error_sum);
 }
 
 /****************************************************************************
 @function	SET_portUchar
+@class		C_roboticManipulator
 @brief		if DEBUGGING_WITHOUT_HW is set 
 			-> do not call RTX RtWritePortUchar function
 			-> rtPrintf byte instead
@@ -193,6 +185,7 @@ void C_roboticManipulator::WRITE_portUchar(PUCHAR a_port_address, UCHAR a_port_d
 
 /****************************************************************************
 @function	RESET_DOport
+@class		C_roboticManipulator
 @brief		Writes zeros into DO port
 @param[in]	
 @param[out]	
@@ -205,6 +198,7 @@ void C_roboticManipulator::RESET_DOport()
 
 /****************************************************************************
 @function	SET_bitUchar
+@class		C_roboticManipulator
 @brief		if DEBUGGING_WITHOUT_HW is set 
 			-> do not call RTX RtWritePortUchar function
 			-> rtPrintf byte instead
@@ -226,31 +220,22 @@ void C_roboticManipulator::SET_DOportBitUchar(UCHAR a_port_bit)
 }
 
 
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-// C_spatialConfiguration - member function definitions
 
 /****************************************************************************
-@function   C_spatialConfiguration
-@brief      constructor - input parameters values => member variables
-@param[in]  
-@param[out] 
-@return     
-************/
-C_spatialConfiguration::C_spatialConfiguration(LARGE_INTEGER* a_phase_interval, LARGE_INTEGER* a_serv_interval_zero){
-	phase_interval.QuadPart = a_phase_interval->QuadPart;
-	for(int i=0; i<SUM_SERVOMOTORS; i++)
-	{
-		serv_interval_zero[i].QuadPart = a_serv_interval_zero[i].QuadPart;
-	}
-}
-
-/****************************************************************************
-@function   ~C_spatialConfiguration
-@brief      destructor
-@param[in]  
-@param[out] 
-@return     
-************/
-C_spatialConfiguration::~C_spatialConfiguration(void){
-	//nope delete[] serv_interval_zero;
-}
+@function	SET_dutyCycleIntervals
+@class		C_roboticManipulator
+@brief
+@param[in]
+@param[out]
+@return
+***************/
+/*
+int C_roboticManipulator::SET_dutyCycleIntervals(
+	int a_servo_i, 
+	LARGE_INTEGER a_interval_one, 
+	LARGE_INTEGER a_intervalZero)
+{
+	if(!IS_in_bounds(a_servo_i)) return(ERR_SERVO_INDEX_OUT_OF_BOUNDS);
+	serv[a_servo_i].SET_dutyCycleIntervals(a_interval_one,a_intervalZero);
+	return(FLAWLESS_EXECUTION);
+}*/

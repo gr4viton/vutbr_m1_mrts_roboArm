@@ -18,7 +18,7 @@
 
 DWORD baseAddress = 0;
 HMODULE hLibModule = NULL;
-char* Gstr = NULL;
+char* G_controlString = NULL;
 //char str[FILE_MAX_CHARS+CZERO] = ""; 
 
 
@@ -218,11 +218,11 @@ void _cdecl main(int  argc, char **argv)
 	// only debugging
 #ifndef DEBUGGING_WITHOUT_HW
 	LARGE_INTEGER interval_one; 
-	LARGE_INTEGER interval_zero; 
+	LARGE_INTEGER intervalZero; 
 	LARGE_INTEGER interval_wait; 
 	
 	interval_one.QuadPart = 10000; // 1000us
-	interval_zero.QuadPart = 200000 - 10000; // 0.02s = 50Hz
+	intervalZero.QuadPart = 200000 - 10000; // 0.02s = 50Hz
 	interval_wait.QuadPart = 10000000; // 1s
 	
 	int i = 0;
@@ -232,25 +232,25 @@ void _cdecl main(int  argc, char **argv)
 	E_servos testedServo = S5;
 	int period = 200;	//Hz
 	interval_one.QuadPart = NS100_1US * 500;	// 500 us
-	interval_zero.QuadPart = NS100_1MS * 1000/period - interval_one.QuadPart; // 0.01s = 100Hz
+	intervalZero.QuadPart = NS100_1MS * 1000/period - interval_one.QuadPart; // 0.01s = 100Hz
 	interval_wait.QuadPart = NS100_1MS * 300; // 0.1s
 	for( i = 0 ; i < 200 ; i++)
 	{
 		RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 1<<testedServo);
 		RtSleepFt(&interval_one);
 		RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 0x00);
-		RtSleepFt(&interval_zero);
+		RtSleepFt(&intervalZero);
 	}
 
 	interval_one.QuadPart = NS100_1US * 2500;	// 2500 us
-	interval_zero.QuadPart = NS100_1MS * 1000/period - interval_one.QuadPart; // 0.01s = 100Hz
+	intervalZero.QuadPart = NS100_1MS * 1000/period - interval_one.QuadPart; // 0.01s = 100Hz
 	interval_wait.QuadPart = NS100_1MS * 300; // 0.1s
 	for( i = 0 ; i < 200 ; i++)
 	{
 		RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 1<<testedServo);
 		RtSleepFt(&interval_one);
 		RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 0x00);
-		RtSleepFt(&interval_zero);
+		RtSleepFt(&intervalZero);
 	}
 	int num = 5; // number_of_mean_values
 	// Reading Data 
