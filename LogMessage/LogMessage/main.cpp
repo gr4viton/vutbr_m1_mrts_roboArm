@@ -10,6 +10,10 @@ HANDLE hThread1;
 HANDLE hThread2;
 C_LogMessageA logMsg;	
 
+//  timer
+HANDLE	hTimerPWM;
+unsigned int timerCounter;
+
 ULONG RTFCNDCL ThreadHandler(void *nContext);
 ULONG RTFCNDCL ThreadHandler2(void *nContext);
 
@@ -101,7 +105,34 @@ void  _cdecl main(int  argc, char **argv, char **envp)
 	logMsg.PushMessage("Test message 1", SEVERITY_MAX - 1);
 	logMsg.PushMessage("Test message 2", SEVERITY_MAX - 1);
 	logMsg.PushMessage("Test message 3", SEVERITY_MAX - 1);
-	Sleep(50);
+
+
+	// Timer test
+	timerCounter = 0;
+	LARGE_INTEGER timerLastTime, minTmrPeriod, tmrPeriod;
+	timerLastTime.QuadPart = 0;
+	char strMessage[256];
+	hTimerPWM = RtCreateTimer(NULL, 0, OnTimerPWMTick, NULL, RT_PRIORITY_MAX, CLOCK_3);	// Create timer
+	if(hTimerPWM == NULL)
+	{
+		sprintf_s(strMessage, 256, "Error: Timer was not created.\r\n");
+		logMsg.PushMessage(strMessage, SEVERITY_MAX - 1);
+	}
+	if(!RtGetClockTimerPeriod(CLOCK_3, &minTmrPeriod))									// Get minimum timer period
+	{
+		sprintf_s(strMessage, 256, "Error: Timer period was not set.\r\n");
+		logMsg.PushMessage(strMessage, SEVERITY_MAX - 1);
+	}
+	tmrPeriod.QuadPart = minTmrPeriod.QuadPart * 10;				
+	printf("\nPeriod = %I64d\n", tmrPeriod.QuadPart);
+	RtSetTimerRelative(hTimerPWM, &tmrPeriod, &tmrPeriod);								// Set required (1ms) timer period
+
+	Sleep(1000);		// 1s
+
+	LARGE_INTEGER cancelCode;
+	RtCancelTimer(hTimerPWM, &cancelCode);												// Close timer
+	if(hTimerPWM != NULL)RtDeleteTimer(hTimerPWM);										// Delete timer
+
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	logMsg.LoggingStop();
@@ -175,4 +206,15 @@ ULONG RTFCNDCL ThreadHandler2(void *nContext)
 	logMsg.PushMessage("Test message 5", SEVERITY_MAX - 1);
 	logMsg.PushMessage("Test message 6", SEVERITY_MAX - 1);
 	ExitThread(0);
+}
+
+// TimerPWM handler
+void RTFCNDCL OnTimerPWMTick(PVOID context)
+{
+	timerCounter++;
+	if(timerCounter >= 100)
+	{
+		timerCounter = 0;
+		logMsg.PushMessage("Timer tick", SEVERITY_MAX - 1);
+	}
 }

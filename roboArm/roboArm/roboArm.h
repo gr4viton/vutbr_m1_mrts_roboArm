@@ -25,9 +25,9 @@
 // linker error
 // vs2008 - LNK2019 -> it means vs does not know the RT functions
 // - probably bad including header of declaration of RT functions
-#ifdef UNDER_RTSS
-	#include <rtssapi.h>
-#endif // UNDER_RTSS
+//#ifdef UNDER_RTSS
+//	#include <rtssapi.h>
+//#endif // UNDER_RTSS
 
 // std
 //#include <iostream>
