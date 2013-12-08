@@ -44,8 +44,11 @@
 
 #include <list> // for ROB->phase-list
 
+//____________________________________________________
+// this project headerfiles
 // return codes
 #include "returnCodeDefines.h"
+#include "LogMessageA.h"
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // setup defines and macros
@@ -139,7 +142,6 @@ class C_LogMessageA;
 #include "C_servoMotor.h"
 #include "C_roboticManipulator.h"
 #include "C_spatialConfiguration.h"
-#include "LogMessageA.h"
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // external variables & classes

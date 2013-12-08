@@ -1,17 +1,20 @@
-/***************
-@filename		LogMessage.h
+/***********
+@project  	roboArm
+@filename	LogMessageA.h
 @author 		xdavid10, xslizj00 @ FEEC-VUTBR 
-@contacts		Bc. Jiøí Sliž		<xslizj00@stud.feec.vutbr.cz>
-				Bc. Daniel Davídek	<danieldavidek@gmail.com>
-@date			2013_12_07
-@brief			Log message class
-@description	Class C_CircBuffer implements circular buffer and provides read/write operations.
-				Class C_LogMessageA uses C_CircBuffer and provides methods for asynchronous logging using mutex.
-***************/
+@contacts	Bc. Jiøí Sliž		<xslizj00@stud.feec.vutbr.cz>
+			Bc. Daniel Davídek	<danieldavidek@gmail.com>
+@date		2013_12_07
+@brief		Log message class
+@descrptn	Class C_CircBuffer implements circular buffer and provides read/write operations.
+			Class C_LogMessageA uses C_CircBuffer and provides methods for asynchronous logging using mutex.
+***********/
 #ifndef __LOGMESSAGEA__
 #define __LOGMESSAGEA__
 
-#include "main.h"
+//#include "main.h"
+#include "roboArm.h"
+
 #define LENGTH_OF_BUFF	512
 #define HMUTEX_SHARED_NAME TEXT("C_LogMessageA_hMutex.Name")
 
