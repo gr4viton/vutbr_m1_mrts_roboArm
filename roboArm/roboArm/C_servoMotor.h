@@ -17,7 +17,8 @@
 @class		C_servoMotor
 @brief      
 ***********/
-class C_servoMotor{
+class C_servoMotor
+{
 //____________________________________________________
 // member variables
 public:	

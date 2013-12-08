@@ -119,7 +119,11 @@ C_LogMessageA::~C_LogMessageA()
 
 unsigned int C_LogMessageA::PushMessage(char* in, int iSeverity)
 {
-	if(!bLogging)return 1;
+	if(!bLogging)
+	{
+		RtPrintf("(Logging stopped)\t%s\n",in);
+		return 1;
+	}
 	actSeverity = iSeverity;
 	while(!buf->IsEmpthy())Sleep(50);
 	RtWaitForSingleObject(hMutex,INFINITE); // wait to own hMutex

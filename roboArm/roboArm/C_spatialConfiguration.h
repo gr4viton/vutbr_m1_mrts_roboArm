@@ -16,7 +16,8 @@
 @class		C_spatialConfiguration
 @brief      
 ***********/
-class C_spatialConfiguration{
+class C_spatialConfiguration
+{
 //____________________________________________________
 // member variables
 public:

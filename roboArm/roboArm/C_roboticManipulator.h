@@ -17,7 +17,8 @@
 @class		C_roboticManipulator
 @brief      
 ***************/
-class C_roboticManipulator{
+class C_roboticManipulator
+{
 //____________________________________________________
 // member variables
 private:

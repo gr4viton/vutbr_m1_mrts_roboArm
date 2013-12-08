@@ -24,7 +24,7 @@
 
 //#define LOG_FILE "C:\\mrts\\xslizj00\\cv6\\LogMessage.txt"
 #define LOG_FILE "D:\\LogMessage.txt"
-#define LOG_SCREEN	// comment for hide logs on screen
+#define SHOW_LOG_ON_SCREEN	// comment for hide logs on screen
 
 
 /****************************************************************************
@@ -35,7 +35,7 @@ class C_CircBuffer
 {
 private:
 	char *buf;					// buffer array
-	unsigned int Start, End;	// actual start and end positions
+	unsigned int Start, End;		// actual start and end positions
 	unsigned int freeSpace;		// actual free space
 
 	char ReadOne();				// method for read one symbol
@@ -48,40 +48,35 @@ public:
 
 	unsigned int Write(char *in);
 	unsigned int Read(char* out);
-	bool IsEmpthy();
+	bool IsEmpty();
 };
 
 /****************************************************************************
 @class	C_LogMessageA
-@brief	class provides methods fo asynchronous logging using mutex
+@brief	class provides methods for asynchronous logging using mutex
 ***************/
 class C_LogMessageA
 {
+//____________________________________________________
+// member variables
 private:
-	// Mutex handle
-	HANDLE hMutex;
-	// File handle
-	HANDLE Hfile; 
+	HANDLE hMutex;		// Mutex handle
+	HANDLE Hfile;		// File handle
 	int actSeverity;
-	// Circular buffer
-	C_CircBuffer *buf;
-	// Flag indicating start/stop (true/false) of logging
-	bool bLogging;
-public:
+	C_CircBuffer *buf;	// Circular buffer
+	bool bLogging;		// Flag indicating start/stop (true/false) of logging
 
-	// Constructor
+public:
+//____________________________________________________
+// declaration of external defined member functions 
 	C_LogMessageA();
-	// Destructor
 	~C_LogMessageA();
 
 	unsigned int PushMessage(char* in, int iSeverity);
-
 	unsigned int WriteBuffToFile();
 
 	void LoggingStart(){bLogging = true;}
-
 	void LoggingStop(){bLogging = false;}
-
 	bool GetState(){return bLogging;}
 };
 
