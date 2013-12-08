@@ -16,6 +16,10 @@
 ***************/
 int INIT_All(){
 	int ret = 0;
+
+	// Init logMsg
+	logMsg = new C_LogMessageA();
+
 	// Load library
 	ret = INIT_Library();
 	if(ret){

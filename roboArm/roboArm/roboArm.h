@@ -126,24 +126,28 @@
 // defines connection of real physical position indexing (SX) to port address DO bit of each servoMotor
 typedef enum {S1=2, S2=3, S3=4, S5=6, S4=5, S6=7}E_servos;
 
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-// external variables & classes
-extern DWORD baseAddress;	//roboArm.cpp
-extern HMODULE hLibModule;	//roboArm.cpp
-extern char* G_controlString;			//roboArm.cpp
-//extern char str[]; 
+
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // class declarations
 class C_servoMotor;
 class C_spatialConfiguration;
 class C_roboticManipulator;
+class C_LogMessageA;
 
 // classes headerfiles (for proper linking)
 #include "C_servoMotor.h"
 #include "C_roboticManipulator.h"
 #include "C_spatialConfiguration.h"
+#include "LogMessageA.h"
 
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+// external variables & classes
+extern DWORD baseAddress;	//roboArm.cpp
+extern HMODULE hLibModule;	//roboArm.cpp
+extern char* G_controlString;			//roboArm.cpp
+//extern char str[]; 
+extern C_LogMessageA *logMsg;
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // function declarations of roboArm.cpp
 void _cdecl main(int  argc, char **argv);
@@ -169,6 +173,7 @@ int		READ_spatialConfigurationFromFile(C_roboticManipulator* a_ROB, char* a_file
 // threadFunctions.cpp
 HANDLE* CREATE_threads(void);
 	void		TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, int error_sum);
+	void RTFCNDCL LogMessageThread(void *a_manip);
 	void		RTFCNDCL TIM_PWMfunction(void *a_manip);
 		void		CLOSE_handleAndExitThread(HANDLE handle, int error_sum);
 

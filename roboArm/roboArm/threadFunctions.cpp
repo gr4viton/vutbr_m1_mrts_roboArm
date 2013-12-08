@@ -14,6 +14,25 @@ HANDLE* CREATE_threads(void)
 }
 
 /****************************************************************************
+@function		LOGGING
+@brief			Function function periodically call method
+				WriteBuffToFile in logMsg instance of C_LogMessageA. If the buffer
+				contains message and mutex is free, then it writes message to Log file.
+@param[in]		void *a_struct
+				- i will not be needed
+***************/
+void RTFCNDCL LogMessageThread(void *a_manip)
+{
+	while(logMsg->GetState())
+	{
+		logMsg->WriteBuffToFile();
+		Sleep(10);
+	}
+
+	ExitThread(0);
+}
+
+/****************************************************************************
 @function		PWM_dutyCycle
 @brief			Function of thread writing into the DO register 
 				in the main loop there are tic waitings

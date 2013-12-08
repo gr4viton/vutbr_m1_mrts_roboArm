@@ -20,8 +20,8 @@ DWORD baseAddress = 0;
 HMODULE hLibModule = NULL;
 char* G_controlString = NULL;
 //char str[FILE_MAX_CHARS+CZERO] = ""; 
-
-
+// Pointer of C_LogMessageA, used for all logging
+C_LogMessageA *logMsg;
 
 
 /****************************************************************************
@@ -115,7 +115,9 @@ void _cdecl main(int  argc, char **argv)
 	//____________________________________________________
 	// thread creation
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	const int iTh_max = 1; // number of threads = for now only one
+	// one thread added for logging
+	const int iTh_max = 1 + 1; // number of threads = for now only one
+	
 	HANDLE hTh[iTh_max]; // array of handles to the threads
 	//DWORD this_loop_ExitCode_sum = 0;
 
@@ -135,8 +137,20 @@ void _cdecl main(int  argc, char **argv)
 		//____________________________________________________
 		// RtCreateThread - handle creation 
 		RtPrintf("> Try to create multi thread %i.\n", iTh);
-		hTh[iTh] = RtCreateThread(NULL, 0, 
-			(LPTHREAD_START_ROUTINE) TIM_PWMfunction, (VOID*)&ROB, CREATE_SUSPENDED, &thread_id);
+
+		// First thread for logging
+		if(iTh == 0)
+		{
+			// Bebore log thread started, LoggingStart() must be called
+			logMsg->LoggingStart();
+			hTh[iTh] = RtCreateThread(NULL, 0, 
+				(LPTHREAD_START_ROUTINE) LogMessageThread, NULL, CREATE_SUSPENDED, &thread_id);
+		}
+		else
+		{
+			hTh[iTh] = RtCreateThread(NULL, 0, 
+				(LPTHREAD_START_ROUTINE) TIM_PWMfunction, (VOID*)&ROB, CREATE_SUSPENDED, &thread_id);
+		}
 		if(hTh[iTh] == NULL){
 			RtPrintf("ERROR:\tCannot create thread %i.\n",iTh);
 			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_CREATE_THREAD);
@@ -182,7 +196,10 @@ void _cdecl main(int  argc, char **argv)
 	int still_active_threads;
 	LARGE_INTEGER preemptive_interval; 
 	preemptive_interval.QuadPart = 100;
-	iTh = 0;
+	iTh = 1;
+
+	
+
 	do{
 		still_active_threads = 0;
 		//BOOL GetExitCodeThread(HANDLE hThread, LPDWORD lpExitCode);
@@ -201,6 +218,19 @@ void _cdecl main(int  argc, char **argv)
 		RtSleepFt(&preemptive_interval);
 	}while(still_active_threads);
 	
+	// End of logging -> ends thread hTh[0]
+	logMsg->LoggingStop();
+	// Wait to end of thread hTh[0]
+	do{
+		still_active_threads = 0;
+		if(GetExitCodeThread(hTh[0], (thExitCode[0]) ) == FALSE){
+			RtPrintf("Function of thread %i failed, returned FALSE with exit-code %lu\n", 0, *thExitCode);
+			break;
+		}
+		if( *thExitCode[0] == STILL_ACTIVE )still_active_threads=1;
+		RtSleepFt(&preemptive_interval);
+	}while(still_active_threads);
+
 	for(iTh = 0; iTh<iTh_max; iTh++){
 		RtPrintf("Thread %i terminated with exit code %lu\n", iTh, *thExitCode[iTh]);
 		//printf("Thread %i sum = %f\n", iTh, static_cast<double *>(thread_argument[iTh]));
