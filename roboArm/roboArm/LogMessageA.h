@@ -12,8 +12,13 @@
 #ifndef __LOGMESSAGEA__
 #define __LOGMESSAGEA__
 
-//#include "main.h"
-#include "roboArm.h"
+#ifdef LOGMSG_DEV
+	#include "main.h"
+#else
+	#include "roboArm.h"
+#endif
+
+#include "returnCodeDefines.h"
 
 #define LENGTH_OF_BUFF	512
 #define HMUTEX_SHARED_NAME TEXT("C_LogMessageA_hMutex.Name")
