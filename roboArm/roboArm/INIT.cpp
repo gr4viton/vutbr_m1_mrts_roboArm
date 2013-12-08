@@ -23,14 +23,17 @@ int INIT_All(){
 	// Load library
 	ret = INIT_Library();
 	if(ret){
-		printf("Cannot init library\n");	
+		//printf("Cannot init library\n");	
+		logMsg->PushMessage("Cannot init library", SEVERITY_MAX - 1);
 #ifndef DEBUGGING_WITHOUT_HW //if NOT defined
 		return(ERR_INIT_CANNOT_LOAD_LIBRARY);	
 #endif
-		printf("Continuing as DEBUGGING_WITHOUT_HW was defined!\n");
+		//printf("Continuing as DEBUGGING_WITHOUT_HW was defined!\n");
+		logMsg->PushMessage("Continuing as DEBUGGING_WITHOUT_HW was defined!", SEVERITY_MAX - 1);
 	}
 	else 
-		printf("Library was opened successfully :)\n");
+		//printf("Library was opened successfully :)\n");
+		logMsg->PushMessage("Library was opened successfully :)", SEVERITY_MAX - 1);
 	
 	//____________________________________________________
 	// Initialize ADC
@@ -69,6 +72,8 @@ void INIT_ADC()
 */
 int INIT_Library()
 {
+	// char array for printing messages
+	char textMsg[LENGTH_OF_BUFF];
 //typedef __nullterminated CONST CHAR *LPCSTR, *PCSTR;
 //typedef __nullterminated CONST WCHAR *LPCWSTR, *PCWSTR;
 	LPCSTR lpLibFileName = "dac_dll.rtdll";
@@ -93,7 +98,9 @@ int INIT_Library()
 	}
 	// Call function
 	baseAddress = (DWORD) functionPointer();
-	printf("base = %i = hex = %x \n", baseAddress, baseAddress);
+	//printf("base = %i = hex = %x \n", baseAddress, baseAddress);
+	printf_s(textMsg, LENGTH_OF_BUFF, "base = %i = hex = %x \n", baseAddress, baseAddress);
+	logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
 	// Free Library 
 	FreeLibrary(hLibModule);
 	return 0;
