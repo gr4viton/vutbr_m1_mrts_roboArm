@@ -11,7 +11,7 @@
 #ifndef __LOGMESSAGEA__
 #define __LOGMESSAGEA__
 
-#include "main.h"
+#include "roboArm.h"
 #define LENGTH_OF_BUFF	512
 #define HMUTEX_SHARED_NAME TEXT("C_LogMessageA_hMutex.Name")
 
@@ -21,7 +21,7 @@
 
 //#define LOG_FILE "C:\\mrts\\xslizj00\\cv6\\LogMessage.txt"
 #define LOG_FILE "D:\\LogMessage.txt"
-#define LOG_SCREEN
+#define LOG_SCREEN	// comment for hide logs on screen
 
 
 /****************************************************************************
@@ -31,12 +31,12 @@
 class C_CircBuffer
 {
 private:
-	char *buf;
-	unsigned int Start, End;
-	unsigned int freeSpace;
+	char *buf;					// buffer array
+	unsigned int Start, End;	// actual start and end positions
+	unsigned int freeSpace;		// actual free space
 
-	char ReadOne();
-	void WriteOne(char in);
+	char ReadOne();				// method for read one symbol
+	void WriteOne(char in);		// method for write one symbol
 public:
 	// Constructor
 	C_CircBuffer();
