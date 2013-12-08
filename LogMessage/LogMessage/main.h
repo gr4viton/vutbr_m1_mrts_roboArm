@@ -21,3 +21,4 @@
 
 
 //  Add Function prototypes Here
+void RTFCNDCL OnTimerPWMTick(PVOID context);
