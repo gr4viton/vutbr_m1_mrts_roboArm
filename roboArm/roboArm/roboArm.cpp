@@ -45,17 +45,12 @@ DWORD MEAN_adc(UCHAR channel, UCHAR gain, int c)
 }
 
 /****************************************************************************
-@function	CREATE_threads
-@brief		Create all needed threads and returns a handle to an array of them
+@function	EXIT_process
+@brief		exit process and log it
 @param[in]
 @param[out]
 @return
 ***************/
-HANDLE* CREATE_threads(void)
-{
-	return(FLAWLESS_EXECUTION);
-}
-
 void EXIT_process(int error_sum){
 	printf("Exiting process with error_sum %i\n",error_sum);
 	ExitProcess(error_sum);

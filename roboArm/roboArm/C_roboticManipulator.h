@@ -32,7 +32,7 @@ public:
 //____________________________________________________
 // declaration of external defined member functions 
 public:		int IS_in_bounds(int servo_i);	
-public:		C_roboticManipulator(int &roboticManipulator_error);
+public:		C_roboticManipulator(int &error_sum);
 //public:		int SET_dutyCycleIntervals(int servo_i, LARGE_INTEGER a_interval_one, LARGE_INTEGER a_intervalZero);
 
 public:		int GET_servoMotor(int a_servo_i, C_servoMotor** servoMotor);
@@ -41,7 +41,7 @@ public:		int GET_servoMotor(int a_servo_i, C_servoMotor** servoMotor);
 public:		void WRITE_portUchar(PUCHAR a_port_address, UCHAR a_port_data);
 public:		void RESET_DOport();
 public:		void SET_DOportBitUchar(UCHAR a_port_bit);
-public:		int CONVERT_angle2int_zero(int a_angle, int a_i_serv, LARGE_INTEGER* a_intervalZero);
+public:		int CONVERT_angle2intervalOne(int a_angle, int a_i_serv, LARGE_INTEGER* a_intervalZero);
 };
 
 #endif

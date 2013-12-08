@@ -147,31 +147,30 @@ class C_roboticManipulator;
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // function declarations of roboArm.cpp
 void _cdecl main(int  argc, char **argv);
-DWORD	GET_ADC(UCHAR channel, UCHAR gain);
-HANDLE* CREATE_threads(void);
+	DWORD	GET_ADC(UCHAR channel, UCHAR gain);
+	void EXIT_process(int error_sum);
 
 //____________________________________________________
 // function declarations of non-headered .cpp files
 // INIT.cpp
 int		INIT_All();
-int		INIT_Library();
-void		INIT_ADC();
+	int		INIT_Library();
+	void		INIT_ADC();
 
 // readFile.cpp
 int		READ_spatialConfigurationFromFile(C_roboticManipulator* a_ROB, char* a_filePath);
-int		READ_file(char* a_filePath);
-int		PARSE_controlString(C_roboticManipulator* a_manip);
-int		MOVE_pointerOrReturn(HANDLE hFile, LONG distance2move, DWORD* file_current_byte, DWORD MoveMethod);
-int		CLOSE_handleAndReturn(HANDLE handle, int error_sum);
-int		PARSE_controlString(void);
-int		char2num(char ch);
+	int		READ_file(char* a_filePath);
+		int		MOVE_pointerOrReturn(HANDLE hFile, LONG distance2move, DWORD* file_current_byte, DWORD MoveMethod);
+		int		CLOSE_handleAndReturn(HANDLE handle, int error_sum);
+	int		PARSE_controlString(C_roboticManipulator* a_manip);
+		int		PARSE_controlString(void);
+		int		char2num(char ch);
 
 // threadFunctions.cpp
-void		RTFCNDCL TIM_PWMfunction(void *a_manip);
-void		TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, int error_sum);
-void		CLOSE_handleAndExitThread(HANDLE handle, int error_sum);
-
-
+HANDLE* CREATE_threads(void);
+	void		TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, int error_sum);
+	void		RTFCNDCL TIM_PWMfunction(void *a_manip);
+		void		CLOSE_handleAndExitThread(HANDLE handle, int error_sum);
 
 #endif
 

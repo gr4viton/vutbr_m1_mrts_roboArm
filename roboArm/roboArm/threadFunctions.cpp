@@ -1,6 +1,17 @@
 #include "roboArm.h"
 
 
+/****************************************************************************
+@function	CREATE_threads
+@brief		Create all needed threads and returns a handle to an array of them
+@param[in]
+@param[out]
+@return
+***************/
+HANDLE* CREATE_threads(void)
+{
+	return(FLAWLESS_EXECUTION);
+}
 
 /****************************************************************************
 @function		PWM_dutyCycle

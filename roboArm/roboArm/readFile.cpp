@@ -38,7 +38,7 @@ int	READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_fil
 	}
 	// AFTER creation of new prvek in array of C_spatialConf you must copy non-changed angles from previous phase
 	delete[] G_controlString;
-	//return(a_ROB->CONVERT_angle2int_zero(i);
+	//return(a_ROB->CONVERT_angle2intervalOne(i);
 	return(FLAWLESS_EXECUTION);
 }
 
@@ -153,7 +153,7 @@ int	PARSE_controlString(C_roboticManipulator* a_manip){
 						}
 					//____________________________________________________
 					// int_value = (int) angle
-					ROB->CONVERT_angle2int_zero(int_value, i_serv, &LI_value);
+					ROB->CONVERT_angle2intervalOne(int_value, i_serv, &LI_value);
 					ROB->phases.back().SET_servIntervalZero(i_serv,	&LI_value);
 					}
 					else

@@ -11,16 +11,16 @@
 //#include "C_roboticManipulator.h"
 
 /****************************************************************************
-@function   CONVERT_angle2int_zero
+@function   CONVERT_angle2intervalOne
 @class		C_roboticManipulator
 @brief      converts the value of angle of bounds [angle_min, angle_max]
 			into bounds of servo [a_serv] intervals [min_val, max_val]
 				can be rewriten to be faster with external pre-counted variables
 @param[in]  
-@param[out] (LARGE_INTEGER*) a_intervalZero
+@param[out] (LARGE_INTEGER*) a_intervalOne
 @return     error_sum
 ************/
-int C_roboticManipulator::CONVERT_angle2int_zero(int a_angle, int a_i_serv, LARGE_INTEGER* a_intervalZero)
+int C_roboticManipulator::CONVERT_angle2intervalOne(int a_angle, int a_i_serv, LARGE_INTEGER* a_intervalOne)
 {
 	float relative = 0 ; // from f0.0 to f1.0
 	relative = (a_angle - angle_min)/((float)(angle_max - angle_min));
@@ -40,7 +40,7 @@ int C_roboticManipulator::CONVERT_angle2int_zero(int a_angle, int a_i_serv, LARG
 		return(ERROR_ANGLE_OUT_OF_BOUNDS);
 #endif
 	}
-	a_intervalZero->QuadPart = (DWORD)( 
+	a_intervalOne->QuadPart = (DWORD)( 
 		serv[a_i_serv].min_val + relative * (serv[a_i_serv].max_val - serv[a_i_serv].min_val)
 		);
 	return(FLAWLESS_EXECUTION);
@@ -54,9 +54,9 @@ int C_roboticManipulator::CONVERT_angle2int_zero(int a_angle, int a_i_serv, LARG
 @param[out] 
 @return     
 ************/
-C_roboticManipulator::C_roboticManipulator(int &roboticManipulator_error)
+C_roboticManipulator::C_roboticManipulator(int &error_sum)
 {
-	roboticManipulator_error = FLAWLESS_EXECUTION;
+	error_sum = FLAWLESS_EXECUTION;
 	
 	DOport_ByteAddress = (PUCHAR)(baseAddress + DO_High_Byte);
 	WRITE_portUchar(DOport_ByteAddress,0);
@@ -71,61 +71,59 @@ C_roboticManipulator::C_roboticManipulator(int &roboticManipulator_error)
 	//set constants for individual servos
 	int i=0;
 	int ret_i;
+	int min_intervalZero = 500;
+	int max_intervalZero = 2500;
+	LARGE_INTEGER val_intervalZero;
+	val_intervalZero.QuadPart = PWM_period.QuadPart; // for not writing the one at all on start
+
 	//____________________________________________________
 	// servo0
-	ret_i = serv[i].SET_constants( i, 0,
-		true, 1,255, 5 );
+	ret_i = serv[i].SET_constants( i, 0, true, min_intervalZero, max_intervalZero, 5 );
 	if(ret_i != i){ 
-		roboticManipulator_error = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
+		error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
 	} 
-	serv[i].SET_intervalZero(PWM_period);
+	serv[i].SET_intervalZero(val_intervalZero);
 	i++;
 	//____________________________________________________
 	// servo1
-	ret_i = serv[i].SET_constants( i, 1,
-		true, 1,255, 5 );
+	ret_i = serv[i].SET_constants( i, 1, true, 1,255, 5 );
 	if(ret_i != i){ 
-		roboticManipulator_error = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
+		error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
 	} 
-	serv[i].SET_intervalZero(PWM_period);
+	serv[i].SET_intervalZero(val_intervalZero);
 	i++;
 	//____________________________________________________
 	// servo2
-	ret_i = serv[i].SET_constants( i, 2,
-		true, 1,255, 5 );
+	ret_i = serv[i].SET_constants( i, 2, true, 1,255, 5 );
 	if(ret_i != i){ 
-		roboticManipulator_error = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
+		error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
 	} 
-	serv[i].SET_intervalZero(PWM_period);
+	serv[i].SET_intervalZero(val_intervalZero);
 	i++;
 	//____________________________________________________
 	// servo3
-	ret_i = serv[i].SET_constants( i, 3
-		);
+	ret_i = serv[i].SET_constants( i, 3 );
 	if(ret_i != i){ 
-		roboticManipulator_error = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
+		error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
 	} 
-	serv[i].SET_intervalZero(PWM_period);
+	serv[i].SET_intervalZero(val_intervalZero);
 	i++;
 	//____________________________________________________
 	// servo4
-	ret_i = serv[i].SET_constants( i, 4
-		);
+	ret_i = serv[i].SET_constants( i, 4 );
 	if(ret_i != i){ 
-		roboticManipulator_error = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
+		error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
 	} 
-	serv[i].SET_intervalZero(PWM_period);
+	serv[i].SET_intervalZero(val_intervalZero);
 	i++;
 	//____________________________________________________
 	// servo5
-	ret_i = serv[i].SET_constants( i, 5
-		);
+	ret_i = serv[i].SET_constants( i, 5 );
 	if(ret_i != i){ 
-		roboticManipulator_error = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
+		error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
 	} 
-	serv[i].SET_intervalZero(PWM_period);
+	serv[i].SET_intervalZero(val_intervalZero);
 	i++;
-	//for(int i=0;i<max_servo_i;i++){serv[i] = new C_servoMotor(..)		}
 	return;
 }
 

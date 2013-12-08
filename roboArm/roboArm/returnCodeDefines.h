@@ -21,7 +21,7 @@
 // PERROR_
 
 // ____________________________________________________
-// roboticManipulator_error
+// error_sum
 #define FLAWLESS_EXECUTION						0
 #define DESTRUCT_EVERYTHING						1
 #define ERR_SERVO_INDEX_OUT_OF_BOUNDS			2
