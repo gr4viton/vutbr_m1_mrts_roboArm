@@ -18,9 +18,11 @@
 // includes
 
 // win & RTX
-#include <SDKDDKVer.h>
+
+//#include <SDKDDKVer.h>
 #include <windows.h>
-#include <rtapi.h> // must be after windows.h
+#include <rtapi.h>
+//#include <rtapi.h> // must be after windows.h
 
 // linker error
 // vs2008 - LNK2019 -> it means vs does not know the RT functions
@@ -32,8 +34,7 @@
 // std
 //#include <iostream>
 #include <stdio.h>
-//#include <string.h>
-#include <string>
+
 //#include <iostream>
 //#include <ctype.h>
 #include <exception> // for [new] allocation
@@ -42,6 +43,8 @@
 //#include <math.h>
 //#include <errno.h>
 
+// problematic
+//#include <string>
 #include <list> // for ROB->phase-list
 
 //____________________________________________________
@@ -145,7 +148,7 @@ class C_LogMessageA;
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // external variables & classes
-extern DWORD baseAddress;	//roboArm.cpp
+extern unsigned int baseAddress;	//roboArm.cpp
 extern HMODULE hLibModule;	//roboArm.cpp
 extern char* G_controlString;			//roboArm.cpp
 //extern char str[]; 

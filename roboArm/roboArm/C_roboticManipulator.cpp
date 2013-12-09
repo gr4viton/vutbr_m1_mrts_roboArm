@@ -19,11 +19,20 @@
 @return     
 ************/
 void C_roboticManipulator::DEBUG_fillPhases(void){
-	
-	// phase 1
-	phases.push_back(C_spatialConfiguration());
-	std::list<C_spatialConfiguration>::iterator it=phases.begin();
-	//it->SET_servIntervalZero(
+	LARGE_INTEGER intervalZero;
+	intervalZero.QuadPart = 1750;
+	int i_serv = 0;
+	for(int i_phase = 0; i_phase < 5; i_phase++)
+	{ // phases
+		phases.push_back(C_spatialConfiguration());
+		std::list<C_spatialConfiguration>::iterator it=phases.begin();
+		for(i_serv = 3; i_serv<SUM_SERVOMOTORS; i_serv++)
+		{
+			it->SET_servIntervalZero(i_serv, &intervalZero);
+		}
+		intervalZero.QuadPart += 100;
+	}
+	//phases.end();
 		//it->
 	
 }

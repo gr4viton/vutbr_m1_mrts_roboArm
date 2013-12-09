@@ -30,6 +30,7 @@ private:
 	int angle_max;
 public:
 	std::list<C_spatialConfiguration> phases;
+
 //____________________________________________________
 // declaration of external defined member functions 
 public:		int IS_in_bounds(int servo_i);	

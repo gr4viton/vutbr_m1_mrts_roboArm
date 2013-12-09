@@ -17,6 +17,7 @@
 			on Error		= error_sum of ERRORS defined in returnCodeDefines.h
 ************/
 int	READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_filePath){
+	/*
 	// char array for printing messages
 	char textMsg[LENGTH_OF_BUFFER];
 	int error_sum = 0;
@@ -44,7 +45,7 @@ int	READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_fil
 	}
 	// AFTER creation of new prvek in array of C_spatialConf you must copy non-changed angles from previous phase
 	delete[] G_controlString;
-	//return(a_ROB->CONVERT_angle2intervalOne(i);
+	//return(a_ROB->CONVERT_angle2intervalOne(i);*/
 	return(FLAWLESS_EXECUTION);
 }
 
@@ -57,6 +58,7 @@ int	READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_fil
 @return     
 ************/
 int	PARSE_controlString(C_roboticManipulator* a_manip){
+	/*
 	// char array for printing messages
 	char textMsg[LENGTH_OF_BUFFER];
 
@@ -68,7 +70,7 @@ int	PARSE_controlString(C_roboticManipulator* a_manip){
 	std::string token = "";
 
 	//first phase
-	ROB->phases.push_back(C_spatialConfiguration());
+//	ROB->phases.push_back(C_spatialConfiguration());
 	int i_serv = 0;
 	int int_value = 0;
 	int int_from_char = 0;
@@ -116,7 +118,7 @@ int	PARSE_controlString(C_roboticManipulator* a_manip){
 		case('W'): // phase waiting time = end of this phase -> create another one
 			
 			//ROB->phases.back().phaseInterval = 
-			ROB->phases.push_back(C_spatialConfiguration());
+//			ROB->phases.push_back(C_spatialConfiguration());
 			break;
 		//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		case('='): // i_serv=angle
@@ -166,7 +168,7 @@ int	PARSE_controlString(C_roboticManipulator* a_manip){
 					//____________________________________________________
 					// int_value = (int) angle
 					ROB->CONVERT_angle2intervalOne(int_value, i_serv, &LI_value);
-					ROB->phases.back().SET_servIntervalZero(i_serv,	&LI_value);
+//					ROB->phases.back().SET_servIntervalZero(i_serv,	&LI_value);
 					}
 					else
 					{ // token is empty
@@ -195,6 +197,7 @@ int	PARSE_controlString(C_roboticManipulator* a_manip){
 
 	ROB->RESET_DOport();
 	ROB = NULL;
+	*/
 	return(FLAWLESS_EXECUTION);
 }
 

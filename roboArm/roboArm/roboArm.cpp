@@ -16,7 +16,7 @@
 //____________________________________________________ 
 // global Variables
 
-DWORD baseAddress = 0;
+unsigned int baseAddress = 0;
 HMODULE hLibModule = NULL;
 char* G_controlString = NULL;
 //char str[FILE_MAX_CHARS+CZERO] = ""; 
@@ -188,7 +188,7 @@ void _cdecl main(int  argc, char **argv)
 		if( RtResumeThread(hTh[iTh]) != 0xFFFFFFFF ){
 			printf_s(textMsg, LENGTH_OF_BUFFER, "Succesfully resumed thread %i.\n", iTh);
 			logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
-			if(iTh = 0)
+			if(iTh == 0)
 			{
 				logMsg->PushMessage("Logging started.", SEVERITY_MAX - 5);
 			}
