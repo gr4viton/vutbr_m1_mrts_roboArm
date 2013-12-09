@@ -144,7 +144,7 @@ void _cdecl main(int  argc, char **argv)
 		// First thread for logging
 		if(iTh == 0)
 		{
-			// Bebore log thread started, LoggingStart() must be called
+			// Before log thread started, LoggingStart() must be called
 			logMsg->LoggingStart();
 			hTh[iTh] = RtCreateThread(NULL, 0, 
 				(LPTHREAD_START_ROUTINE) LogMessageThread, NULL, CREATE_SUSPENDED, &thread_id);

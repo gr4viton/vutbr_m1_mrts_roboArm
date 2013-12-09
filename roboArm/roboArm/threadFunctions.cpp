@@ -18,8 +18,7 @@ HANDLE* CREATE_threads(void)
 @brief			Function function periodically call method
 				WriteBuffToFile in logMsg instance of C_LogMessageA. If the buffer
 				contains message and mutex is free, then it writes message to Log file.
-@param[in]		void *a_struct
-				- i will not be needed
+@param[in]		void *a_struct - not used
 ***************/
 void RTFCNDCL LogMessageThread(void *a_manip)
 {
