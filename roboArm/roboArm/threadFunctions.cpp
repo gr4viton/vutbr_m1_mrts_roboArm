@@ -47,7 +47,7 @@ void RTFCNDCL LogMessageThread(void *a_manip)
 void RTFCNDCL TIM_PWMfunction(void *a_manip)
 {
 	// char array for printing messages
-	char textMsg[LENGTH_OF_BUFF];
+	char textMsg[LENGTH_OF_BUFFER];
 	//____________________________________________________
 	// time measurement
 	LARGE_INTEGER tim1; tim1.QuadPart = 0;
@@ -87,10 +87,10 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 				serv = NULL;
 				ROB = NULL;
 				//printf("Could not get servoMotor[%i] pointer\n", i_serv);
-				printf_s(textMsg, LENGTH_OF_BUFF, "Could not get servoMotor[%i] pointer\n", i_serv);
+				printf_s(textMsg, LENGTH_OF_BUFFER, "Could not get servoMotor[%i] pointer\n", i_serv);
 				logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
 				//printf("Terminating thread with error_sum %i\n", error_sum);
-				printf_s(textMsg, LENGTH_OF_BUFF, "Terminating thread with error_sum %i\n", error_sum);
+				printf_s(textMsg, LENGTH_OF_BUFFER, "Terminating thread with error_sum %i\n", error_sum);
 				logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
 				ExitThread(error_sum);
 			}
@@ -115,7 +115,7 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 			RtGetClockTime(CLOCK_X,&tim2);
 			tim2.QuadPart = tim2.QuadPart-tim1.QuadPart;
 			//printf("PWM_period = %I64d [100ns] = %I64d [1s]  \n", tim2.QuadPart, tim2.QuadPart / NS100_1S);
-			printf_s(textMsg, LENGTH_OF_BUFF, "PWM_period = %I64d [100ns] = %I64d [1s]  \n", tim2.QuadPart, tim2.QuadPart / NS100_1S);
+			printf_s(textMsg, LENGTH_OF_BUFFER, "PWM_period = %I64d [100ns] = %I64d [1s]  \n", tim2.QuadPart, tim2.QuadPart / NS100_1S);
 			logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
 			RtGetClockTime(CLOCK_X,&tim1);
 		// stop after first period (for debug - to terminate threads)<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -137,10 +137,10 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 void CLOSE_handleAndExitThread(HANDLE handle, int error_sum)
 {
 	// char array for printing messages
-	char textMsg[LENGTH_OF_BUFF];
+	char textMsg[LENGTH_OF_BUFFER];
 	error_sum = CLOSE_handleAndReturn(handle,error_sum);
 	//printf("Exiting thread with error_sum %8i\n", error_sum);
-	printf_s(textMsg, LENGTH_OF_BUFF, "Exiting thread with error_sum %8i\n", error_sum);
+	printf_s(textMsg, LENGTH_OF_BUFFER, "Exiting thread with error_sum %8i\n", error_sum);
 	logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
 	ExitThread(error_sum);
 }

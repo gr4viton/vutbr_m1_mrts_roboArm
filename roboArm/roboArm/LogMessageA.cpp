@@ -27,9 +27,9 @@ C_CircBuffer::C_CircBuffer()
 {
 	Start = 0;
 	End = 0;
-	freeSpace = LENGTH_OF_BUFF;
+	freeSpace = LENGTH_OF_BUFFER;
 
-	buf = new char[LENGTH_OF_BUFF];
+	buf = new char[LENGTH_OF_BUFFER];
 }
 
 /****************************************************************************
@@ -55,7 +55,7 @@ C_CircBuffer::~C_CircBuffer()
 ************/
 bool C_CircBuffer::IsEmpty()
 {
-	if(freeSpace == LENGTH_OF_BUFF)return TRUE;
+	if(freeSpace == LENGTH_OF_BUFFER)return TRUE;
 	else return FALSE;
 }
 
@@ -72,8 +72,8 @@ char C_CircBuffer::ReadOne()
 	char ret = buf[Start];
 	Start++;
 	freeSpace++;
-	if(Start >= LENGTH_OF_BUFF)Start = 0;
-	if(LENGTH_OF_BUFF-freeSpace < 0)return 0;
+	if(Start >= LENGTH_OF_BUFFER)Start = 0;
+	if(LENGTH_OF_BUFFER-freeSpace < 0)return 0;
 	return ret;
 }
 
@@ -91,7 +91,7 @@ void C_CircBuffer::WriteOne(char in)
 	{
 		buf[End] = in;
 		End++;
-		if(End >= LENGTH_OF_BUFF)End = 0;
+		if(End >= LENGTH_OF_BUFFER)End = 0;
 		freeSpace--;
 	}
 }
@@ -106,7 +106,11 @@ void C_CircBuffer::WriteOne(char in)
 ************/
 unsigned int  C_CircBuffer::Write(char *in)
 {
-	unsigned int inStrLen = strlen(in);
+	// secure strlen
+	unsigned int inStrLen = 0;
+	for(inStrLen=0; in[inStrLen] != 0; inStrLen++){
+		if(inStrLen > LENGTH_OF_BUFFER) return(ERROR_STRING_TO_WRITE_IS_TOO_LONG);
+	}
 	// is there enaugh space?
 	if(inStrLen > freeSpace) return(ERROR_NOT_ENAUGH_SPACE_IN_BUFFER);
 
@@ -127,10 +131,10 @@ unsigned int  C_CircBuffer::Write(char *in)
 ************/
 unsigned int C_CircBuffer::Read(char* out)
 {
-	if(freeSpace == LENGTH_OF_BUFF) return(ERROR_BUFFER_IS_EMPTY);
+	if(freeSpace == LENGTH_OF_BUFFER) return(ERROR_BUFFER_IS_EMPTY);
 	
 	char r = 1;
-	unsigned int len = LENGTH_OF_BUFF-freeSpace;
+	unsigned int len = LENGTH_OF_BUFFER-freeSpace;
 	unsigned int i;
 	for(i = 0 ; i < len; i++)
 	{
@@ -220,7 +224,7 @@ unsigned int C_LogMessageA::WriteBuffToFile()
 	// try if loggign is not locked
 	if(!bLogging) return(ERROR_LOGGING_IS_LOCKED);
 
-	CHAR cMessage[LENGTH_OF_BUFF];
+	CHAR cMessage[LENGTH_OF_BUFFER];
 	unsigned int err = FLAWLESS_EXECUTION;
 	RtWaitForSingleObject(hMutex, INFINITE); // wait to own hMutex
 	// Critical section [START]

@@ -11,6 +11,24 @@
 //#include "C_roboticManipulator.h"
 
 /****************************************************************************
+@function   DEBUG_fillPhases
+@class		C_roboticManipulator
+@brief      
+@param[in]  
+@param[out] 
+@return     
+************/
+void C_roboticManipulator::DEBUG_fillPhases(void){
+	
+	// phase 1
+	phases.push_back(C_spatialConfiguration());
+	std::list<C_spatialConfiguration>::iterator it=phases.begin();
+	//it->SET_servIntervalZero(
+		//it->
+	
+}
+
+/****************************************************************************
 @function   CONVERT_angle2intervalOne
 @class		C_roboticManipulator
 @brief      converts the value of angle of bounds [angle_min, angle_max]

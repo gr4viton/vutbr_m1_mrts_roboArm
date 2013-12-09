@@ -73,7 +73,7 @@ void INIT_ADC()
 int INIT_Library()
 {
 	// char array for printing messages
-	char textMsg[LENGTH_OF_BUFF];
+	char textMsg[LENGTH_OF_BUFFER];
 //typedef __nullterminated CONST CHAR *LPCSTR, *PCSTR;
 //typedef __nullterminated CONST WCHAR *LPCWSTR, *PCWSTR;
 	LPCSTR lpLibFileName = "dac_dll.rtdll";
@@ -99,7 +99,7 @@ int INIT_Library()
 	// Call function
 	baseAddress = (DWORD) functionPointer();
 	//printf("base = %i = hex = %x \n", baseAddress, baseAddress);
-	printf_s(textMsg, LENGTH_OF_BUFF, "base = %i = hex = %x \n", baseAddress, baseAddress);
+	printf_s(textMsg, LENGTH_OF_BUFFER, "base = %i = hex = %x \n", baseAddress, baseAddress);
 	logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
 	// Free Library 
 	FreeLibrary(hLibModule);

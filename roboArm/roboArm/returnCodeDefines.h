@@ -58,7 +58,7 @@
 #define ERROR_LOGGING_IS_LOCKED						98008
 #define ERROR_BUFFER_IS_EMPTY						98009
 #define ERROR_NOT_ENAUGH_SPACE_IN_BUFFER				98010
-
+#define ERROR_STRING_TO_WRITE_IS_TOO_LONG			98011
 //____________________________________________________
 // C_spatialConfiguration
 #define ERROR_ANGLE_OUT_OF_BOUNDS					99256

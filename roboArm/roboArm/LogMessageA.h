@@ -20,12 +20,12 @@
 
 #include "returnCodeDefines.h"
 
-#define LENGTH_OF_BUFF	512
-#define HMUTEX_SHARED_NAME TEXT("C_LogMessageA_hMutex.Name")
+#define LENGTH_OF_BUFFER			512
+#define HMUTEX_SHARED_NAME		TEXT("C_LogMessageA_hMutex.Name")
 
-#define SEVERITY_MIN 0
-#define SEVERITY_MAX 16
-#define SEVERITY_LEVEL 7
+#define SEVERITY_MIN				0
+#define SEVERITY_MAX				16
+#define SEVERITY_LEVEL			7
 
 //#define LOG_FILE "C:\\mrts\\xslizj00\\cv6\\LogMessage.txt"
 #define LOG_FILE "D:\\LogMessage.txt"
