@@ -60,7 +60,9 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 	LARGE_INTEGER tic;			// iterating variable
 	LARGE_INTEGER tic_interval;	// how long does one tic take
 	LARGE_INTEGER tic_phase;	// counting phase time
+	LARGE_INTEGER intervalOne;	// counting phase time
 
+	intervalOne.QuadPart = 0;
 	tic.QuadPart = 0;
 	tic_phase.QuadPart = 0;
 	//PWM_period.QuadPart = NS100_1S / 100; // 1/100 s = 100 Hz
@@ -96,7 +98,8 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 					logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
 					ExitThread(error_sum);
 				}
-				serv->SET_intervalZero(it->servIntervalZero[i_serv]);
+				intervalOne.QuadPart = PWM_period.QuadPart - it->servIntervalZero[i_serv].QuadPart;
+				serv->SET_intervalZero( intervalOne );
 			}
 		}
 		while(!ticDone)	// tics loop
@@ -153,7 +156,7 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 				//done = true;
 			}
 		}//tic loop
-		it++;
+		if(it != ROB->phases.end()) it++;
 	}// phase loop
 	ROB = NULL;
 }

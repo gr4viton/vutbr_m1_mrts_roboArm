@@ -67,6 +67,7 @@ void EXIT_process(int error_sum){
 void _cdecl main(int  argc, char **argv)
 {
 	printf("_________________________(: Clean start :)___________________________\n");
+	/*
 	if ( argc != 2 )	 
 	{// argc should be 2 for correct execution
 		printf("You must specify the control txt file! Run:\n");
@@ -84,7 +85,7 @@ void _cdecl main(int  argc, char **argv)
 		}
 	}
 	printf("Control-file: %s\n",argv[1]);
-
+	*/
 	int error_sum = 0;
 	// ____________________________________________________
 	// init HW
