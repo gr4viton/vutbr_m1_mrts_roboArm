@@ -80,7 +80,7 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 	//____________________________________________________
 	// main thread loop
 	ROB->RESET_DOport();
-	std::list<C_spatialConfiguration>::iterator it=ROB->phases.begin();
+	std::list<C_spatialConfiguration>::iterator it =ROB->phases.begin();
 	while(phaseDone)
 	{
 		if(it != ROB->phases.end())

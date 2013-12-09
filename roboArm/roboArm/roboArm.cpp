@@ -107,8 +107,8 @@ void _cdecl main(int  argc, char **argv)
 
 	//____________________________________________________
 	// read phases from file
-	//READ_spatialConfigurationFromFile(&ROB, argv[1]);
-	//ROB->DEBUG_fillPhases();
+	// READ_spatialConfigurationFromFile(&ROB, argv[1]);
+	ROB.DEBUG_fillPhases();
 
 
 // ____________________________________________________
