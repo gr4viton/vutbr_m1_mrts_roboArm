@@ -47,7 +47,7 @@ void RTFCNDCL LogMessageThread(void *a_manip)
 void RTFCNDCL TIM_PWMfunction(void *a_manip)
 {
 	// char array for printing messages
-	char textMsg[LENGTH_OF_BUFF];
+	char textMsg[LENGTH_OF_BUFFER];
 	//____________________________________________________
 	// time measurement
 	LARGE_INTEGER tim1; tim1.QuadPart = 0;
@@ -59,8 +59,10 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 	LARGE_INTEGER PWM_period;	// how often to write position - restart tic
 	LARGE_INTEGER tic;			// iterating variable
 	LARGE_INTEGER tic_interval;	// how long does one tic take
+	LARGE_INTEGER tic_phase;	// counting phase time
 
 	tic.QuadPart = 0;
+	tic_phase.QuadPart = 0;
 	//PWM_period.QuadPart = NS100_1S / 100; // 1/100 s = 100 Hz
 	PWM_period.QuadPart = NS100_1S / 1;				// 1/1 s = 1 Hz
 	RtGetClockTimerPeriod(CLOCK_X, &tic_interval);	// time to wait between individual tics
@@ -70,59 +72,89 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 	C_servoMotor* serv = NULL;
 
 	// here there will be some mutexed variable for control of this thread termination ??
-	bool done = false;
+	bool ticDone = false;
+	bool phaseDone = false;
 	int error_sum = 0;
 	//____________________________________________________
 	// main thread loop
 	ROB->RESET_DOport();
-	while(!done)
+	std::list<int>::iterator it=mylist.begin();
+	while(phaseDone)
 	{
-		// ask each servo if this tic the interval zero has passed = time [to write 1]
-		for(i_serv=0; i_serv<SUM_SERVOMOTORS; i_serv++)
-		{
-			// get the pointer of ROB->serv[i_serv] into serv
-			error_sum = ROB->GET_servoMotor(i_serv, &serv);
-			if(error_sum != FLAWLESS_EXECUTION)
+		if(it != mylist.end())
+		{			
+			// read phase
+			for(int i_serv=0 ; i_serv < SUM_SERVOMOTORS ; i_serv++)
 			{
-				serv = NULL;
-				ROB = NULL;
-				//printf("Could not get servoMotor[%i] pointer\n", i_serv);
-				printf_s(textMsg, LENGTH_OF_BUFF, "Could not get servoMotor[%i] pointer\n", i_serv);
-				logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
-				//printf("Terminating thread with error_sum %i\n", error_sum);
-				printf_s(textMsg, LENGTH_OF_BUFF, "Terminating thread with error_sum %i\n", error_sum);
-				logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
-				ExitThread(error_sum);
-			}
-			if(tic.QuadPart >= serv->intervalZero.QuadPart)
-			{ // time for writing 1 has come
-				// write to the right digit
-				ROB->SET_DOportBitUchar(serv->servoMotorDigit);
+				error_sum = ROB->GET_servoMotor(i_serv, &serv);
+				if(error_sum != FLAWLESS_EXECUTION)
+				{
+					printf_s(textMsg, LENGTH_OF_BUFFER, "Could not get servoMotor[%i] pointer\n", i_serv);
+					logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
+					//printf("Terminating thread with error_sum %i\n", error_sum);
+					printf_s(textMsg, LENGTH_OF_BUFFER, "Terminating thread with error_sum %i\n", error_sum);
+					logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
+					ExitThread(error_sum);
+				}
+				serv->SET_intervalZero(it->servIntervalZero[i_serv]);
 			}
 		}
-		// ____________________________________________________
-		// iteration & tic-waiting
-		RtSleepFt(&tic_interval);
-		//RtPrintf("tic=%I64d/%I64d\n",tic,PWM_period);
-		tic.QuadPart += tic_interval.QuadPart;
-		// ____________________________________________________
-		// end of each period
-		if(tic.QuadPart >= PWM_period.QuadPart)
-		{ // end of one period
-			ROB->RESET_DOport();
-			tic.QuadPart = 0;
+		while(!ticDone)	// tics loop
+		{
+			// ask each servo if this tic the interval zero has passed = time [to write 1]
+			for(i_serv=0; i_serv<SUM_SERVOMOTORS; i_serv++)
+			{
+				// get the pointer of ROB->serv[i_serv] into serv
+				error_sum = ROB->GET_servoMotor(i_serv, &serv);
+				if(error_sum != FLAWLESS_EXECUTION)
+				{
+					serv = NULL;
+					ROB = NULL;
+					//printf("Could not get servoMotor[%i] pointer\n", i_serv);
+					printf_s(textMsg, LENGTH_OF_BUFFER, "Could not get servoMotor[%i] pointer\n", i_serv);
+					logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
+					//printf("Terminating thread with error_sum %i\n", error_sum);
+					printf_s(textMsg, LENGTH_OF_BUFFER, "Terminating thread with error_sum %i\n", error_sum);
+					logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
+					ExitThread(error_sum);
+				}
+				if(tic.QuadPart >= serv->intervalZero.QuadPart)
+				{ // time for writing 1 has come
+					// write to the right digit
+					ROB->SET_DOportBitUchar(serv->servoMotorDigit);
+				}
+			}
+			// ____________________________________________________
+			// iteration & tic-waiting
+			RtSleepFt(&tic_interval);
+			//RtPrintf("tic=%I64d/%I64d\n",tic,PWM_period);
+			tic.QuadPart += tic_interval.QuadPart;
+			tic_phase.QuadPart += tic_interval.QuadPart;
+			if(tic_phase.QuadPart >= it->phaseInterval)
+			{
+				tic.QuadPart = 0;
+				tic_phase.QuadPart = 0;
+				break;
+			}
+			// ____________________________________________________
+			// end of each period
+			if(tic.QuadPart >= PWM_period.QuadPart)
+			{ // end of one period
+				ROB->RESET_DOport();
+				tic.QuadPart = 0;
 		
-			RtGetClockTime(CLOCK_X,&tim2);
-			tim2.QuadPart = tim2.QuadPart-tim1.QuadPart;
-			//printf("PWM_period = %I64d [100ns] = %I64d [1s]  \n", tim2.QuadPart, tim2.QuadPart / NS100_1S);
-			printf_s(textMsg, LENGTH_OF_BUFF, "PWM_period = %I64d [100ns] = %I64d [1s]  \n", tim2.QuadPart, tim2.QuadPart / NS100_1S);
-			logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
-			RtGetClockTime(CLOCK_X,&tim1);
-		// stop after first period (for debug - to terminate threads)<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-			//done = true;
-		}
-	}
-
+				RtGetClockTime(CLOCK_X,&tim2);
+				tim2.QuadPart = tim2.QuadPart-tim1.QuadPart;
+				//printf("PWM_period = %I64d [100ns] = %I64d [1s]  \n", tim2.QuadPart, tim2.QuadPart / NS100_1S);
+				printf_s(textMsg, LENGTH_OF_BUFFER, "PWM_period = %I64d [100ns] = %I64d [1s]  \n", tim2.QuadPart, tim2.QuadPart / NS100_1S);
+				logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
+				RtGetClockTime(CLOCK_X,&tim1);
+			// stop after first period (for debug - to terminate threads)<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+				//done = true;
+			}
+		}//tic loop
+		it++;
+	}// phase loop
 	ROB = NULL;
 }
 
@@ -137,10 +169,10 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 void CLOSE_handleAndExitThread(HANDLE handle, int error_sum)
 {
 	// char array for printing messages
-	char textMsg[LENGTH_OF_BUFF];
+	char textMsg[LENGTH_OF_BUFFER];
 	error_sum = CLOSE_handleAndReturn(handle,error_sum);
 	//printf("Exiting thread with error_sum %8i\n", error_sum);
-	printf_s(textMsg, LENGTH_OF_BUFF, "Exiting thread with error_sum %8i\n", error_sum);
+	printf_s(textMsg, LENGTH_OF_BUFFER, "Exiting thread with error_sum %8i\n", error_sum);
 	logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
 	ExitThread(error_sum);
 }
