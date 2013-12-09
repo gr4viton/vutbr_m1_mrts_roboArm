@@ -78,10 +78,10 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 	//____________________________________________________
 	// main thread loop
 	ROB->RESET_DOport();
-	std::list<int>::iterator it=mylist.begin();
+	std::list<C_spatialConfiguration>::iterator it=ROB->phases.begin();
 	while(phaseDone)
 	{
-		if(it != mylist.end())
+		if(it != ROB->phases.end())
 		{			
 			// read phase
 			for(int i_serv=0 ; i_serv < SUM_SERVOMOTORS ; i_serv++)
@@ -130,7 +130,7 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 			//RtPrintf("tic=%I64d/%I64d\n",tic,PWM_period);
 			tic.QuadPart += tic_interval.QuadPart;
 			tic_phase.QuadPart += tic_interval.QuadPart;
-			if(tic_phase.QuadPart >= it->phaseInterval)
+			if(tic_phase.QuadPart >= it->phaseInterval.QuadPart)
 			{
 				tic.QuadPart = 0;
 				tic_phase.QuadPart = 0;
