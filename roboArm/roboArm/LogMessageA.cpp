@@ -244,7 +244,7 @@ unsigned int C_LogMessageA::WriteBuffToFile()
 			actSeverity, SEVERITY_MAX, cMessage);
 		return ERROR_SEVERITY_BIGGER_THAN_MAX;
 	}
-	else ( SEVERITY_MIN > actSeverity )
+	else if( SEVERITY_MIN > actSeverity )
 	{
 		RtPrintf("\nLogMessage() Error: Severity is too low [%d] < min[%d]: %s\n", 
 			actSeverity, SEVERITY_MIN, cMessage);
