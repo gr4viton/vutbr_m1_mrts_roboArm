@@ -237,7 +237,7 @@ unsigned int C_LogMessageA::WriteBuffToFile()
 	FILETIME FileTime; 
 	SYSTEMTIME SystemTime;
 	LARGE_INTEGER pTime;
-
+	
 	if ( actSeverity > SEVERITY_MAX )
 	{
 		RtPrintf("\nLogMessage() Error: Severity is too high [%d] > max[%d]: %s\n", 
