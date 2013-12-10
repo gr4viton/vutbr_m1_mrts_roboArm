@@ -28,7 +28,7 @@ int	READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_fil
 	{
 		delete[] G_controlString;
 		//printf("READ_file failed with error_sum %i\n", error_sum);
-		printf_s(textMsg, LENGTH_OF_BUFFER, "READ_file failed with error_sum %i\n", error_sum);
+		sprintf_s(textMsg, LENGTH_OF_BUFFER, "READ_file failed with error_sum %i\n", error_sum);
 		logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
 		return(error_sum);
 	}
@@ -39,7 +39,7 @@ int	READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_fil
 	{
 		delete[] G_controlString;
 		//printf("READ_file failed with error_sum %i\n", error_sum);
-		printf_s(textMsg, LENGTH_OF_BUFFER, "READ_file failed with error_sum %i\n", error_sum);
+		sprintf_s(textMsg, LENGTH_OF_BUFFER, "READ_file failed with error_sum %i\n", error_sum);
 		logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
 		return(error_sum);
 	}
@@ -156,7 +156,7 @@ int	PARSE_controlString(C_roboticManipulator* a_manip){
 							{
 								done = true;
 								//printf("One of digits from angle [%s] is not a number!\n",token.c_str());
-								printf_s(textMsg, LENGTH_OF_BUFFER, "One of digits from angle [%s] is not a number!\n",token.c_str());
+								sprintf_s(textMsg, LENGTH_OF_BUFFER, "One of digits from angle [%s] is not a number!\n",token.c_str());
 								logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
 								return(ERROR_IS_NOT_NUMBER);
 							}
@@ -185,14 +185,14 @@ int	PARSE_controlString(C_roboticManipulator* a_manip){
 		
 		//std::cout << token << std::endl;
 		//printf("token = \"%s\"\n", token.c_str());
-		printf_s(textMsg, LENGTH_OF_BUFFER, "token = \"%s\"\n", token.c_str());
+		sprintf_s(textMsg, LENGTH_OF_BUFFER, "token = \"%s\"\n", token.c_str());
 		logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
 		controlString.erase(0, pos + delimiter.length());
 	}
 	// last
   //  std::cout << controlString << std::endl;
 	//printf("%s\n",controlString.c_str());
-	printf_s(textMsg, LENGTH_OF_BUFFER, "%s",controlString.c_str());
+	sprintf_s(textMsg, LENGTH_OF_BUFFER, "%s",controlString.c_str());
 	logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
 
 	ROB->RESET_DOport();
@@ -229,7 +229,7 @@ int READ_file(char* a_filePath){
 		//LogMessage()
 		// ifdef
 		//RtPrintf("Function CreateFile failed with 0x%04x - INVALID_HANDLE_VALUE\n", GetLastError());
-		printf_s(textMsg, LENGTH_OF_BUFFER, "Function CreateFile failed with 0x%04x - INVALID_HANDLE_VALUE\n", GetLastError());
+		sprintf_s(textMsg, LENGTH_OF_BUFFER, "Function CreateFile failed with 0x%04x - INVALID_HANDLE_VALUE\n", GetLastError());
 		logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
 		return(ERROR_CREATEFILE_FAIL);
 	}
@@ -276,7 +276,7 @@ int READ_file(char* a_filePath){
 #ifdef DEBUG_PRINT_READ_FUNCTIONS
 //	RtPrintf("Try to READ_chunk [%lu bytes] from file.\n",bytes2get);
 	//RtPrintf("Try to ReadFile. Read whole file [%lu bytes] from [%s], \n", bytes2get, a_filePath);
-	printf_s(textMsg, LENGTH_OF_BUFFER, "Try to ReadFile. Read whole file [%lu bytes] from [%s], \n", bytes2get, a_filePath);
+	sprintf_s(textMsg, LENGTH_OF_BUFFER, "Try to ReadFile. Read whole file [%lu bytes] from [%s], \n", bytes2get, a_filePath);
 	logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
 #endif
 	DWORD bytes_got;
@@ -284,7 +284,7 @@ int READ_file(char* a_filePath){
 	if (	 FALSE == ReadFile( hFile, (LPVOID) (G_controlString), bytes2get, &bytes_got, NULL) ) 
 	{ // Failed to ReadFile
 		//RtPrintf("ERROR:\tFunction ReadFile failed with 0x%04x - returned FALSE\n", GetLastError());
-		printf_s(textMsg, LENGTH_OF_BUFFER, "ERROR:\tFunction ReadFile failed with 0x%04x - returned FALSE\n", GetLastError());
+		sprintf_s(textMsg, LENGTH_OF_BUFFER, "ERROR:\tFunction ReadFile failed with 0x%04x - returned FALSE\n", GetLastError());
 		logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
 		return(CLOSE_handleAndReturn(hFile, ERROR_READFILE_FAIL));
 	}
@@ -297,12 +297,12 @@ int READ_file(char* a_filePath){
 	}
 #ifdef DEBUG_PRINT_READ_FUNCTIONS
 	//RtPrintf("bytes_got = %lu\n", bytes_got);	
-	printf_s(textMsg, LENGTH_OF_BUFFER, "bytes_got = %lu\n", bytes_got);	
+	sprintf_s(textMsg, LENGTH_OF_BUFFER, "bytes_got = %lu\n", bytes_got);	
 	logMsg->PushMessage(textMsg, SEVERITY_MAX - 4);
 #endif
 	G_controlString[bytes_got] = '\0';
 	//printf("[FILE_START]\n%s\n[FILE_END]",G_controlString);
-	printf_s(textMsg, LENGTH_OF_BUFFER, "[FILE_START]\n%s\n[FILE_END]",G_controlString);
+	sprintf_s(textMsg, LENGTH_OF_BUFFER, "[FILE_START]\n%s\n[FILE_END]",G_controlString);
 	logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -332,7 +332,7 @@ int CLOSE_handleAndReturn(HANDLE handle, int error_sum)
 	if( CloseHandle(handle) == 0 )
 	{
 		//RtPrintf("Function CloseHandle failed with 0x%04x\n", GetLastError());
-		printf_s(textMsg, LENGTH_OF_BUFFER, "Function CloseHandle failed with 0x%04x\n", GetLastError());
+		sprintf_s(textMsg, LENGTH_OF_BUFFER, "Function CloseHandle failed with 0x%04x\n", GetLastError());
 		logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
 		return(error_sum + ERROR_CLOSEHANDLE_FAIL);
 	}
@@ -368,7 +368,7 @@ int MOVE_pointerOrReturn(HANDLE hFile, LONG distance2move, DWORD* file_current_b
 	if (*file_current_byte == INVALID_SET_FILE_POINTER) 
 	{ // Failed to SetFilePointer
 		//RtPrintf("Function SetFilePointer failed with 0x%04x\n", GetLastError());
-		printf_s(textMsg, LENGTH_OF_BUFFER, "Function SetFilePointer failed with 0x%04x\n", GetLastError());
+		sprintf_s(textMsg, LENGTH_OF_BUFFER, "Function SetFilePointer failed with 0x%04x\n", GetLastError());
 		logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
 		return(CLOSE_handleAndReturn(hFile, ERROR_SETFILEPOINTER_FAIL));
 	}

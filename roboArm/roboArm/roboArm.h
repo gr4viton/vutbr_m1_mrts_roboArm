@@ -19,17 +19,13 @@
 
 // win & RTX
 
-//#include <SDKDDKVer.h>
+#include <SDKDDKVer.h>
 #include <windows.h>
-#include <rtapi.h>
-//#include <rtapi.h> // must be after windows.h
+#include <rtapi.h> // must be after windows.h
 
-// linker error
-// vs2008 - LNK2019 -> it means vs does not know the RT functions
-// - probably bad including header of declaration of RT functions
-//#ifdef UNDER_RTSS
-//	#include <rtssapi.h>
-//#endif // UNDER_RTSS
+#ifdef UNDER_RTSS
+	#include <rtssapi.h>
+#endif // UNDER_RTSS
 
 // std
 //#include <iostream>
@@ -59,12 +55,18 @@
 #define DEBUGGING_WITHOUT_HW
 #define DEBUG_PRINT_READ_FUNCTIONS
 
+//____________________________________________________
+// optional walk-arounds for little file inconsistency
 // if angle in file is out of bounds do not exit but convert it to limit instead and continue
 #define CUT_OFF_OUT_OF_BOUNDS_ANGLE_IN_CONTROL_FILE 
 #define IGNORE_NOT_NUMBER_ANGLE_IN_CONTROL_FILE
 #define IGNORE_INCONSISTENT_FILE_LINE
 
-#define CLOCK_X				CLOCK_1
+#define CLOCK_X							CLOCK_1
+#define 	PUSHMSG_SEVERITY_LOW				SEVERITY_MIN
+#define PUSHMSG_SEVERITY_NORMAL			SEVERITY_MAX - 5
+#define 	PUSHMSG_SEVERITY_HIGH			SEVERITY_MAX
+
 //____________________________________________________
 // file path
 //#define CONTROL_FILE_PATH		L"D:\\EDUC\\m1\\R_MRTS\\proj_robo_ruka\\GIT\\roboArm\\control2.txt"
@@ -74,7 +76,8 @@
 
 //____________________________________________________
 // reading control
-#define NUM_OF_THREADS			2
+#define NUM_OF_THREADS			1
+#define LOGMSG_THREAD			1
 
 #define CHARS_PER_LINE			9
 #define FIRST_DIGIT_CHAR			2

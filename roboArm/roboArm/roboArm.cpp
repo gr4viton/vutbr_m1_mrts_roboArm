@@ -66,16 +66,20 @@ void EXIT_process(int error_sum){
 //void _cdecl main(int  argc, char **argv, char **envp)
 void _cdecl main(int  argc, char **argv)
 {
+	//try{
+	//}
+	//catch(std::exception & e)
+	//{
+	//	printf("EXCEPTION %s\n",e.what());
+	//}
 	printf("_________________________(: Clean start :)___________________________\n");
-	/*
 	if ( argc != 2 )	 
 	{// argc should be 2 for correct execution
 		printf("You must specify the control txt file! Run:\n");
 		printf("$ %s <control_file_path>\n", argv[0]);
 		EXIT_process(ERROR_CONTROLFILE_PATH_NOT_SPECIFIED);
 	}
-	// We assume argv[1] is a filename to open
-	
+	// We assume argv[1] is a filename to open	
 	// try lenght of string file_path 
 	for(int i=0; argv[1][i] != '\0'; i++)
 	{
@@ -85,7 +89,7 @@ void _cdecl main(int  argc, char **argv)
 		}
 	}
 	printf("Control-file: %s\n",argv[1]);
-	*/
+	
 	int error_sum = 0;
 	// ____________________________________________________
 	// init HW
@@ -114,54 +118,59 @@ void _cdecl main(int  argc, char **argv)
 // ____________________________________________________
 // will be in the function CREATE_threads
 
-	//____________________________________________________
-	// thread creation
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	// one thread added for logging
-	const int iTh_max = 1 + 1; // number of threads = for now only one
-	
-	HANDLE hTh[iTh_max]; // array of handles to the threads
-	//DWORD this_loop_ExitCode_sum = 0;
+	// thread creation
 
-	// char array for printing messages
-	char textMsg[LENGTH_OF_BUFFER];
+	const int iTh_max = NUM_OF_THREADS + LOGMSG_THREAD; 
 
-	LPDWORD thExitCode[iTh_max];
-//	void* thread_argument[iTh_max];
+	HANDLE		hTh[iTh_max];			// array of handles to the threads
+	LPDWORD		thExitCode[iTh_max];		// exit code from thread
 
+	int iTh = 0;							// handler iterator
+	DWORD thread_id = 0;					// thread id input param
+
+	//____________________________________________________
+	// priorities
 	int default_priority = RT_PRIORITY_MAX - 1;
 	int wanted_priority = default_priority;
 	int thread_priority = 0;
-	int iTh = 0;
 	
-	DWORD thread_id = 0;
+	//____________________________________________________
+	char textMsg[LENGTH_OF_BUFFER];	// char array for printing messages
+
+
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// RtCreateThread - will be in the separate function
-	for(iTh = 0; iTh<iTh_max; iTh++){
+	for(iTh = 0; iTh<iTh_max; iTh++)
+	{
 		//____________________________________________________
 		// RtCreateThread - handle creation 
-		RtPrintf("> Try to create multi thread %i.\n", iTh);
-
-		// First thread for logging
+		RtPrintf("> Try to create thread[%i].\n", iTh);
+		
+		//____________________________________________________
+		// Logging Thread
 		if(iTh == 0)
 		{
 			// Before log thread started, LoggingStart() must be called
 			logMsg->LoggingStart();
 			hTh[iTh] = RtCreateThread(NULL, 0, 
-				(LPTHREAD_START_ROUTINE) LogMessageThread, NULL, CREATE_SUSPENDED, &thread_id);
+				(LPTHREAD_START_ROUTINE) LogMessageThread, 
+				NULL, CREATE_SUSPENDED, &thread_id);
 		}
 		else
 		{
 			hTh[iTh] = RtCreateThread(NULL, 0, 
-				(LPTHREAD_START_ROUTINE) TIM_PWMfunction, (VOID*)&ROB, CREATE_SUSPENDED, &thread_id);
+				(LPTHREAD_START_ROUTINE) TIM_PWMfunction, 
+				(VOID*)&ROB, CREATE_SUSPENDED, &thread_id);
 		}
+
 		if(hTh[iTh] == NULL){
-			printf_s(textMsg, LENGTH_OF_BUFFER, "ERROR:\tCannot create thread %i.\n",iTh);
+			sprintf_s(textMsg, LENGTH_OF_BUFFER, "ERROR:\tCannot create thread[%i].\n",iTh);
 			logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
 			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_CREATE_THREAD);
 		}
-		RtPrintf("Thread %i created and suspended with priority %i.\n", iTh, RtGetThreadPriority(hTh[iTh]) );
+		RtPrintf("Thread[%i] created and suspended with priority %i.\n", iTh, RtGetThreadPriority(hTh[iTh]) );
 
 		// ____________________________________________________
 		// RtSetThreadPriority
@@ -169,25 +178,25 @@ void _cdecl main(int  argc, char **argv)
 		if( RtSetThreadPriority( hTh[iTh], wanted_priority) ){
 			thread_priority = RtGetThreadPriority(hTh[iTh]);
 			if( thread_priority == wanted_priority ){
-				printf_s(textMsg, LENGTH_OF_BUFFER, "Priority of thread %i sucessfully set to %i\n", iTh, wanted_priority );
+				sprintf_s(textMsg, LENGTH_OF_BUFFER, "Priority of thread[%i] sucessfully set to %i\n", iTh, wanted_priority );
 				logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
 			}
 			else{
-				printf_s(textMsg, LENGTH_OF_BUFFER, "ERROR:\tCannot set thread %i priority to %i! It currently has priority %i.\n", 
+				sprintf_s(textMsg, LENGTH_OF_BUFFER, "ERROR:\tCannot set thread[%i] priority to %i! It currently has priority %i.\n", 
 					iTh, wanted_priority , thread_priority);
 				logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
 				TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_CHANGE_PRIORITY);
 			}
 		}
 		else{
-			printf_s(textMsg, LENGTH_OF_BUFFER, "ERROR:\tCannot set thread %i priority to %i! It currently has priority %i.\n", 
+			sprintf_s(textMsg, LENGTH_OF_BUFFER, "ERROR:\tCannot set thread[%i] priority to %i! It currently has priority %i.\n", 
 				iTh, wanted_priority , GetThreadPriority(hTh[iTh]) );
 			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_CHANGE_PRIORITY);
 		}
 		//____________________________________________________
 		// RtResumeThread
 		if( RtResumeThread(hTh[iTh]) != 0xFFFFFFFF ){
-			printf_s(textMsg, LENGTH_OF_BUFFER, "Succesfully resumed thread %i.\n", iTh);
+			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Succesfully resumed thread[%i].\n", iTh);
 			logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
 			if(iTh == 0)
 			{
@@ -195,7 +204,7 @@ void _cdecl main(int  argc, char **argv)
 			}
 		}
 		else{
-			printf_s(textMsg, LENGTH_OF_BUFFER, "Could not resume thread %i.\n", iTh);
+			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Could not resume thread[%i].\n", iTh);
 			logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
 			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_RESUME_THREAD);
 		}
@@ -209,16 +218,13 @@ void _cdecl main(int  argc, char **argv)
 
 	int still_active_threads;
 	LARGE_INTEGER preemptive_interval; 
-	preemptive_interval.QuadPart = 100;
-	iTh = 1;
+	preemptive_interval.QuadPart = 100;	
 
-	
-
-	do{
+	do{ // waiting for all the threads to be
 		still_active_threads = 0;
 		//BOOL GetExitCodeThread(HANDLE hThread, LPDWORD lpExitCode);
-		if(GetExitCodeThread(hTh[iTh], (thExitCode[iTh]) ) == FALSE){
-			printf_s(textMsg, LENGTH_OF_BUFFER, "Function of thread %i failed, returned FALSE with exit-code %lu\n", iTh, *thExitCode);
+		if(GetExitCodeThread(hTh[iTh], thExitCode[iTh] ) == FALSE){
+			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Function of thread[%i] failed, returned FALSE with exit-code %lu\n", iTh, *thExitCode);
 			logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
 			break;
 		}
@@ -229,7 +235,7 @@ void _cdecl main(int  argc, char **argv)
 			
 		}
 		iTh++;
-		if(iTh > iTh_max)iTh = 1;
+		if(iTh > iTh_max)	iTh = 1;
 		//____________________________________________________
 		// could not be executed if CPU>1 
 		RtSleepFt(&preemptive_interval);
@@ -241,7 +247,7 @@ void _cdecl main(int  argc, char **argv)
 	do{
 		still_active_threads = 0;
 		if(GetExitCodeThread(hTh[0], (thExitCode[0]) ) == FALSE){
-			printf_s(textMsg, LENGTH_OF_BUFFER, "Function of thread %i failed, returned FALSE with exit-code %lu\n", 0, *thExitCode);
+			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Function of thread[%i] failed, returned FALSE with exit-code %lu\n", 0, *thExitCode);
 			logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
 			break;
 		}
@@ -250,9 +256,9 @@ void _cdecl main(int  argc, char **argv)
 	}while(still_active_threads);
 
 	for(iTh = 0; iTh<iTh_max; iTh++){
-		printf_s(textMsg, LENGTH_OF_BUFFER, "Thread %i terminated with exit code %lu\n", iTh, *thExitCode[iTh]);
+		sprintf_s(textMsg, LENGTH_OF_BUFFER, "Thread[%i] terminated with exit code %lu\n", iTh, *thExitCode[iTh]);
 		logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
-		//printf("Thread %i sum = %f\n", iTh, static_cast<double *>(thread_argument[iTh]));
+		//printf("Thread[%i] sum = %f\n", iTh, static_cast<double *>(thread_argument[iTh]));
 	}			
 	
 

@@ -272,10 +272,12 @@ unsigned int C_LogMessageA::WriteBuffToFile()
 		RtPrintf("\nLogMessage() Error: FileTimeToSystemTime\n");
 		return ERROR_FILETIMETOSYSTEMTIME_FAIL;
 	}
-	sprintf_s(DataBuffer,512,"%02d.%02d.%04d %02d:%02d:%02d.%03d %02d: %s \r\n",
+	//sprintf_s(DataBuffer,512,"%02d.%02d.%04d %02d:%02d:%02d.%03d %02d: %s \r\n",
+	sprintf_s(DataBuffer,512,"%02d.%02d.%04d %02d:%02d:%02d.%03d: %s \r\n",
 		(int)SystemTime.wDay,  (int)SystemTime.wMonth,  (int)SystemTime.wYear,
 		(int)SystemTime.wHour, (int)SystemTime.wMinute, (int)SystemTime.wSecond, (int)SystemTime.wMilliseconds ,
-		actSeverity, cMessage);
+		cMessage);
+		//actSeverity, cMessage);
 
 	// CreateFile
 	Hfile = CreateFile(
@@ -306,10 +308,11 @@ unsigned int C_LogMessageA::WriteBuffToFile()
 	}
 	
 	// WriteFile
+	// bezpeèný strLEN !!! %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	if ( WriteFile(
 			Hfile,
 			(LPCVOID) DataBuffer,
-			strlen(DataBuffer),
+			(DWORD) strlen(DataBuffer),
 			(LPDWORD) &BytesWritten,
 			0
 		) == FALSE ) 

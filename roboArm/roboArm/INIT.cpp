@@ -99,7 +99,7 @@ int INIT_Library()
 	// Call function
 	baseAddress = (DWORD) functionPointer();
 	//printf("base = %i = hex = %x \n", baseAddress, baseAddress);
-	printf_s(textMsg, LENGTH_OF_BUFFER, "base = %i = hex = %x \n", baseAddress, baseAddress);
+	sprintf_s(textMsg, LENGTH_OF_BUFFER, "base = %i = hex = %x \n", baseAddress, baseAddress);
 	logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
 	// Free Library 
 	FreeLibrary(hLibModule);
