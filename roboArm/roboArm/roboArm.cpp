@@ -66,12 +66,8 @@ void EXIT_process(int error_sum){
 //void _cdecl main(int  argc, char **argv, char **envp)
 void _cdecl main(int  argc, char **argv)
 {
-	//try{
-	//}
-	//catch(std::exception & e)
-	//{
-	//	printf("EXCEPTION %s\n",e.what());
-	//}
+	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	// program parameters aquisition
 	printf("_________________________(: Clean start :)___________________________\n");
 	if ( argc != 2 )	 
 	{// argc should be 2 for correct execution
@@ -90,11 +86,14 @@ void _cdecl main(int  argc, char **argv)
 	}
 	printf("Control-file: %s\n",argv[1]);
 	
+	
+	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	// INITIALIZATIONS
 	int error_sum = 0;
 	// ____________________________________________________
 	// init HW
 	printf("Starting initialization process.");
-	error_sum = INIT_All();
+	error_sum = INIT_HW();
 	if(error_sum!=FLAWLESS_EXECUTION){
 		printf("Initialization process failed with error_sum %i", error_sum);
 		EXIT_process(error_sum);
@@ -108,7 +107,6 @@ void _cdecl main(int  argc, char **argv)
 		printf("Initialization of robotic manipulator failed with error_sum %i\n", error_sum);
 		EXIT_process(error_sum);
 	}
-
 	//____________________________________________________
 	// read phases from file
 	// READ_spatialConfigurationFromFile(&ROB, argv[1]);
@@ -121,7 +119,7 @@ void _cdecl main(int  argc, char **argv)
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// thread creation
 
-	const int iTh_max = NUM_OF_THREADS + LOGMSG_THREAD; 
+	const int iTh_max = NUM_OF_THREADS; 
 
 	HANDLE		hTh[iTh_max];			// array of handles to the threads
 	LPDWORD		thExitCode[iTh_max];		// exit code from thread
@@ -130,61 +128,65 @@ void _cdecl main(int  argc, char **argv)
 	DWORD thread_id = 0;					// thread id input param
 
 	//____________________________________________________
-	// priorities
-	int default_priority = RT_PRIORITY_MAX - 1;
-	int wanted_priority = default_priority;
-	int thread_priority = 0;
+	// priorities - changed in switch case
+	int wanted_priority = RT_PRIORITY_MIN;
+	int thread_priority = RT_PRIORITY_MIN;
 	
 	//____________________________________________________
-	char textMsg[LENGTH_OF_BUFFER];	// char array for printing messages
+	char textMsg[LENGTH_OF_BUFFER];	// char array for log messages
 
 
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	// RtCreateThread - will be in the separate function
+	// will be in separate function CREATE THREAD?
+	// create & priority & unsuspend all needed threads
 	for(iTh = 0; iTh<iTh_max; iTh++)
 	{
 		//____________________________________________________
 		// RtCreateThread - handle creation 
 		RtPrintf("> Try to create thread[%i].\n", iTh);
-		
-		//____________________________________________________
-		// Logging Thread
-		if(iTh == 0)
-		{
-			// Before log thread started, LoggingStart() must be called
-			logMsg->LoggingStart();
-			hTh[iTh] = RtCreateThread(NULL, 0, 
-				(LPTHREAD_START_ROUTINE) LogMessageThread, 
-				NULL, CREATE_SUSPENDED, &thread_id);
-		}
-		else
-		{
-			hTh[iTh] = RtCreateThread(NULL, 0, 
-				(LPTHREAD_START_ROUTINE) TIM_PWMfunction, 
-				(VOID*)&ROB, CREATE_SUSPENDED, &thread_id);
+		switch(iTh){
+			//____________________________________________________
+			case(TH_LOG_I): // Logging thread				
+				logMsg->LoggingStart();	// Before log thread started, LoggingStart() must be called
+				wanted_priority = TH_LOG_PRIORITY;
+				// create thread
+				hTh[iTh] = RtCreateThread(NULL, 0, 
+					(LPTHREAD_START_ROUTINE) LogMessageThread, 
+					NULL, CREATE_SUSPENDED, &thread_id);
+				break;
+			//____________________________________________________
+			case(TH_PWM_I): // PWM controllign thread
+				wanted_priority = TH_PWM_PRIORITY;
+				// create thread
+				hTh[iTh] = RtCreateThread(NULL, 0, 
+					(LPTHREAD_START_ROUTINE) TIM_PWMfunction, 
+					(VOID*)&ROB, CREATE_SUSPENDED, &thread_id);
+				break;
+
 		}
 
+		//____________________________________________________
+		// the other rutines are same for all types of threads 
 		if(hTh[iTh] == NULL){
 			sprintf_s(textMsg, LENGTH_OF_BUFFER, "ERROR:\tCannot create thread[%i].\n",iTh);
-			logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
+			logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_CREATE_THREAD);
 		}
 		RtPrintf("Thread[%i] created and suspended with priority %i.\n", iTh, RtGetThreadPriority(hTh[iTh]) );
 
 		// ____________________________________________________
-		// RtSetThreadPriority
-		wanted_priority = default_priority - iTh;
+		// RtSetThreadPriority - set thread priority to wanted_priority
 		if( RtSetThreadPriority( hTh[iTh], wanted_priority) ){
 			thread_priority = RtGetThreadPriority(hTh[iTh]);
 			if( thread_priority == wanted_priority ){
 				sprintf_s(textMsg, LENGTH_OF_BUFFER, "Priority of thread[%i] sucessfully set to %i\n", iTh, wanted_priority );
-				logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
+				logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			}
 			else{
 				sprintf_s(textMsg, LENGTH_OF_BUFFER, "ERROR:\tCannot set thread[%i] priority to %i! It currently has priority %i.\n", 
 					iTh, wanted_priority , thread_priority);
-				logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
+				logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 				TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_CHANGE_PRIORITY);
 			}
 		}
@@ -193,11 +195,12 @@ void _cdecl main(int  argc, char **argv)
 				iTh, wanted_priority , GetThreadPriority(hTh[iTh]) );
 			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_CHANGE_PRIORITY);
 		}
+
 		//____________________________________________________
-		// RtResumeThread
+		// RtResumeThread - unsuspend 
 		if( RtResumeThread(hTh[iTh]) != 0xFFFFFFFF ){
 			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Succesfully resumed thread[%i].\n", iTh);
-			logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
+			logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			if(iTh == 0)
 			{
 				logMsg->PushMessage("Logging started.", SEVERITY_MAX - 5);
@@ -205,7 +208,7 @@ void _cdecl main(int  argc, char **argv)
 		}
 		else{
 			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Could not resume thread[%i].\n", iTh);
-			logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
+			logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_RESUME_THREAD);
 		}
 	}
@@ -225,7 +228,7 @@ void _cdecl main(int  argc, char **argv)
 		//BOOL GetExitCodeThread(HANDLE hThread, LPDWORD lpExitCode);
 		if(GetExitCodeThread(hTh[iTh], thExitCode[iTh] ) == FALSE){
 			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Function of thread[%i] failed, returned FALSE with exit-code %lu\n", iTh, *thExitCode);
-			logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
+			logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			break;
 		}
 		if( *thExitCode[iTh] == STILL_ACTIVE ){
@@ -248,7 +251,7 @@ void _cdecl main(int  argc, char **argv)
 		still_active_threads = 0;
 		if(GetExitCodeThread(hTh[0], (thExitCode[0]) ) == FALSE){
 			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Function of thread[%i] failed, returned FALSE with exit-code %lu\n", 0, *thExitCode);
-			logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
+			logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			break;
 		}
 		if( *thExitCode[0] == STILL_ACTIVE )still_active_threads=1;
@@ -257,7 +260,7 @@ void _cdecl main(int  argc, char **argv)
 
 	for(iTh = 0; iTh<iTh_max; iTh++){
 		sprintf_s(textMsg, LENGTH_OF_BUFFER, "Thread[%i] terminated with exit code %lu\n", iTh, *thExitCode[iTh]);
-		logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
+		logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 		//printf("Thread[%i] sum = %f\n", iTh, static_cast<double *>(thread_argument[iTh]));
 	}			
 	
@@ -359,7 +362,7 @@ DWORD GET_ADC(UCHAR channel, UCHAR gain)
 
 	if ( c > 10 ) {
 		//RtPrintf("GetADC: Reading timeout\n");
-		logMsg->PushMessage("GetADC: Reading timeout\n", SEVERITY_MAX - 1);
+		logMsg->PushMessage("GetADC: Reading timeout\n", PUSHMSG_SEVERITY_NORMAL);
 		return 0;		
 	}
 

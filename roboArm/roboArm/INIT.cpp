@@ -9,12 +9,12 @@
 #include "roboArm.h"
 
 /****************************************************************************
-@function		INIT_All
+@function		INIT_HW
 @brief			
 				initializes all
 @retval[out]	FLAWLESS_EXECUTION - on flawless execution
 ***************/
-int INIT_All(){
+int INIT_HW(){
 	int ret = 0;
 
 	// Init logMsg
@@ -24,16 +24,16 @@ int INIT_All(){
 	ret = INIT_Library();
 	if(ret){
 		//printf("Cannot init library\n");	
-		logMsg->PushMessage("Cannot init library", SEVERITY_MAX - 1);
+		logMsg->PushMessage("Cannot init library", PUSHMSG_SEVERITY_NORMAL);
 #ifndef DEBUGGING_WITHOUT_HW //if NOT defined
 		return(ERR_INIT_CANNOT_LOAD_LIBRARY);	
 #endif
 		//printf("Continuing as DEBUGGING_WITHOUT_HW was defined!\n");
-		logMsg->PushMessage("Continuing as DEBUGGING_WITHOUT_HW was defined!", SEVERITY_MAX - 1);
+		logMsg->PushMessage("Continuing as DEBUGGING_WITHOUT_HW was defined!", PUSHMSG_SEVERITY_NORMAL);
 	}
 	else 
 		//printf("Library was opened successfully :)\n");
-		logMsg->PushMessage("Library was opened successfully :)", SEVERITY_MAX - 1);
+		logMsg->PushMessage("Library was opened successfully :)", PUSHMSG_SEVERITY_NORMAL);
 	
 	//____________________________________________________
 	// Initialize ADC
@@ -100,7 +100,7 @@ int INIT_Library()
 	baseAddress = (DWORD) functionPointer();
 	//printf("base = %i = hex = %x \n", baseAddress, baseAddress);
 	sprintf_s(textMsg, LENGTH_OF_BUFFER, "base = %i = hex = %x \n", baseAddress, baseAddress);
-	logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
+	logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 	// Free Library 
 	FreeLibrary(hLibModule);
 	return 0;

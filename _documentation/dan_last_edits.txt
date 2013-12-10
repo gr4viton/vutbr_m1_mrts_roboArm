@@ -1,3 +1,2 @@
-
-pøepis SEVERITY_MAX -1 => PUSHMSG_SEVERITY_NORMAL
-TH_PWM_I
+INIT_All -> INIT_HW
+documentation remake

@@ -92,10 +92,10 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 				if(error_sum != FLAWLESS_EXECUTION)
 				{
 					sprintf_s(textMsg, LENGTH_OF_BUFFER, "Could not get servoMotor[%i] pointer\n", i_serv);
-					logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
+					logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 					//printf("Terminating thread with error_sum %i\n", error_sum);
 					sprintf_s(textMsg, LENGTH_OF_BUFFER, "Terminating thread with error_sum %i\n", error_sum);
-					logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
+					logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 					ExitThread(error_sum);
 				}
 				intervalOne.QuadPart = PWM_period.QuadPart - it->servIntervalZero[i_serv].QuadPart;
@@ -115,10 +115,10 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 					ROB = NULL;
 					//printf("Could not get servoMotor[%i] pointer\n", i_serv);
 					sprintf_s(textMsg, LENGTH_OF_BUFFER, "Could not get servoMotor[%i] pointer\n", i_serv);
-					logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
+					logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 					//printf("Terminating thread with error_sum %i\n", error_sum);
 					sprintf_s(textMsg, LENGTH_OF_BUFFER, "Terminating thread with error_sum %i\n", error_sum);
-					logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
+					logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 					ExitThread(error_sum);
 				}
 				if(tic.QuadPart >= serv->intervalZero.QuadPart)
@@ -150,7 +150,7 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 				tim2.QuadPart = tim2.QuadPart-tim1.QuadPart;
 				//printf("PWM_period = %I64d [100ns] = %I64d [1s]  \n", tim2.QuadPart, tim2.QuadPart / NS100_1S);
 				sprintf_s(textMsg, LENGTH_OF_BUFFER, "PWM_period = %I64d [100ns] = %I64d [1s]  \n", tim2.QuadPart, tim2.QuadPart / NS100_1S);
-				logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
+				logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 				RtGetClockTime(CLOCK_X,&tim1);
 			// stop after first period (for debug - to terminate threads)<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 				//done = true;
@@ -177,7 +177,7 @@ void CLOSE_handleAndExitThread(HANDLE handle, int error_sum)
 	error_sum = CLOSE_handleAndReturn(handle,error_sum);
 	//printf("Exiting thread with error_sum %8i\n", error_sum);
 	sprintf_s(textMsg, LENGTH_OF_BUFFER, "Exiting thread with error_sum %8i\n", error_sum);
-	logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
+	logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 	ExitThread(error_sum);
 }
 
@@ -193,7 +193,7 @@ void TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, int error_sum)
 {
 	char textMsg[LENGTH_OF_BUFFER];
 	sprintf_s(textMsg, LENGTH_OF_BUFFER, "Starting to terminate all threads with error_sum %8i\n", error_sum);
-	logMsg->PushMessage(textMsg, SEVERITY_MAX - 1);
+	logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 
 	for(int iTh = 0; iTh<iTh_max; iTh++){
 		if(FALSE == TerminateThread(hTh[iTh], EXITCODE_TERMINATED_BY_MAIN)){

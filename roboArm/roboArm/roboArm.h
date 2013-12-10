@@ -51,18 +51,22 @@
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // setup defines and macros
+#define CLOCK_X							CLOCK_1
+//____________________________________________________
+// debug
 #define DEBUG
 #define DEBUGGING_WITHOUT_HW
 #define DEBUG_PRINT_READ_FUNCTIONS
 
 //____________________________________________________
 // optional walk-arounds for little file inconsistency
-// if angle in file is out of bounds do not exit but convert it to limit instead and continue
-#define CUT_OFF_OUT_OF_BOUNDS_ANGLE_IN_CONTROL_FILE 
 #define IGNORE_NOT_NUMBER_ANGLE_IN_CONTROL_FILE
 #define IGNORE_INCONSISTENT_FILE_LINE
+// if angle in file is out of bounds do not exit but convert it to limit instead and continue
+#define CUT_OFF_OUT_OF_BOUNDS_ANGLE_IN_CONTROL_FILE 
 
-#define CLOCK_X							CLOCK_1
+//____________________________________________________
+// severities
 #define 	PUSHMSG_SEVERITY_LOW				SEVERITY_MIN
 #define PUSHMSG_SEVERITY_NORMAL			SEVERITY_MAX - 5
 #define 	PUSHMSG_SEVERITY_HIGH			SEVERITY_MAX
@@ -75,18 +79,16 @@
 #define FILE_MAX_CHARS			100000
 
 //____________________________________________________
-// reading control
-#define NUM_OF_THREADS			1
-#define LOGMSG_THREAD			1
-
-#define CHARS_PER_LINE			9
-#define FIRST_DIGIT_CHAR			2
-#define NUM_OF_DIGITS			5
-// MAX_DWORD = 4 294 967 295
-// MAX_DWORD / CHARS_PER_LINE > MAX(chunk_lines)
-// DWORD is sufficient for chunk_lines < 477 218 588
-//#define CHUNK_LINES				1024
-#define CHUNK_LINES				9000
+// thread counts
+#define NUM_OF_THREADS				(PWM_CONTROLLING_THREAD + LOGMSG_THREAD)
+#define LOGMSG_THREAD				1
+#define PWM_CONTROLLING_THREAD		1
+// thread indexes
+#define TH_LOG_I		0
+#define TH_PWM_I		1
+// thread priorities
+#define TH_LOG_PRIORITY				RT_PRIORITY_MAX - 1
+#define TH_PWM_PRIORITY				RT_PRIORITY_MAX - 2
 
 //____________________________________________________
 // class servoMotor macros
@@ -100,7 +102,9 @@
 #define CEOF							1 
 // end line characters (\r\n)
 #define CEND_LINE					2
-//#define DEFAULT_STACK_SIZE			8192
+// maximal Wait time command number of digits
+#define MAX_WAIT_TIME_CMD_NUM_OF_DIGITS
+
 
 
 
@@ -165,7 +169,7 @@ void _cdecl main(int  argc, char **argv);
 //____________________________________________________
 // function declarations of non-headered .cpp files
 // INIT.cpp
-int		INIT_All();
+int		INIT_HW();
 	int		INIT_Library();
 	void		INIT_ADC();
 
