@@ -155,39 +155,53 @@ class C_LogMessageA;
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // external variables & classes
-extern unsigned int baseAddress;	//roboArm.cpp
-extern HMODULE hLibModule;	//roboArm.cpp
-extern char* G_controlString;			//roboArm.cpp
-//extern char str[]; 
-extern C_LogMessageA *logMsg;
+
+//roboArm.cpp
+extern unsigned int		baseAddress;		
+extern HMODULE			hLibModule;	
+extern char*				G_controlString;			
+extern C_LogMessageA*	logMsg;
+
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // function declarations of roboArm.cpp
-void _cdecl main(int  argc, char **argv);
-	DWORD	GET_ADC(UCHAR channel, UCHAR gain);
-	void EXIT_process(int error_sum);
+void _cdecl	main(int  argc, char **argv);
+DWORD		GET_ADC(UCHAR channel, UCHAR gain);
+void			EXIT_process(int error_sum);
 
-//____________________________________________________
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // function declarations of non-headered .cpp files
+//____________________________________________________
 // INIT.cpp
 int		INIT_HW();
-	int		INIT_Library();
-	void		INIT_ADC();
-
+int		INIT_Library();
+void		INIT_ADC();
+	
+//____________________________________________________
 // readFile.cpp
+DWORD	GET_stringLenght(char *a_string, DWORD a_max_lenght, int* error_sum);
 int		READ_spatialConfigurationFromFile(C_roboticManipulator* a_ROB, char* a_filePath);
-	int		READ_file(char* a_filePath);
-		int		MOVE_pointerOrReturn(HANDLE hFile, LONG distance2move, DWORD* file_current_byte, DWORD MoveMethod);
-		int		CLOSE_handleAndReturn(HANDLE handle, int error_sum);
-	int		PARSE_controlString(C_roboticManipulator* a_manip);
-		int		PARSE_controlString(void);
-		int		char2num(char ch);
 
+// read file
+int		READ_file(char* a_filePath);
+int		MOVE_pointerOrReturn(HANDLE hFile, LONG distance2move, DWORD* file_current_byte, DWORD MoveMethod);
+int		CLOSE_handleAndReturn(HANDLE handle, int error_sum);
+
+// parse text
+int		PARSE_controlString(C_roboticManipulator* a_manip);
+int		PARSE_controlString(void);
+int		char2num(char ch);
+		
+//____________________________________________________
 // threadFunctions.cpp
 HANDLE* CREATE_threads(void);
-	void		TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, int error_sum);
-	void RTFCNDCL LogMessageThread(void *a_manip);
-	void		RTFCNDCL TIM_PWMfunction(void *a_manip);
-		void		CLOSE_handleAndExitThread(HANDLE handle, int error_sum);
+
+// exiting functions
+void		CLOSE_handleAndExitThread(HANDLE handle, int error_sum);
+void		TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, int error_sum);
+
+// thread functions
+void RTFCNDCL LogMessageThread(void *a_manip);
+void		RTFCNDCL TIM_PWMfunction(void *a_manip);
 
 #endif
 

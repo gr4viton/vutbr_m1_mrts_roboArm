@@ -56,45 +56,56 @@ void EXIT_process(int error_sum){
 	ExitProcess(error_sum);
 }
 
+
+
 /****************************************************************************
 @function	main
-@brief
-@param[in]
-@param[out]
-@return
+@brief		the function which is runned first, 
+			Calls init procedures and all other needed functions
+@param[in]	(int)argc - number of text input program parameters
+			(char)**argv - individual text input program parameters
+@param[out]	-
+@return		-
 ***************/
 //void _cdecl main(int  argc, char **argv, char **envp)
 void _cdecl main(int  argc, char **argv)
 {
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// program parameters aquisition
-	printf("_________________________(: Clean start :)___________________________\n");
+	//printf("_________________________(: Clean start :)___________________________\n");
+	printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>> roboArm started <<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
+	printf("function main()\n");
 	if ( argc != 2 )	 
 	{// argc should be 2 for correct execution
 		printf("You must specify the control txt file! Run:\n");
 		printf("$ %s <control_file_path>\n", argv[0]);
 		EXIT_process(ERROR_CONTROLFILE_PATH_NOT_SPECIFIED);
 	}
-	// We assume argv[1] is a filename to open	
-	// try lenght of string file_path 
-	for(int i=0; argv[1][i] != '\0'; i++)
+	int error_sum = 0;
+	// We assume argv[1] is a filename to open - try lenght of string file_path 
+	if( GET_stringLenght(argv[1], MAX_PATH, &error_sum) == 0)
 	{
-		if( i>=MAX_PATH ) 
+		if( error_sum == ERROR_STRING_LENGHT_LARGER_THAN_TRESHOLD )
 		{
+			printf("ERROR - control file path is too long (max=%u) = program parameter [%s]\n", MAX_PATH, argv[1]);
 			EXIT_process(ERROR_FILE_PATH_STRING_TOO_LONG);
 		}
 	}
+	// the filename lenght is short enaght
 	printf("Control-file: %s\n",argv[1]);
-	
-	
+		
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// INITIALIZATIONS
-	int error_sum = 0;
+	printf("Starting initialization process.");
+	// ____________________________________________________
+	// init logMsg
+	printf("> Try to logging class\n");
+	logMsg = new C_LogMessageA();
 	// ____________________________________________________
 	// init HW
-	printf("Starting initialization process.");
+	printf("> Try to initialize hardware\n");
 	error_sum = INIT_HW();
-	if(error_sum!=FLAWLESS_EXECUTION){
+	if(error_sum != FLAWLESS_EXECUTION){
 		printf("Initialization process failed with error_sum %i", error_sum);
 		EXIT_process(error_sum);
 	}	
@@ -107,9 +118,13 @@ void _cdecl main(int  argc, char **argv)
 		printf("Initialization of robotic manipulator failed with error_sum %i\n", error_sum);
 		EXIT_process(error_sum);
 	}
-	//____________________________________________________
+
+	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// read phases from file
+	
+	//printf("> Try to read phases from Configuration file\n");
 	// READ_spatialConfigurationFromFile(&ROB, argv[1]);
+	printf("> Try to fill phases with testing positions\n");
 	ROB.DEBUG_fillPhases();
 
 
@@ -319,6 +334,8 @@ void _cdecl main(int  argc, char **argv)
 #endif
 	//____________________________________________________
 	// everything should be unallocated and closed
+	printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> roboArm ended <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
+	printf("Exiting process.\n");
     EXIT_process(FLAWLESS_EXECUTION);
 }
 

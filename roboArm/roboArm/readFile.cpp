@@ -9,11 +9,41 @@
 #include "roboArm.h"
 
 /****************************************************************************
+@function   GET_stringLenght
+@brief      secure strlen() with maximum lenght 
+@param[in]  (char*) a_string | string whose lenght we want to know
+			(DWORD) a_max_lenght | maximum lenght
+@param[out] (int*) error_sum | param to return out error value
+@return    	(DWORD)
+			- if the lenght of the string is larger than maximum 
+				return = 0
+				error_sum = ERROR_STRING_LENGHT_LARGER_THAN_TRESHOLD
+			- else
+				return = number of characters in a_string
+				error_sum = FLAWLESS_EXECUTION
+************/
+DWORD GET_stringLenght(char *a_string, DWORD a_max_lenght, int* a_error_sum)
+{
+	DWORD inStrLen = 0;
+	for(inStrLen=0; a_string[inStrLen] != '\0'; inStrLen++){
+		if(inStrLen > a_max_lenght) 
+		{
+			printf("ERROR - string is too long (max=%u) [%s]\n", a_max_lenght, a_string);
+			*a_error_sum = ERROR_STRING_LENGHT_LARGER_THAN_TRESHOLD;
+			return(0);
+		}
+	}
+	*a_error_sum = FLAWLESS_EXECUTION;
+	return(inStrLen);
+}
+
+/****************************************************************************
 @function   READ_patialConfigurationFromFile
 @brief      	parsing out the parameters for individual phases from the string [str]
 @param[in]  
 @param[out] 
-@return     	on Success	= FLAWLESS_EXECUTION
+@return     (int)
+			on Success	= FLAWLESS_EXECUTION
 			on Error		= error_sum of ERRORS defined in returnCodeDefines.h
 ************/
 int	READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_filePath){

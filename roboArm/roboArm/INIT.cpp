@@ -15,28 +15,24 @@
 @retval[out]	FLAWLESS_EXECUTION - on flawless execution
 ***************/
 int INIT_HW(){
-	int ret = 0;
-
-	// Init logMsg
-	logMsg = new C_LogMessageA();
-
+	int error_sum = 0;
+	//____________________________________________________
 	// Load library
-	ret = INIT_Library();
-	if(ret){
-		//printf("Cannot init library\n");	
+	printf("> Try to initialize Library\n");
+	error_sum = INIT_Library();
+	if(error_sum){
 		logMsg->PushMessage("Cannot init library", PUSHMSG_SEVERITY_NORMAL);
 #ifndef DEBUGGING_WITHOUT_HW //if NOT defined
 		return(ERR_INIT_CANNOT_LOAD_LIBRARY);	
 #endif
-		//printf("Continuing as DEBUGGING_WITHOUT_HW was defined!\n");
-		logMsg->PushMessage("Continuing as DEBUGGING_WITHOUT_HW was defined!", PUSHMSG_SEVERITY_NORMAL);
+		logMsg->PushMessage(">> Continuing as DEBUGGING_WITHOUT_HW was defined!", PUSHMSG_SEVERITY_NORMAL);
 	}
 	else 
-		//printf("Library was opened successfully :)\n");
-		logMsg->PushMessage("Library was opened successfully :)", PUSHMSG_SEVERITY_NORMAL);
+		logMsg->PushMessage(">> Library was opened successfully!", PUSHMSG_SEVERITY_NORMAL);
 	
 	//____________________________________________________
 	// Initialize ADC
+	printf("> Try to initialize ADC\n");
 	INIT_ADC();
 	return(FLAWLESS_EXECUTION);
 }

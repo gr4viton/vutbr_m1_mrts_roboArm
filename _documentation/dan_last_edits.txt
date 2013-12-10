@@ -1,2 +1,3 @@
-INIT_All -> INIT_HW
-documentation remake
+funkce GET_stringLenght() vytvoøena a použita v main
+zpøehlednìny hlavièky
+start a end program notification

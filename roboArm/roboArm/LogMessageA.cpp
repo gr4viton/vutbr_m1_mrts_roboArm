@@ -195,9 +195,12 @@ C_LogMessageA::~C_LogMessageA()
 ************/
 unsigned int C_LogMessageA::PushMessage(char* in, int iSeverity)
 {
+	printf(in);
+	// FOR DEBUGGING - uncoment after
+	/*
 	if(!bLogging)
 	{
-		RtPrintf("(Logging stopped)\t%s\n",in);
+		RtPrintf("(Logging blocked)\t%s\n",in);
 		return 1;
 	}
 	actSeverity = iSeverity;
@@ -206,8 +209,8 @@ unsigned int C_LogMessageA::PushMessage(char* in, int iSeverity)
 	// Critical section [START]
 	buf->Write(in);	
 	RtReleaseMutex(hMutex); // Critical section [END]
-
-	return FLAWLESS_EXECUTION;
+	*/
+	return(FLAWLESS_EXECUTION);
 }
 
 /****************************************************************************
