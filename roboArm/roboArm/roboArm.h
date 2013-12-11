@@ -191,7 +191,7 @@ DWORD	READ_spatialConfigurationFromFile(C_roboticManipulator* a_ROB, char* a_fil
 // read file
 DWORD	READ_file(char* a_filePath);
 DWORD	MOVE_pointerOrReturn(HANDLE hFile, LONG distance2move, DWORD* file_current_byte, DWORD MoveMethod);
-DWORD CLOSE_handleAndReturn(HANDLE a_handle, DWORD error_sum, bool a_writeError = true);
+DWORD	CLOSE_handleAndReturn(HANDLE a_handle, DWORD error_sum, bool a_writeError = true);
 
 // parse text
 DWORD	PARSE_controlString(C_roboticManipulator* a_manip);
