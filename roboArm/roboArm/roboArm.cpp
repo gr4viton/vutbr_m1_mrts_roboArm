@@ -92,7 +92,7 @@ void _cdecl main(int  argc, char **argv)
 		}
 	}
 	// the filename lenght is short enaght
-	printf("Control-file: %s\n",argv[1]);
+	printf("Control-file: %s\n", argv[1]);
 		
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// INITIALIZATIONS
@@ -245,6 +245,7 @@ void _cdecl main(int  argc, char **argv)
 	printf("main() - Waiting for all but the Logging thread to terminate.\n");
 	do{ 
 		still_active_threads = 0;
+		iTh = iTh;
 		// get the exit code of a thread
 
 		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!!!<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
