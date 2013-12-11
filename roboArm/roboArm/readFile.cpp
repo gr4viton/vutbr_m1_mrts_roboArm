@@ -47,6 +47,7 @@ DWORD GET_stringLenght(char *a_string, DWORD a_max_lenght, int* a_error_sum)
 			on Error		= error_sum of ERRORS defined in returnCodeDefines.h
 ************/
 int	READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_filePath){
+	if(*a_filePath == 0 && a_manip->IS_in_bounds(1)) return(100000);
 	/*
 	// char array for printing messages
 	char textMsg[LENGTH_OF_BUFFER];
@@ -94,6 +95,7 @@ int	READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_fil
 // only MAX_WAIT_TIME_CMD_NUM_OF_DIGITS shoudl be readed
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!!!<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 int	PARSE_controlString(C_roboticManipulator* a_manip){
+	if(a_manip->IS_in_bounds(1)) return(100000);
 	/*
 	// char array for printing messages
 	char textMsg[LENGTH_OF_BUFFER];
@@ -364,7 +366,7 @@ int CLOSE_handleAndReturn(HANDLE handle, int error_sum)
 	char textMsg[LENGTH_OF_BUFFER];
 #ifdef DEBUG
 	RtPrintf("Try to CloseHandle.\n");
-	logMsg->PushMessage("Try to CloseHandle.", SEVERITY_MAX - 4);
+	logMsg->PushMessage("Try to CloseHandle.", PUSHMSG_SEVERITY_NORMAL);
 #endif
 	if( CloseHandle(handle) == 0 )
 	{

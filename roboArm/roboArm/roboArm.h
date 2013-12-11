@@ -52,6 +52,7 @@
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // setup defines and macros
 #define CLOCK_X							CLOCK_1
+#define RUNNING_ON_1CPU
 //____________________________________________________
 // debug
 #define DEBUG
@@ -67,9 +68,15 @@
 
 //____________________________________________________
 // severities
-#define 	PUSHMSG_SEVERITY_LOW				SEVERITY_MIN
-#define PUSHMSG_SEVERITY_NORMAL			SEVERITY_MAX - 5
-#define 	PUSHMSG_SEVERITY_HIGH			SEVERITY_MAX
+#define 	PUSHMSG_SEVERITY_LOWEST			SEVERITY_MAX - 9
+#define 	PUSHMSG_SEVERITY_LOWER			SEVERITY_MAX - 8
+#define 	PUSHMSG_SEVERITY_LOW				SEVERITY_MAX - 7 
+#define PUSHMSG_SEVERITY_MEDIUM			SEVERITY_MAX - 5	
+#define 	PUSHMSG_SEVERITY_HIGH			SEVERITY_MAX - 3
+#define 	PUSHMSG_SEVERITY_HIGHER			SEVERITY_MAX - 2
+#define 	PUSHMSG_SEVERITY_HIGHEST			SEVERITY_MAX - 1
+
+#define PUSHMSG_SEVERITY_NORMAL			PUSHMSG_SEVERITY_MEDIUM		
 
 //____________________________________________________
 // file path
@@ -84,11 +91,11 @@
 #define LOGMSG_THREAD				1
 #define PWM_CONTROLLING_THREAD		1
 // thread indexes
-#define TH_LOG_I		0
-#define TH_PWM_I		1
+#define TH_LOG_I						0
+#define TH_PWM_I						1
 // thread priorities
-#define TH_LOG_PRIORITY				RT_PRIORITY_MAX - 1
-#define TH_PWM_PRIORITY				RT_PRIORITY_MAX - 2
+#define TH_LOG_PRIORITY				RT_PRIORITY_MAX - 6
+#define TH_PWM_PRIORITY				RT_PRIORITY_MAX - 7
 
 //____________________________________________________
 // class servoMotor macros
@@ -104,9 +111,6 @@
 #define CEND_LINE					2
 // maximal Wait time command number of digits
 #define MAX_WAIT_TIME_CMD_NUM_OF_DIGITS
-
-
-
 
 
 //____________________________________________________
@@ -200,7 +204,7 @@ void		CLOSE_handleAndExitThread(HANDLE handle, int error_sum);
 void		TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, int error_sum);
 
 // thread functions
-void RTFCNDCL LogMessageThread(void *a_manip);
+void RTFCNDCL LogMessageThread(void *a_struct);
 void		RTFCNDCL TIM_PWMfunction(void *a_manip);
 
 #endif

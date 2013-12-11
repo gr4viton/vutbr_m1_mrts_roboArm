@@ -96,7 +96,7 @@ void _cdecl main(int  argc, char **argv)
 		
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// INITIALIZATIONS
-	printf("Starting initialization process.");
+	printf("Starting initialization process.\n");
 	// ____________________________________________________
 	// init logMsg
 	printf("> Try to logging class\n");
@@ -106,7 +106,7 @@ void _cdecl main(int  argc, char **argv)
 	printf("> Try to initialize hardware\n");
 	error_sum = INIT_HW();
 	if(error_sum != FLAWLESS_EXECUTION){
-		printf("Initialization process failed with error_sum %i", error_sum);
+		printf("Initialization process failed with error_sum %i\n", error_sum);
 		EXIT_process(error_sum);
 	}	
 	//____________________________________________________
@@ -218,7 +218,7 @@ void _cdecl main(int  argc, char **argv)
 			logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			if(iTh == 0)
 			{
-				logMsg->PushMessage("Logging started.", SEVERITY_MAX - 5);
+				logMsg->PushMessage("Logging started.\n", SEVERITY_MAX - 5);
 			}
 		}
 		else{
@@ -238,46 +238,65 @@ void _cdecl main(int  argc, char **argv)
 	LARGE_INTEGER preemptive_interval; 
 	preemptive_interval.QuadPart = 100;	
 
-	do{ // waiting for all the threads to be
+
+	//____________________________________________________
+	// waiting for the termination of all threads but the Logging one [TH_LOG_I = 0]
+	iTh = TH_LOG_I + 1;
+	printf("main() - Waiting for all but the Logging thread to terminate.\n");
+	do{ 
 		still_active_threads = 0;
-		//BOOL GetExitCodeThread(HANDLE hThread, LPDWORD lpExitCode);
-		if(GetExitCodeThread(hTh[iTh], thExitCode[iTh] ) == FALSE){
+		// get the exit code of a thread
+		if(GetExitCodeThread(hTh[iTh], thExitCode[iTh] ) == FALSE)
+		{ // the function failed 
 			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Function of thread[%i] failed, returned FALSE with exit-code %lu\n", iTh, *thExitCode);
 			logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			break;
 		}
-		if( *thExitCode[iTh] == STILL_ACTIVE ){
+		// is this thread still active?
+		if( *thExitCode[iTh] == STILL_ACTIVE )
+		{ // this thread is still active
 			still_active_threads++;
 		}
-		else{
-			
-		}
+		// try next thread
 		iTh++;
-		if(iTh > iTh_max)	iTh = 1;
-		//____________________________________________________
-		// could not be executed if CPU>1 
-		RtSleepFt(&preemptive_interval);
+		if(iTh > iTh_max) iTh = 1; 
+#ifdef RUNNING_ON_1CPU
+		RtSleepFt(&preemptive_interval);  // preemption
+#endif
 	}while(still_active_threads);
 	
+	
+	for(iTh = 1; iTh<iTh_max; iTh++){
+		sprintf_s(textMsg, LENGTH_OF_BUFFER, "Thread[%i] terminated with exit code %lu\n", iTh, *thExitCode[iTh]);
+		logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);		
+	}			
+
+
+	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// End of logging -> ends thread hTh[0]
+	printf("main() - Try to stop Loggign function.\n");
 	logMsg->LoggingStop();
+	printf("main() - Waiting for the Logging thread to terminate.\n");
 	// Wait to end of thread hTh[0]
 	do{
-		still_active_threads = 0;
 		if(GetExitCodeThread(hTh[0], (thExitCode[0]) ) == FALSE){
 			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Function of thread[%i] failed, returned FALSE with exit-code %lu\n", 0, *thExitCode);
 			logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			break;
 		}
-		if( *thExitCode[0] == STILL_ACTIVE )still_active_threads=1;
-		RtSleepFt(&preemptive_interval);
+		if( *thExitCode[0] == STILL_ACTIVE ) 
+		{
+			still_active_threads = 1;
+		}
+		else
+		{
+			still_active_threads = 0;
+		}
+#ifdef RUNNING_ON_1CPU
+		RtSleepFt(&preemptive_interval);  // preemption
+#endif
 	}while(still_active_threads);
 
-	for(iTh = 0; iTh<iTh_max; iTh++){
-		sprintf_s(textMsg, LENGTH_OF_BUFFER, "Thread[%i] terminated with exit code %lu\n", iTh, *thExitCode[iTh]);
-		logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
-		//printf("Thread[%i] sum = %f\n", iTh, static_cast<double *>(thread_argument[iTh]));
-	}			
 	
 
 	//    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

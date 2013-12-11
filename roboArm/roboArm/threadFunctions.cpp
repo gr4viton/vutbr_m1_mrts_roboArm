@@ -18,10 +18,12 @@ HANDLE* CREATE_threads(void)
 @brief			Function function periodically call method
 				WriteBuffToFile in logMsg instance of C_LogMessageA. If the buffer
 				contains message and mutex is free, then it writes message to Log file.
-@param[in]		void *a_struct - not used
+@param[in]		(void*) - 
 ***************/
-void RTFCNDCL LogMessageThread(void *a_manip)
+void RTFCNDCL LogMessageThread(void *)
 {
+	// DEBUG - logging do not wanna
+	
 	// logging - do NOT modify
 	while(logMsg->GetState())
 	{
@@ -29,7 +31,7 @@ void RTFCNDCL LogMessageThread(void *a_manip)
 		Sleep(10);
 	}
 
-	ExitThread(0);
+	ExitThread(FLAWLESS_EXECUTION);
 }
 
 /****************************************************************************
@@ -59,7 +61,7 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 	LARGE_INTEGER PWM_period;	// how often to write position - restart tic
 	LARGE_INTEGER tic;			// iterating variable
 	LARGE_INTEGER tic_interval;	// how long does one tic take
-	LARGE_INTEGER tic_phase;	// counting phase time
+	LARGE_INTEGER tic_phase;		// counting phase time
 	LARGE_INTEGER intervalOne;	// counting phase time
 
 	intervalOne.QuadPart = 0;
@@ -159,6 +161,7 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 		if(it != ROB->phases.end()) it++;
 	}// phase loop
 	ROB = NULL;
+	ExitThread(FLAWLESS_EXECUTION);
 }
 
 

@@ -48,6 +48,11 @@
 #define ERROR_COULD_NOT_CREATE_THREAD				1024
 
 //____________________________________________________
+// INIT
+#define ERROR_COULD_NOT_LOAD_DAC_DLL_RTDLL_LIBRARY  97000
+#define ERROR_COULD_NOT_FIND_PROC_ADDRESS			97001
+
+//____________________________________________________
 //LogMessageA
 #define ERROR_SPRINTF_S								98002
 #define ERROR_SEVERITY_LOWER_THAN_MIN				98003
@@ -67,6 +72,7 @@
 #define ERROR_BAD_DYNAMIC_ALLOCATION					99258
 #define ERROR_IS_NOT_NUMBER							99259
 #define ERROR_INCONSISTENT_FILE_LINE					99260
+
 //____________________________________________________
 #define EXITCODE_SUCCESSFUL_END					0
 #define EXITCODE_TERMINATED_BY_MAIN				1

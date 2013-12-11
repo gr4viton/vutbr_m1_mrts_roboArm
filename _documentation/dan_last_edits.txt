@@ -1,3 +1,4 @@
-funkce GET_stringLenght() vytvoøena a použita v main
-zpøehlednìny hlavièky
-start a end program notification
+severities PUSHMSG_SEVERITY_LOWEST - HIGHEST + NORMAL
+printf register in DEBUGGING_WITHOUT_HW notification DEBUG vs WRITE
+
+

@@ -200,12 +200,20 @@ int C_roboticManipulator::GET_servoMotor(int a_servo_i, C_servoMotor** servoMoto
 ***************/
 void C_roboticManipulator::WRITE_portUchar(PUCHAR a_port_address, UCHAR a_port_data)
 {	
-	DOport_lastValue = a_port_data;
-#ifndef DEBUGGING_WITHOUT_HW
-	RtWritePortUchar(PUCHAR Port, UCHAR Data);
-	return;
+	if(DOport_lastValue == a_port_data)
+	{ // register byte did not change
+		printf("Do not have to write byte - port has not changed.\n");
+	}
+	else
+	{ // write new byte
+		DOport_lastValue = a_port_data;
+#ifndef DEBUGGING_WITHOUT_HW // if NOT defined
+		printf("WRITE > address= 0x%08x | data= 0x%08x\n", a_port_address, a_port_data);
+		RtWritePortUchar(PUCHAR Port, UCHAR Data);
+		return;
 #endif
-	printf("address= 0x%08x | data= 0x%08x\n", a_port_address, a_port_data);
+		printf("DEBUG > address= 0x%08x | data= 0x%08x\n", a_port_address, a_port_data);
+	}
 }
 
 /****************************************************************************

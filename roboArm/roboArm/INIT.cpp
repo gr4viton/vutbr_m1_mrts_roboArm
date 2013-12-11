@@ -21,14 +21,14 @@ int INIT_HW(){
 	printf("> Try to initialize Library\n");
 	error_sum = INIT_Library();
 	if(error_sum){
-		logMsg->PushMessage("Cannot init library", PUSHMSG_SEVERITY_NORMAL);
+		logMsg->PushMessage("Cannot init library\n", PUSHMSG_SEVERITY_NORMAL);
 #ifndef DEBUGGING_WITHOUT_HW //if NOT defined
 		return(ERR_INIT_CANNOT_LOAD_LIBRARY);	
 #endif
-		logMsg->PushMessage(">> Continuing as DEBUGGING_WITHOUT_HW was defined!", PUSHMSG_SEVERITY_NORMAL);
+		logMsg->PushMessage(">> Continuing as DEBUGGING_WITHOUT_HW was defined!\n", PUSHMSG_SEVERITY_NORMAL);
 	}
 	else 
-		logMsg->PushMessage(">> Library was opened successfully!", PUSHMSG_SEVERITY_NORMAL);
+		logMsg->PushMessage(">> Library was opened successfully!\n", PUSHMSG_SEVERITY_NORMAL);
 	
 	//____________________________________________________
 	// Initialize ADC
@@ -66,38 +66,49 @@ void INIT_ADC()
  @retval	1 - loadLibrary error, communication FAILED
  @retval	2 - get adrees error, communication FAILED
 */
+/****************************************************************************
+@function   INIT_Library
+@brief      function open library for communication with PIO821 card
+@param[in]  
+@param[out] 
+@return     (int)
+			FLAWLESS_EXECUTION - function succeeded
+			ERROR-code - defined in returnCodeDefines.h
+************/
 int INIT_Library()
 {
-	// char array for printing messages
-	char textMsg[LENGTH_OF_BUFFER];
-//typedef __nullterminated CONST CHAR *LPCSTR, *PCSTR;
-//typedef __nullterminated CONST WCHAR *LPCWSTR, *PCWSTR;
-	LPCSTR lpLibFileName = "dac_dll.rtdll";
-	LPCSTR lpProcName = "GetPIO821BaseAddress";
+	char textMsg[LENGTH_OF_BUFFER]; // char array for printing messages
+
+	LPCSTR lpLibFileName		= "dac_dll.rtdll";
+	LPCSTR lpProcName		= "GetPIO821BaseAddress";
 	FARPROC functionPointer = NULL;
+
+	// ____________________________________________________
 	// load Library 
+	printf("Try to load Library.\n");
 	hLibModule = LoadLibrary(lpLibFileName);
-	// check if loadLibrary returned correctly 
-	if(hLibModule== NULL) {
-		/* ERROR */
+	if(hLibModule == NULL) 
+	{
 		printf("Error:\tCould not load the library.\n");
-		return 1;
+		return(ERROR_COULD_NOT_LOAD_DAC_DLL_RTDLL_LIBRARY);
 	}
+	//____________________________________________________
 	// Get function from Rtdll 
+	printf("Try to get function pointer.\n");
 	functionPointer = GetProcAddress( hLibModule, lpProcName) ;
-	// check if function was found 
 	if(functionPointer == NULL) 
-	{	// ERROR 
+	{
 		printf("Error:\tCould not find address.\n");
 		FreeLibrary(hLibModule);
-		return 2;
+		return(ERROR_COULD_NOT_FIND_PROC_ADDRESS);
 	}
-	// Call function
+	// Call function - to get the address
 	baseAddress = (DWORD) functionPointer();
-	//printf("base = %i = hex = %x \n", baseAddress, baseAddress);
-	sprintf_s(textMsg, LENGTH_OF_BUFFER, "base = %i = hex = %x \n", baseAddress, baseAddress);
+
+	sprintf_s(textMsg, LENGTH_OF_BUFFER, "baseAddress = %i = hex = %x \n", baseAddress, baseAddress);
 	logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
-	// Free Library 
+	// Free the Library
+	printf("Free the Library.\n");
 	FreeLibrary(hLibModule);
-	return 0;
+	return(FLAWLESS_EXECUTION);
 }

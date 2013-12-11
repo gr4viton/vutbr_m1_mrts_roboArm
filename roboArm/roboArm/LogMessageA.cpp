@@ -195,7 +195,8 @@ C_LogMessageA::~C_LogMessageA()
 ************/
 unsigned int C_LogMessageA::PushMessage(char* in, int iSeverity)
 {
-	printf(in);
+	if(iSeverity > 0)
+		printf(in);
 	// FOR DEBUGGING - uncoment after
 	/*
 	if(!bLogging)
