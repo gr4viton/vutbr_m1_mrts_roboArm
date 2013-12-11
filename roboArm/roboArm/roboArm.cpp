@@ -137,7 +137,7 @@ void _cdecl main(int  argc, char **argv)
 	const int iTh_max = NUM_OF_THREADS; 
 
 	HANDLE		hTh[iTh_max];			// array of handles to the threads
-	LPDWORD		thExitCode[iTh_max];		// exit code from thread
+	DWORD		thExitCode[iTh_max];		// exit code from thread
 
 	int iTh = 0;							// handler iterator
 	DWORD thread_id = 0;					// thread id input param
@@ -247,10 +247,7 @@ void _cdecl main(int  argc, char **argv)
 		still_active_threads = 0;
 		iTh = iTh;
 		// get the exit code of a thread
-
-		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!!!<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-		// HERE IT FALLS
-		if(GetExitCodeThread(hTh[iTh], thExitCode[iTh] ) == FALSE)
+		if(GetExitCodeThread(hTh[iTh], &(thExitCode[iTh]) ) == FALSE)
 		{ // the function failed 
 			error_sum = GetLastError();
 			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Function GetExitCodeThread called with thread[%i] failed, returned FALSE with error %lu\n", iTh, error_sum);
@@ -258,7 +255,7 @@ void _cdecl main(int  argc, char **argv)
 			break;
 		}
 		// is this thread still active?
-		if( *thExitCode[iTh] == STILL_ACTIVE )
+		if( thExitCode[iTh] == STILL_ACTIVE )
 		{ // this thread is still active
 			still_active_threads++;
 		}
@@ -272,7 +269,7 @@ void _cdecl main(int  argc, char **argv)
 	
 	
 	for(iTh = 1; iTh<iTh_max; iTh++){
-		sprintf_s(textMsg, LENGTH_OF_BUFFER, "Thread[%i] terminated with exit code %lu\n", iTh, *thExitCode[iTh]);
+		sprintf_s(textMsg, LENGTH_OF_BUFFER, "Thread[%i] terminated with exit code %lu\n", iTh, thExitCode[iTh]);
 		logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);		
 	}			
 
@@ -284,12 +281,12 @@ void _cdecl main(int  argc, char **argv)
 	printf("main() - Waiting for the Logging thread to terminate.\n");
 	// Wait to end of thread hTh[TH_LOG_I]
 	do{
-		if(GetExitCodeThread(hTh[TH_LOG_I], (thExitCode[TH_LOG_I]) ) == FALSE){
-			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Function of thread[%i] failed, returned FALSE with exit-code %lu\n", 0, *thExitCode);
+		if(GetExitCodeThread(hTh[TH_LOG_I], &(thExitCode[TH_LOG_I]) ) == FALSE){
+			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Function of thread[%i] failed, returned FALSE with exit-code %lu\n", TH_LOG_I, thExitCode[TH_LOG_I]);
 			logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			break;
 		}
-		if( *thExitCode[TH_LOG_I] == STILL_ACTIVE ) 
+		if( thExitCode[TH_LOG_I] == STILL_ACTIVE ) 
 		{
 			still_active_threads = 1;
 		}
