@@ -51,7 +51,7 @@ DWORD MEAN_adc(UCHAR channel, UCHAR gain, int c)
 @param[out]
 @return
 ***************/
-void EXIT_process(int error_sum){
+void EXIT_process(DWORD error_sum){
 	printf("Exiting process with error_sum %i\n",error_sum);
 	ExitProcess(error_sum);
 }
@@ -81,7 +81,7 @@ void _cdecl main(int  argc, char **argv)
 		printf("$ %s <control_file_path>\n", argv[0]);
 		EXIT_process(ERROR_CONTROLFILE_PATH_NOT_SPECIFIED);
 	}
-	int error_sum = 0;
+	DWORD error_sum = 0;
 	// We assume argv[1] is a filename to open - try lenght of string file_path 
 	if( GET_stringLenght(argv[1], MAX_PATH, &error_sum) == 0)
 	{
@@ -246,9 +246,13 @@ void _cdecl main(int  argc, char **argv)
 	do{ 
 		still_active_threads = 0;
 		// get the exit code of a thread
+
+		// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!!!<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+		// HERE IT FALLS
 		if(GetExitCodeThread(hTh[iTh], thExitCode[iTh] ) == FALSE)
 		{ // the function failed 
-			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Function of thread[%i] failed, returned FALSE with exit-code %lu\n", iTh, *thExitCode);
+			error_sum = GetLastError();
+			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Function GetExitCodeThread called with thread[%i] failed, returned FALSE with error %lu\n", iTh, error_sum);
 			logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			break;
 		}
@@ -259,7 +263,7 @@ void _cdecl main(int  argc, char **argv)
 		}
 		// try next thread
 		iTh++;
-		if(iTh > iTh_max) iTh = 1; 
+		if(iTh >= iTh_max) iTh = 1; 
 #ifdef RUNNING_ON_1CPU
 		RtSleepFt(&preemptive_interval);  // preemption
 #endif

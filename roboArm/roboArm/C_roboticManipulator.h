@@ -34,11 +34,11 @@ public:
 //____________________________________________________
 // declaration of external defined member functions 
 public:		int IS_in_bounds(int servo_i);	
-public:		C_roboticManipulator(int &error_sum);
+public:		C_roboticManipulator(DWORD &error_sum);
 //public:		int SET_dutyCycleIntervals(int servo_i, LARGE_INTEGER a_interval_one, LARGE_INTEGER a_intervalZero);
 
-public:		int GET_servoMotor(int a_servo_i, C_servoMotor** servoMotor);
-//public:		int GET_servoMotor(int a_servo_i, C_servoMotor* servoMotor);
+public:		DWORD GET_servoMotor(int a_servo_i, C_servoMotor** servoMotor);
+//public:		DWORD GET_servoMotor(int a_servo_i, C_servoMotor* servoMotor);
 			
 public:		void WRITE_portUchar(PUCHAR a_port_address, UCHAR a_port_data);
 public:		void RESET_DOport();

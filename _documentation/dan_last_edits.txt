@@ -1,4 +1,0 @@
-severities PUSHMSG_SEVERITY_LOWEST - HIGHEST + NORMAL
-printf register in DEBUGGING_WITHOUT_HW notification DEBUG vs WRITE
-
-

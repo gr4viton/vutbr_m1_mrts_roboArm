@@ -75,7 +75,7 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 	// here there will be some mutexed variable for control of this thread termination ??
 	bool ticDone = false;
 	bool phaseDone = false;
-	int error_sum = 0;
+	DWORD error_sum = 0;
 	//____________________________________________________
 	// main thread loop
 	ROB->RESET_DOport();
@@ -169,7 +169,7 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 @param[out]	
 @return		
 ***************/
-void CLOSE_handleAndExitThread(HANDLE handle, int error_sum)
+void CLOSE_handleAndExitThread(HANDLE handle, DWORD error_sum)
 {
 	//PUSHMSG_SEVERITY_HIGH
 	// char array for printing messages
@@ -189,7 +189,7 @@ void CLOSE_handleAndExitThread(HANDLE handle, int error_sum)
 @param[out]
 @return
 ***************/
-void TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, int error_sum)
+void TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, DWORD error_sum)
 {
 	char textMsg[LENGTH_OF_BUFFER];
 	sprintf_s(textMsg, LENGTH_OF_BUFFER, "Starting to terminate all threads with error_sum %8i\n", error_sum);

@@ -22,7 +22,7 @@
 				return = number of characters in a_string
 				error_sum = FLAWLESS_EXECUTION
 ************/
-DWORD GET_stringLenght(char *a_string, DWORD a_max_lenght, int* a_error_sum)
+DWORD GET_stringLenght(char *a_string, DWORD a_max_lenght, DWORD* a_error_sum)
 {
 	DWORD inStrLen = 0;
 	for(inStrLen=0; a_string[inStrLen] != '\0'; inStrLen++){
@@ -46,12 +46,12 @@ DWORD GET_stringLenght(char *a_string, DWORD a_max_lenght, int* a_error_sum)
 			on Success	= FLAWLESS_EXECUTION
 			on Error		= error_sum of ERRORS defined in returnCodeDefines.h
 ************/
-int	READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_filePath){
+DWORD READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_filePath){
 	if(*a_filePath == 0 && a_manip->IS_in_bounds(1)) return(100000);
 	/*
 	// char array for printing messages
 	char textMsg[LENGTH_OF_BUFFER];
-	int error_sum = 0;
+	DWORD error_sum = 0;
 	//____________________________________________________
 	// read control file into string
 	error_sum = READ_file(a_filePath);
@@ -94,7 +94,7 @@ int	READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_fil
 // only 4 digits of angle should be readed
 // only MAX_WAIT_TIME_CMD_NUM_OF_DIGITS shoudl be readed
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!!!<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-int	PARSE_controlString(C_roboticManipulator* a_manip){
+DWORD PARSE_controlString(C_roboticManipulator* a_manip){
 	if(a_manip->IS_in_bounds(1)) return(100000);
 	/*
 	// char array for printing messages
@@ -120,7 +120,7 @@ int	PARSE_controlString(C_roboticManipulator* a_manip){
 
 	while ((pos = controlString.find(delimiter)) != std::string::npos) 
 	{
-		int error_sum = FLAWLESS_EXECUTION;
+		DWORD error_sum = FLAWLESS_EXECUTION;
 		token = controlString.substr(0, pos);
 		//____________________________________________________
 		// Wtime
@@ -249,10 +249,10 @@ int	PARSE_controlString(C_roboticManipulator* a_manip){
 @return     	on Success	= FLAWLESS_EXECUTION
 			on Error		= error_sum of ERRORS defined in returnCodeDefines.h
 ***************/
-int READ_file(char* a_filePath){
+DWORD READ_file(char* a_filePath){
 	// char array for printing messages
 	char textMsg[LENGTH_OF_BUFFER];
-	int error_sum = 0;
+	DWORD error_sum = 0;
 	HANDLE hFile = NULL;
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// CreateFile - for read handle 
@@ -360,7 +360,7 @@ int READ_file(char* a_filePath){
 @param[out] 
 @return     
 ************/
-int CLOSE_handleAndReturn(HANDLE handle, int error_sum)
+DWORD CLOSE_handleAndReturn(HANDLE handle, DWORD error_sum)
 {
 	// char array for printing messages
 	char textMsg[LENGTH_OF_BUFFER];
@@ -395,7 +395,7 @@ int CLOSE_handleAndReturn(HANDLE handle, int error_sum)
 @param[out] 
 @return     error_sum
 ************/
-int MOVE_pointerOrReturn(HANDLE hFile, LONG distance2move, DWORD* file_current_byte, DWORD MoveMethod=FILE_CURRENT)
+DWORD MOVE_pointerOrReturn(HANDLE hFile, LONG distance2move, DWORD* file_current_byte, DWORD MoveMethod=FILE_CURRENT)
 {
 	// char array for printing messages
 	char textMsg[LENGTH_OF_BUFFER];

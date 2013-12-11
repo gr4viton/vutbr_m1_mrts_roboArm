@@ -81,7 +81,7 @@ int C_roboticManipulator::CONVERT_angle2intervalOne(int a_angle, int a_i_serv, L
 @param[out] 
 @return     
 ************/
-C_roboticManipulator::C_roboticManipulator(int &error_sum)
+C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 {
 	error_sum = FLAWLESS_EXECUTION;
 	
@@ -176,10 +176,10 @@ int C_roboticManipulator::IS_in_bounds(int servo_i){
 @param[out]
 @return
 ***************/
-int C_roboticManipulator::GET_servoMotor(int a_servo_i, C_servoMotor** servoMotor)
-//int C_roboticManipulator::GET_servoMotor(int a_servo_i, C_servoMotor* servoMotor)
+DWORD C_roboticManipulator::GET_servoMotor(int a_servo_i, C_servoMotor** servoMotor)
+//DWORD C_roboticManipulator::GET_servoMotor(int a_servo_i, C_servoMotor* servoMotor)
 {
-	int error_sum = IS_in_bounds(a_servo_i);
+	DWORD error_sum = IS_in_bounds(a_servo_i);
 	if(error_sum != FLAWLESS_EXECUTION) 
 		return(error_sum);
 	else 

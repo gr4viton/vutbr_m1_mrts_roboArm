@@ -15,7 +15,7 @@
 @retval[out]	FLAWLESS_EXECUTION - on flawless execution
 ***************/
 int INIT_HW(){
-	int error_sum = 0;
+	DWORD error_sum = 0;
 	//____________________________________________________
 	// Load library
 	printf("> Try to initialize Library\n");

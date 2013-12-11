@@ -168,7 +168,7 @@ extern C_LogMessageA*	logMsg;
 // function declarations of roboArm.cpp
 void _cdecl	main(int  argc, char **argv);
 DWORD		GET_ADC(UCHAR channel, UCHAR gain);
-void			EXIT_process(int error_sum);
+void			EXIT_process(DWORD error_sum);
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // function declarations of non-headered .cpp files
@@ -180,17 +180,17 @@ void		INIT_ADC();
 	
 //____________________________________________________
 // readFile.cpp
-DWORD	GET_stringLenght(char *a_string, DWORD a_max_lenght, int* error_sum);
-int		READ_spatialConfigurationFromFile(C_roboticManipulator* a_ROB, char* a_filePath);
+DWORD	GET_stringLenght(char *a_string, DWORD a_max_lenght, DWORD* error_sum);
+DWORD	READ_spatialConfigurationFromFile(C_roboticManipulator* a_ROB, char* a_filePath);
 
 // read file
-int		READ_file(char* a_filePath);
-int		MOVE_pointerOrReturn(HANDLE hFile, LONG distance2move, DWORD* file_current_byte, DWORD MoveMethod);
-int		CLOSE_handleAndReturn(HANDLE handle, int error_sum);
+DWORD	READ_file(char* a_filePath);
+DWORD	MOVE_pointerOrReturn(HANDLE hFile, LONG distance2move, DWORD* file_current_byte, DWORD MoveMethod);
+DWORD	CLOSE_handleAndReturn(HANDLE handle, DWORD error_sum);
 
 // parse text
-int		PARSE_controlString(C_roboticManipulator* a_manip);
-int		PARSE_controlString(void);
+DWORD	PARSE_controlString(C_roboticManipulator* a_manip);
+DWORD	PARSE_controlString(void);
 int		char2num(char ch);
 		
 //____________________________________________________
@@ -198,8 +198,8 @@ int		char2num(char ch);
 HANDLE* CREATE_threads(void);
 
 // exiting functions
-void		CLOSE_handleAndExitThread(HANDLE handle, int error_sum);
-void		TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, int error_sum);
+void		CLOSE_handleAndExitThread(HANDLE handle, DWORD error_sum);
+void		TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, DWORD error_sum);
 
 // thread functions
 void RTFCNDCL LogMessageThread(void *a_struct);
