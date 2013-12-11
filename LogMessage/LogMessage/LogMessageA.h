@@ -11,13 +11,22 @@
 ***********/
 #ifndef __LOGMESSAGEA__
 #define __LOGMESSAGEA__
+#define LOGMSG_DEV
 
-#include "main.h"
-//#include "roboArm.h"
+#ifdef LOGMSG_DEV
+	#include "main.h"
+#else
+	#include "roboArm.h"
+#endif
 
-#define LENGTH_OF_BUFF	256
-#define LENGTH_OF_MESSAGE	512
-#define LENGTH_OF_MESSAGE_HEAD	512 + 30 //(30 is for tame, date, severity)
+#include "returnCodeDefines.h"
+
+// buffer dimensions - user choise
+	#define LENGTH_OF_BUFFER	256
+	#define LENGTH_OF_MESSAGE	512
+
+// do not modify
+#define LENGTH_OF_MESSAGE_HEAD	LENGTH_OF_MESSAGE + 30 //(30 is for tame, date, severity)
 #define HMUTEX_SHARED_NAME TEXT("C_LogMessageA_hMutex.Name")
 
 #define SEVERITY_MIN 0
@@ -36,7 +45,7 @@
 class C_CircBuffer
 {
 private:
-	char buf[LENGTH_OF_BUFF][LENGTH_OF_MESSAGE_HEAD];	// buffer array 
+	char buf[LENGTH_OF_BUFFER][LENGTH_OF_MESSAGE_HEAD];	// buffer array 
 	unsigned int Start, End;	// actual start and end positions
 	unsigned int freeSpace;		// actual free space
 
@@ -57,6 +66,8 @@ public:
 ***************/
 class C_LogMessageA
 {
+//____________________________________________________
+// member variables
 private:
 	// Mutex handle
 	HANDLE hMutex;
@@ -67,20 +78,16 @@ private:
 	// Flag indicating start/stop (true/false) of logging
 	bool bLogging;
 public:
-
-	// Constructor
+//____________________________________________________
+// declaration of external defined member functions 
 	C_LogMessageA();
-	// Destructor
 	~C_LogMessageA();
 
 	unsigned int PushMessage(char in[LENGTH_OF_MESSAGE], int iSeverity);
-
 	unsigned int WriteBuffToFile();
 
 	void LoggingStart(){bLogging = true;}
-
 	void LoggingStop(){bLogging = false;}
-
 	bool GetState(){return bLogging;}
 };
 
