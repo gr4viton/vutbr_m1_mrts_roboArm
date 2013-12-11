@@ -57,8 +57,7 @@
 #define DEBUGGING_WITHOUT_HW
 #define DEBUG_PRINT_READ_FUNCTIONS
 
-
-//#define SHOW_LOG_ON_SCREEN
+#define SHOW_LOG_ON_SCREEN
 
 //____________________________________________________
 // optional walk-arounds for little file inconsistency
@@ -192,7 +191,7 @@ DWORD	READ_spatialConfigurationFromFile(C_roboticManipulator* a_ROB, char* a_fil
 // read file
 DWORD	READ_file(char* a_filePath);
 DWORD	MOVE_pointerOrReturn(HANDLE hFile, LONG distance2move, DWORD* file_current_byte, DWORD MoveMethod);
-DWORD	CLOSE_handleAndReturn(HANDLE handle, DWORD error_sum);
+DWORD CLOSE_handleAndReturn(HANDLE a_handle, DWORD error_sum, bool a_writeError = true);
 
 // parse text
 DWORD	PARSE_controlString(C_roboticManipulator* a_manip);
@@ -208,7 +207,7 @@ void		CLOSE_handleAndExitThread(HANDLE handle, DWORD error_sum);
 void		TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, DWORD error_sum);
 
 // thread functions
-void RTFCNDCL LogMessageThread(void *a_struct);
+void		RTFCNDCL LogMessageThread(void *a_struct);
 void		RTFCNDCL TIM_PWMfunction(void *a_manip);
 
 #endif

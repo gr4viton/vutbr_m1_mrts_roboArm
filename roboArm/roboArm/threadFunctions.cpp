@@ -41,7 +41,7 @@ void RTFCNDCL LogMessageThread(void *)
 void LOAD_actualPhase(C_roboticManipulator* a_ROB, LARGE_INTEGER* PWM_period, 
 	std::list<C_spatialConfiguration>::iterator * a_actualPhase)
 {	
-	char textMsg[LENGTH_OF_BUFFER]; // char array for printing messages
+	char textMsg[LENGTH_OF_MESSAGE]; // char array for printing messages
 	DWORD error_sum = FLAWLESS_EXECUTION;
 	
 	LARGE_INTEGER intervalZero;		// tics for holding one on defined pin
@@ -52,10 +52,10 @@ void LOAD_actualPhase(C_roboticManipulator* a_ROB, LARGE_INTEGER* PWM_period,
 		error_sum = a_ROB->GET_servoMotor(i_serv, &serv);
 		if(error_sum != FLAWLESS_EXECUTION)
 		{
-			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Could not get servoMotor[%i] pointer\n", i_serv);
+			sprintf_s(textMsg, LENGTH_OF_MESSAGE, "Could not get servoMotor[%i] pointer\n", i_serv);
 			logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			//printf("Terminating thread with error_sum %lu\n", error_sum);
-			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Terminating thread with error_sum %lu\n", error_sum);
+			sprintf_s(textMsg, LENGTH_OF_MESSAGE, "Terminating thread with error_sum %lu\n", error_sum);
 			logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			ExitThread(error_sum);
 		}
@@ -82,7 +82,7 @@ void LOAD_actualPhase(C_roboticManipulator* a_ROB, LARGE_INTEGER* PWM_period,
 ***************/
 void RTFCNDCL TIM_PWMfunction(void *a_manip)
 {
-	char textMsg[LENGTH_OF_BUFFER]; // char array for printing messages
+	char textMsg[LENGTH_OF_MESSAGE]; // char array for printing messages
 	//____________________________________________________
 	// time measurement
 	LARGE_INTEGER tim1; tim1.QuadPart = 0;
@@ -135,10 +135,10 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 						serv = NULL;
 						ROB = NULL;
 						//printf("Could not get servoMotor[%i] pointer\n", i_serv);
-						sprintf_s(textMsg, LENGTH_OF_BUFFER, "Could not get servoMotor[%i] pointer\n", i_serv);
+						sprintf_s(textMsg, LENGTH_OF_MESSAGE, "Could not get servoMotor[%i] pointer\n", i_serv);
 						logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 						//printf("Terminating thread with error_sum %lu\n", error_sum);
-						sprintf_s(textMsg, LENGTH_OF_BUFFER, "Terminating thread with error_sum %lu\n", error_sum);
+						sprintf_s(textMsg, LENGTH_OF_MESSAGE, "Terminating thread with error_sum %lu\n", error_sum);
 						logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 						ExitThread(error_sum);
 					}
@@ -164,7 +164,7 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 				// end of each period
 				if(tic.QuadPart >= PWM_period.QuadPart)
 				{ // end of one period
-					sprintf_s(textMsg, LENGTH_OF_BUFFER, "End of one period - PWM_period = %I64d [100ns] = %I64d [1s]  \n", tim2.QuadPart, tim2.QuadPart / NS100_1S);
+					sprintf_s(textMsg, LENGTH_OF_MESSAGE, "End of one period - PWM_period = %I64d [100ns] = %I64d [1s]  \n", tim2.QuadPart, tim2.QuadPart / NS100_1S);
 					logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 					ROB->RESET_DOport();
 					tic.QuadPart = 0;
@@ -211,10 +211,10 @@ void CLOSE_handleAndExitThread(HANDLE handle, DWORD error_sum)
 {
 	//PUSHMSG_SEVERITY_HIGH
 	// char array for printing messages
-	char textMsg[LENGTH_OF_BUFFER];
+	char textMsg[LENGTH_OF_MESSAGE];
 	error_sum = CLOSE_handleAndReturn(handle,error_sum);
 	//printf("Exiting thread with error_sum %lu\n", error_sum);
-	sprintf_s(textMsg, LENGTH_OF_BUFFER, "Exiting thread with error_sum %lu\n", error_sum);
+	sprintf_s(textMsg, LENGTH_OF_MESSAGE, "Exiting thread with error_sum %lu\n", error_sum);
 	logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 	ExitThread(error_sum);
 }
@@ -229,8 +229,8 @@ void CLOSE_handleAndExitThread(HANDLE handle, DWORD error_sum)
 ***************/
 void TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, DWORD error_sum)
 {
-	char textMsg[LENGTH_OF_BUFFER];
-	sprintf_s(textMsg, LENGTH_OF_BUFFER, "Starting to terminate all threads with error_sum %lu\n", error_sum);
+	char textMsg[LENGTH_OF_MESSAGE];
+	sprintf_s(textMsg, LENGTH_OF_MESSAGE, "Starting to terminate all threads with error_sum %lu\n", error_sum);
 	logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 
 	for(int iTh = 0; iTh<iTh_max; iTh++){

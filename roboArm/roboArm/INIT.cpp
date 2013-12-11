@@ -77,7 +77,7 @@ void INIT_ADC()
 ************/
 int INIT_Library()
 {
-	char textMsg[LENGTH_OF_BUFFER]; // char array for printing messages
+	char textMsg[LENGTH_OF_MESSAGE]; // char array for printing messages
 
 	LPCSTR lpLibFileName		= "dac_dll.rtdll";
 	LPCSTR lpProcName		= "GetPIO821BaseAddress";
@@ -105,7 +105,7 @@ int INIT_Library()
 	// Call function - to get the address
 	baseAddress = (DWORD) functionPointer();
 
-	sprintf_s(textMsg, LENGTH_OF_BUFFER, "baseAddress = %i = hex = %x \n", baseAddress, baseAddress);
+	sprintf_s(textMsg, LENGTH_OF_MESSAGE, "baseAddress = %i = hex = %x \n", baseAddress, baseAddress);
 	logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 	// Free the Library
 	printf("Free the Library.\n");

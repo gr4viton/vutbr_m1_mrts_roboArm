@@ -149,7 +149,7 @@ void _cdecl main(int  argc, char **argv)
 	int thread_priority = RT_PRIORITY_MIN;
 	
 	//____________________________________________________
-	char textMsg[LENGTH_OF_BUFFER];	// char array for log messages
+	char textMsg[LENGTH_OF_MESSAGE];	// char array for log messages
 
 
 
@@ -185,7 +185,7 @@ void _cdecl main(int  argc, char **argv)
 		//____________________________________________________
 		// the other rutines are same for all types of threads 
 		if(hTh[iTh] == NULL){
-			sprintf_s(textMsg, LENGTH_OF_BUFFER, "ERROR:\tCannot create thread[%i].\n",iTh);
+			sprintf_s(textMsg, LENGTH_OF_MESSAGE, "ERROR:\tCannot create thread[%i].\n",iTh);
 			logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_CREATE_THREAD);
 		}
@@ -196,18 +196,18 @@ void _cdecl main(int  argc, char **argv)
 		if( RtSetThreadPriority( hTh[iTh], wanted_priority) ){
 			thread_priority = RtGetThreadPriority(hTh[iTh]);
 			if( thread_priority == wanted_priority ){
-				sprintf_s(textMsg, LENGTH_OF_BUFFER, "Priority of thread[%i] sucessfully set to %i\n", iTh, wanted_priority );
+				sprintf_s(textMsg, LENGTH_OF_MESSAGE, "Priority of thread[%i] sucessfully set to %i\n", iTh, wanted_priority );
 				logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			}
 			else{
-				sprintf_s(textMsg, LENGTH_OF_BUFFER, "ERROR:\tCannot set thread[%i] priority to %i! It currently has priority %i.\n", 
+				sprintf_s(textMsg, LENGTH_OF_MESSAGE, "ERROR:\tCannot set thread[%i] priority to %i! It currently has priority %i.\n", 
 					iTh, wanted_priority , thread_priority);
 				logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 				TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_CHANGE_PRIORITY);
 			}
 		}
 		else{
-			sprintf_s(textMsg, LENGTH_OF_BUFFER, "ERROR:\tCannot set thread[%i] priority to %i! It currently has priority %i.\n", 
+			sprintf_s(textMsg, LENGTH_OF_MESSAGE, "ERROR:\tCannot set thread[%i] priority to %i! It currently has priority %i.\n", 
 				iTh, wanted_priority , GetThreadPriority(hTh[iTh]) );
 			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_CHANGE_PRIORITY);
 		}
@@ -215,7 +215,7 @@ void _cdecl main(int  argc, char **argv)
 		//____________________________________________________
 		// RtResumeThread - unsuspend 
 		if( RtResumeThread(hTh[iTh]) != 0xFFFFFFFF ){
-			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Succesfully resumed thread[%i].\n", iTh);
+			sprintf_s(textMsg, LENGTH_OF_MESSAGE, "Succesfully resumed thread[%i].\n", iTh);
 			logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			if(iTh == 0)
 			{
@@ -223,7 +223,7 @@ void _cdecl main(int  argc, char **argv)
 			}
 		}
 		else{
-			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Could not resume thread[%i].\n", iTh);
+			sprintf_s(textMsg, LENGTH_OF_MESSAGE, "Could not resume thread[%i].\n", iTh);
 			logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_RESUME_THREAD);
 		}
@@ -251,7 +251,7 @@ void _cdecl main(int  argc, char **argv)
 		if(GetExitCodeThread(hTh[iTh], &(thExitCode[iTh]) ) == FALSE)
 		{ // the function failed 
 			error_sum = GetLastError();
-			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Function GetExitCodeThread called with thread[%i] failed, returned FALSE with error %lu\n", iTh, error_sum);
+			sprintf_s(textMsg, LENGTH_OF_MESSAGE, "Function GetExitCodeThread called with thread[%i] failed, returned FALSE with error %lu\n", iTh, error_sum);
 			logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			break;
 		}
@@ -270,7 +270,7 @@ void _cdecl main(int  argc, char **argv)
 	
 	
 	for(iTh = 1; iTh<iTh_max; iTh++){
-		sprintf_s(textMsg, LENGTH_OF_BUFFER, "Thread[%i] terminated with exit code %lu\n", iTh, thExitCode[iTh]);
+		sprintf_s(textMsg, LENGTH_OF_MESSAGE, "Thread[%i] terminated with exit code %lu\n", iTh, thExitCode[iTh]);
 		logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);		
 	}			
 
@@ -283,7 +283,7 @@ void _cdecl main(int  argc, char **argv)
 	// Wait to end of thread hTh[TH_LOG_I]
 	do{
 		if(GetExitCodeThread(hTh[TH_LOG_I], &(thExitCode[TH_LOG_I]) ) == FALSE){
-			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Function of thread[%i] failed, returned FALSE with exit-code %lu\n", TH_LOG_I, thExitCode[TH_LOG_I]);
+			sprintf_s(textMsg, LENGTH_OF_MESSAGE, "Function of thread[%i] failed, returned FALSE with exit-code %lu\n", TH_LOG_I, thExitCode[TH_LOG_I]);
 			logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			break;
 		}

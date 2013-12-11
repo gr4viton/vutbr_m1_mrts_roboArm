@@ -309,5 +309,7 @@ unsigned int C_LogMessageA::WriteBuffToFile()
 	RtPrintf("%s", cMessage);
 #endif
 	
-	return( CLOSE_handleAndReturn(Hfile, FLAWLESS_EXECUTION) );
+	return( CLOSE_handleAndReturn(Hfile, FLAWLESS_EXECUTION, false) );
 }
+
+
