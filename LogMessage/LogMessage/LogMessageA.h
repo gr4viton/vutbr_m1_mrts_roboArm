@@ -11,11 +11,22 @@
 ***********/
 #ifndef __LOGMESSAGEA__
 #define __LOGMESSAGEA__
+#define LOGMSG_DEV
 
-//#include "main.h"
-#include "roboArm.h"
+#ifdef LOGMSG_DEV
+	#include "main.h"
+#else
+	#include "roboArm.h"
+#endif
 
-#define LENGTH_OF_BUFF	512
+#include "returnCodeDefines.h"
+
+// buffer dimensions - user choise
+	#define LENGTH_OF_BUFFER	256
+	#define LENGTH_OF_MESSAGE	512
+
+// do not modify
+#define LENGTH_OF_MESSAGE_HEAD	LENGTH_OF_MESSAGE + 30 //(30 is for tame, date, severity)
 #define HMUTEX_SHARED_NAME TEXT("C_LogMessageA_hMutex.Name")
 
 #define SEVERITY_MIN 0
@@ -34,12 +45,10 @@
 class C_CircBuffer
 {
 private:
-	char *buf;					// buffer array
+	char buf[LENGTH_OF_BUFFER][LENGTH_OF_MESSAGE_HEAD];	// buffer array 
 	unsigned int Start, End;	// actual start and end positions
 	unsigned int freeSpace;		// actual free space
 
-	char ReadOne();				// method for read one symbol
-	void WriteOne(char in);		// method for write one symbol
 public:
 	// Constructor
 	C_CircBuffer();
@@ -47,7 +56,7 @@ public:
 	~C_CircBuffer();
 
 	unsigned int Write(char *in);
-	unsigned int Read(char* out);
+	unsigned int Read(char out[LENGTH_OF_MESSAGE_HEAD]);
 	bool IsEmpthy();
 };
 
@@ -57,31 +66,28 @@ public:
 ***************/
 class C_LogMessageA
 {
+//____________________________________________________
+// member variables
 private:
 	// Mutex handle
 	HANDLE hMutex;
 	// File handle
 	HANDLE Hfile; 
-	int actSeverity;
 	// Circular buffer
-	C_CircBuffer *buf;
+	C_CircBuffer buf;
 	// Flag indicating start/stop (true/false) of logging
 	bool bLogging;
 public:
-
-	// Constructor
+//____________________________________________________
+// declaration of external defined member functions 
 	C_LogMessageA();
-	// Destructor
 	~C_LogMessageA();
 
-	unsigned int PushMessage(char* in, int iSeverity);
-
+	unsigned int PushMessage(char in[LENGTH_OF_MESSAGE], int iSeverity);
 	unsigned int WriteBuffToFile();
 
 	void LoggingStart(){bLogging = true;}
-
 	void LoggingStop(){bLogging = false;}
-
 	bool GetState(){return bLogging;}
 };
 
