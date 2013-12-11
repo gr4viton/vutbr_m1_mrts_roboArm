@@ -12,29 +12,43 @@
 #ifndef __LOGMESSAGEA__
 #define __LOGMESSAGEA__
 
+//#define LOGMSG_DEV
+
 #ifdef LOGMSG_DEV
-	#include "main.h"
+//	#include "main.h"
 #else
 	#include "roboArm.h"
 #endif
 
 #include "returnCodeDefines.h"
 
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+// macro definitions
+//____________________________________________________
+// VARIABLES
+#define SEVERITY_LEVEL			7
 // buffer dimensions - user choise
-#define LENGTH_OF_BUFFER		256
-#define LENGTH_OF_MESSAGE	512
+#define LENGTH_OF_BUFFER			256
+#define MAX_MESSAGE_LENGTH		512
 
-// do not modify
-#define LENGTH_OF_MESSAGE_HEAD	LENGTH_OF_MESSAGE + 30 //(30 is for tame, date, severity)
-#define HMUTEX_SHARED_NAME TEXT("C_LogMessageA_hMutex.Name")
+#define LOG_SCREEN		// comment for hide logs on screen
 
-#define SEVERITY_MIN 0
-#define SEVERITY_MAX 16
-#define SEVERITY_LEVEL 7
+//#define LOG_FILE			"C:\\mrts\\xslizj00\\cv6\\LogMessage.txt"
+#define LOG_FILE				"D:\\LogMessage.txt"
+#define LOGMSG_LINE_END		"\n"
 
-//#define LOG_FILE "C:\\mrts\\xslizj00\\cv6\\LogMessage.txt"
-#define LOG_FILE "D:\\LogMessage.txt"
-#define LOG_SCREEN	// comment for hide logs on screen
+
+//____________________________________________________
+// CONSTANTS - do not modify
+#define HMUTEX_SHARED_NAME				TEXT("C_LogMessageA_hMutex.Name")
+//(30 is for tame, date, severity)
+#define MESSAGE_HEAD_LENGTH				30
+#define MAX_FULL_MESSAGE_LENGTH			MAX_MESSAGE_LENGTH + MESSAGE_HEAD_LENGTH
+
+// Severities
+#define SEVERITY_MIN		0
+#define SEVERITY_MAX		16
+
 
 
 /****************************************************************************
@@ -44,25 +58,23 @@
 class C_CircBuffer
 {
 private:
-	char buf[LENGTH_OF_BUFFER][LENGTH_OF_MESSAGE_HEAD];	// buffer array 
+	char buf[LENGTH_OF_BUFFER][MAX_FULL_MESSAGE_LENGTH];	// buffer array 
 	unsigned int Start, End;	// actual start and end positions
 	unsigned int freeSpace;		// actual free space
 	unsigned int strcpySafe(char *dest, char *in);
 
 public:
-	// Constructor
 	C_CircBuffer();
-	// Destructor
 	~C_CircBuffer();
 
-	unsigned int Write(char *in);
-	unsigned int Read(char out[LENGTH_OF_MESSAGE_HEAD]);
+	unsigned int Write(char *inMsg);
+	unsigned int Read(char out[MAX_FULL_MESSAGE_LENGTH]);
 	bool IsEmpty();
 };
 
 /****************************************************************************
 @class	C_LogMessageA
-@brief	class provides methods for asynchronous logging using mutex
+@brief	class provides methods fo asynchronous logging using mutex
 ***************/
 class C_LogMessageA
 {
@@ -80,7 +92,7 @@ public:
 	C_LogMessageA();
 	~C_LogMessageA();
 
-	unsigned int PushMessage(char in[LENGTH_OF_MESSAGE], int iSeverity);
+	unsigned int PushMessage(char in[MAX_MESSAGE_LENGTH], int iSeverity);
 	unsigned int WriteBuffToFile();
 
 	void LoggingStart(){bLogging = true;}

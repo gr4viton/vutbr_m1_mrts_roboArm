@@ -9,7 +9,7 @@
 #include "roboArm.h"
 
 /****************************************************************************
-@function   GET_stringLenght
+@function   GET_stringLength
 @brief      secure strlen() with maximum lenght 
 @param[in]  (char*) a_string | string whose lenght we want to know
 			(DWORD) a_max_lenght | maximum lenght
@@ -22,13 +22,13 @@
 				return = number of characters in a_string
 				error_sum = FLAWLESS_EXECUTION
 ************/
-DWORD GET_stringLenght(char *a_string, DWORD a_max_lenght, DWORD* a_error_sum)
+DWORD GET_stringLength(char *a_string, DWORD a_max_lenght, DWORD* a_error_sum)
 {
 	DWORD inStrLen = 0;
 	for(inStrLen=0; a_string[inStrLen] != '\0'; inStrLen++){
 		if(inStrLen > a_max_lenght) 
 		{
-			printf("ERROR - string is too long (max=%u) [%s]\n", a_max_lenght, a_string);
+			RtPrintf("ERROR - string is too long (max=%u) [%s]\n", a_max_lenght, a_string);
 			*a_error_sum = ERROR_STRING_LENGHT_LARGER_THAN_TRESHOLD;
 			return(0);
 		}
@@ -50,7 +50,7 @@ DWORD READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_f
 	if(*a_filePath == 0 && a_manip->IS_in_bounds(1)) return(100000);
 	/*
 	// char array for printing messages
-	char textMsg[LENGTH_OF_MESSAGE];
+	char textMsg[MAX_MESSAGE_LENGTH];
 	DWORD error_sum = 0;
 	//____________________________________________________
 	// read control file into string
@@ -59,7 +59,7 @@ DWORD READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_f
 	{
 		delete[] G_controlString;
 		//printf("READ_file failed with error_sum %lu\n", error_sum);
-		sprintf_s(textMsg, LENGTH_OF_MESSAGE, "READ_file failed with error_sum %lu\n", error_sum);
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "READ_file failed with error_sum %lu\n", error_sum);
 		logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 		return(error_sum);
 	}
@@ -70,7 +70,7 @@ DWORD READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_f
 	{
 		delete[] G_controlString;
 		//printf("READ_file failed with error_sum %lu\n", error_sum);
-		sprintf_s(textMsg, LENGTH_OF_MESSAGE, "READ_file failed with error_sum %lu\n", error_sum);
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "READ_file failed with error_sum %lu\n", error_sum);
 		logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 		return(error_sum);
 	}
@@ -98,7 +98,7 @@ DWORD PARSE_controlString(C_roboticManipulator* a_manip){
 	if(a_manip->IS_in_bounds(1)) return(100000);
 	/*
 	// char array for printing messages
-	char textMsg[LENGTH_OF_MESSAGE];
+	char textMsg[MAX_MESSAGE_LENGTH];
 
 	C_roboticManipulator* ROB = (C_roboticManipulator*)a_manip;
 	
@@ -195,7 +195,7 @@ DWORD PARSE_controlString(C_roboticManipulator* a_manip){
 							{
 								done = true;
 								//printf("One of digits from angle [%s] is not a number!\n",token.c_str());
-								sprintf_s(textMsg, LENGTH_OF_MESSAGE, "One of digits from angle [%s] is not a number!\n",token.c_str());
+								sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "One of digits from angle [%s] is not a number!\n",token.c_str());
 								logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 								return(ERROR_IS_NOT_NUMBER);
 							}
@@ -224,14 +224,14 @@ DWORD PARSE_controlString(C_roboticManipulator* a_manip){
 		
 		//std::cout << token << std::endl;
 		//printf("token = \"%s\"\n", token.c_str());
-		sprintf_s(textMsg, LENGTH_OF_MESSAGE, "token = \"%s\"\n", token.c_str());
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "token = \"%s\"\n", token.c_str());
 		logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 		controlString.erase(0, pos + delimiter.length());
 	}
 	// last
   //  std::cout << controlString << std::endl;
 	//printf("%s\n",controlString.c_str());
-	sprintf_s(textMsg, LENGTH_OF_MESSAGE, "%s",controlString.c_str());
+	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "%s",controlString.c_str());
 	logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 
 	ROB->RESET_DOport();
@@ -255,7 +255,7 @@ DWORD CREATE_file(HANDLE* a_hFile)
 		//LogMessage()
 		// ifdef
 		//RtPrintf("Function CreateFile failed with 0x%04x - INVALID_HANDLE_VALUE\n", GetLastError());
-		sprintf_s(textMsg, LENGTH_OF_MESSAGE, "Function CreateFile failed with 0x%04x - INVALID_HANDLE_VALUE\n", GetLastError());
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Function CreateFile failed with 0x%04x - INVALID_HANDLE_VALUE\n", GetLastError());
 		logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 		return(ERROR_CREATEFILE_FAIL);
 	}*/
@@ -272,7 +272,7 @@ DWORD CREATE_file(HANDLE* a_hFile)
 ***************/
 DWORD READ_file(char* a_filePath){
 	// char array for printing messages
-	char textMsg[LENGTH_OF_MESSAGE];
+	char textMsg[MAX_MESSAGE_LENGTH];
 	DWORD error_sum = 0;
 	HANDLE hFile = NULL;
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -292,7 +292,7 @@ DWORD READ_file(char* a_filePath){
 		//LogMessage()
 		// ifdef
 		//RtPrintf("Function CreateFile failed with 0x%04x - INVALID_HANDLE_VALUE\n", GetLastError());
-		sprintf_s(textMsg, LENGTH_OF_MESSAGE, "Function CreateFile failed with 0x%04x - INVALID_HANDLE_VALUE\n", GetLastError());
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Function CreateFile failed with 0x%04x - INVALID_HANDLE_VALUE\n", GetLastError());
 		logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 		return(ERROR_CREATEFILE_FAIL);
 	}
@@ -341,7 +341,7 @@ DWORD READ_file(char* a_filePath){
 #ifdef DEBUG_PRINT_READ_FUNCTIONS
 //	RtPrintf("Try to READ_chunk [%lu bytes] from file.\n",bytes2get);
 	//RtPrintf("Try to ReadFile. Read whole file [%lu bytes] from [%s], \n", bytes2get, a_filePath);
-	sprintf_s(textMsg, LENGTH_OF_MESSAGE, "Try to ReadFile. Read whole file [%lu bytes] from [%s], \n", bytes2get, a_filePath);
+	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Try to ReadFile. Read whole file [%lu bytes] from [%s], \n", bytes2get, a_filePath);
 	logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 #endif
 	DWORD bytes_got;
@@ -349,7 +349,7 @@ DWORD READ_file(char* a_filePath){
 	if (	 FALSE == ReadFile( hFile, (LPVOID) (G_controlString), bytes2get, &bytes_got, NULL) ) 
 	{ // Failed to ReadFile
 		//RtPrintf("ERROR:\tFunction ReadFile failed with 0x%04x - returned FALSE\n", GetLastError());
-		sprintf_s(textMsg, LENGTH_OF_MESSAGE, "ERROR:\tFunction ReadFile failed with 0x%04x - returned FALSE\n", GetLastError());
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "ERROR:\tFunction ReadFile failed with 0x%04x - returned FALSE\n", GetLastError());
 		logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 		return(CLOSE_handleAndReturn(hFile, ERROR_READFILE_FAIL));
 	}
@@ -362,12 +362,12 @@ DWORD READ_file(char* a_filePath){
 	}
 #ifdef DEBUG_PRINT_READ_FUNCTIONS
 	//RtPrintf("bytes_got = %lu\n", bytes_got);	
-	sprintf_s(textMsg, LENGTH_OF_MESSAGE, "bytes_got = %lu\n", bytes_got);	
+	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "bytes_got = %lu\n", bytes_got);	
 	logMsg.PushMessage(textMsg, SEVERITY_MAX - 4);
 #endif
 	G_controlString[bytes_got] = '\0';
 	//printf("[FILE_START]\n%s\n[FILE_END]",G_controlString);
-	sprintf_s(textMsg, LENGTH_OF_MESSAGE, "[FILE_START]\n%s\n[FILE_END]",G_controlString);
+	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "[FILE_START]\n%s\n[FILE_END]",G_controlString);
 	logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -390,7 +390,7 @@ DWORD READ_file(char* a_filePath){
 ************/
 DWORD CLOSE_handleAndReturn(HANDLE a_handle, DWORD error_sum, bool a_logError)
 {
-	char textMsg[LENGTH_OF_MESSAGE]; // char array for printing messages
+	char textMsg[MAX_MESSAGE_LENGTH]; // char array for printing messages
 	if(a_logError)
 	{
 		logMsg.PushMessage("Try to CloseHandle.", PUSHMSG_SEVERITY_NORMAL);
@@ -398,7 +398,7 @@ DWORD CLOSE_handleAndReturn(HANDLE a_handle, DWORD error_sum, bool a_logError)
 	if( CloseHandle(a_handle) == 0 )
 	{
 		//RtPrintf("Function CloseHandle failed with 0x%04x\n", GetLastError());
-		sprintf_s(textMsg, LENGTH_OF_MESSAGE, "Function CloseHandle failed with 0x%04x\n", GetLastError());
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Function CloseHandle failed with 0x%04x\n", GetLastError());
 		logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 		return(error_sum + ERROR_CLOSEHANDLE_FAIL);
 	}
@@ -433,7 +433,7 @@ ____________________________________________________
 DWORD MOVE_pointer(HANDLE a_hFile, LONG a_distance2move, DWORD* a_file_current_byte, 
 	DWORD a_moveMethod, bool a_get_file_current_byte, bool a_logError)
 {
-	char textMsg[LENGTH_OF_MESSAGE]; // char array for printing messages
+	char textMsg[MAX_MESSAGE_LENGTH]; // char array for printing messages
 	if(a_logError)
 		logMsg.PushMessage("Try to SetFilePointer.\n", SEVERITY_MAX - 4);
 	DWORD file_current_byte = SetFilePointer(a_hFile, a_distance2move, NULL, a_moveMethod);
@@ -445,7 +445,7 @@ DWORD MOVE_pointer(HANDLE a_hFile, LONG a_distance2move, DWORD* a_file_current_b
 	{ // Failed to SetFilePointer
 		if(a_logError)
 		{
-			sprintf_s(textMsg, LENGTH_OF_MESSAGE, "Function SetFilePointer failed with 0x%04x\n", GetLastError());
+			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Function SetFilePointer failed with 0x%04x\n", GetLastError());
 			logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 		}
 		return(CLOSE_handleAndReturn(a_hFile, ERROR_SETFILEPOINTER_FAIL));

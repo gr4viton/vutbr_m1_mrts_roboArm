@@ -1,4 +1,3 @@
-//tak 35 to zaèlo
-PWM_PERIOD
-servIntervalOne se pøepisuje do ROB-serv[]-intervalZero
-+docu
+docu
+MACROS
+

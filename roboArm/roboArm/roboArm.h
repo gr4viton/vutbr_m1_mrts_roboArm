@@ -185,7 +185,7 @@ void		INIT_ADC();
 	
 //____________________________________________________
 // readFile.cpp
-DWORD	GET_stringLenght(char *a_string, DWORD a_max_lenght, DWORD* error_sum);
+DWORD	GET_stringLength(char *a_string, DWORD a_max_lenght, DWORD* error_sum);
 DWORD	READ_spatialConfigurationFromFile(C_roboticManipulator* a_ROB, char* a_filePath);
 
 // read file
