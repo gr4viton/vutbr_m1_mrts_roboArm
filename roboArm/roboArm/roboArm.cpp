@@ -282,7 +282,7 @@ void _cdecl main(int  argc, char **argv)
 	printf("main() - Waiting for the Logging thread to terminate.\n");
 	// Wait to end of thread hTh[TH_LOG_I]
 	do{
-		if(GetExitCodeThread(hTh[TH_LOG_I], &(thExitCode[TH_LOG_I]) ) == FALSE){
+		if(GetExitCodeThread( hTh[TH_LOG_I], &(thExitCode[TH_LOG_I]) ) == FALSE){
 			sprintf_s(textMsg, LENGTH_OF_MESSAGE, "Function of thread[%i] failed, returned FALSE with exit-code %lu\n", TH_LOG_I, thExitCode[TH_LOG_I]);
 			logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			break;

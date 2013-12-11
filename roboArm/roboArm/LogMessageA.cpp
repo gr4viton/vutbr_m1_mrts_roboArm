@@ -274,16 +274,8 @@ unsigned int C_LogMessageA::WriteBuffToFile()
 	}
 	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!!!<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 	// to MOVE_pointer
-	if ( SetFilePointer(	
-			Hfile,
-			0,
-			NULL,
-			FILE_END
-		) == 0xFFFFFFFF )
-	{
-		RtPrintf("\nLogMessage() Error: SetFilePointer failed\r\n");
-		return( CLOSE_handleAndReturn(Hfile,ERROR_SETFILEPOINTER_FAIL) );
-	}
+	MOVE_pointer( Hfile, 0, NULL, FILE_END, false, false);
+
 	
 	// WriteFile
 	DWORD BytesWritten;	

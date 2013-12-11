@@ -55,7 +55,7 @@
 // debug
 #define DEBUG
 #define DEBUGGING_WITHOUT_HW
-#define DEBUG_PRINT_READ_FUNCTIONS
+// not needed #define DEBUG_PRINT_READ_FUNCTIONS
 
 #define SHOW_LOG_ON_SCREEN
 
@@ -190,8 +190,10 @@ DWORD	READ_spatialConfigurationFromFile(C_roboticManipulator* a_ROB, char* a_fil
 
 // read file
 DWORD	READ_file(char* a_filePath);
-DWORD	MOVE_pointerOrReturn(HANDLE hFile, LONG distance2move, DWORD* file_current_byte, DWORD MoveMethod);
-DWORD	CLOSE_handleAndReturn(HANDLE a_handle, DWORD error_sum, bool a_writeError = true);
+//DWORD	MOVE_pointer(HANDLE hFile, LONG distance2move, DWORD* file_current_byte, DWORD MoveMethod, bool get_file_current_byte);
+DWORD	MOVE_pointer(HANDLE a_hFile, LONG a_distance2move, DWORD* a_file_current_byte, 
+			DWORD MoveMethod = FILE_CURRENT, bool a_get_file_current_byte = true, bool a_logError = true);
+DWORD	CLOSE_handleAndReturn(HANDLE a_handle, DWORD error_sum, bool a_logError = true);
 
 // parse text
 DWORD	PARSE_controlString(C_roboticManipulator* a_manip);

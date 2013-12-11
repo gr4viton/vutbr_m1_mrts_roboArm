@@ -246,7 +246,7 @@ DWORD PARSE_controlString(C_roboticManipulator* a_manip){
 @param[out] 
 @return     error_sum
 ************/
-DWORD CREATE_file(HANDLE* hFile)
+DWORD CREATE_file(HANDLE* a_hFile)
 {
 	return(FLAWLESS_EXECUTION);
 	/*
@@ -310,7 +310,7 @@ DWORD READ_file(char* a_filePath){
 	RtPrintf("Try to SetFilePointer to FILE_END:\n");
 	logMsg.PushMessage("Try to SetFilePointer to FILE_END:", SEVERITY_MAX - 4);
 #endif
-	error_sum = MOVE_pointerOrReturn(hFile, 0, &file_end_byte, FILE_END);
+	error_sum = MOVE_pointer(hFile, 0, &file_end_byte, FILE_END);
 	if(error_sum != FLAWLESS_EXECUTION)	return(CLOSE_handleAndReturn(hFile, error_sum));
 	
 	DWORD file_begin_byte = 0;
@@ -318,7 +318,7 @@ DWORD READ_file(char* a_filePath){
 	RtPrintf("Try to SetFilePointer to FILE_BEGIN:\n");
 	logMsg.PushMessage("Try to SetFilePointer to FILE_BEGIN:", SEVERITY_MAX - 4);
 #endif
-	error_sum = MOVE_pointerOrReturn(hFile, 0, &file_begin_byte, FILE_BEGIN);
+	error_sum = MOVE_pointer(hFile, 0, &file_begin_byte, FILE_BEGIN);
 	if(error_sum != FLAWLESS_EXECUTION)	return(CLOSE_handleAndReturn(hFile, error_sum));
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -388,10 +388,10 @@ DWORD READ_file(char* a_filePath){
 @param[out] 
 @return     
 ************/
-DWORD CLOSE_handleAndReturn(HANDLE a_handle, DWORD error_sum, bool a_writeError)
+DWORD CLOSE_handleAndReturn(HANDLE a_handle, DWORD error_sum, bool a_logError)
 {
 	char textMsg[LENGTH_OF_MESSAGE]; // char array for printing messages
-	if(a_writeError)
+	if(a_logError)
 	{
 		logMsg.PushMessage("Try to CloseHandle.", PUSHMSG_SEVERITY_NORMAL);
 	}
@@ -404,7 +404,7 @@ DWORD CLOSE_handleAndReturn(HANDLE a_handle, DWORD error_sum, bool a_writeError)
 	}
 	else 
 	{
-		if(a_writeError)
+		if(a_logError)
 		{
 			logMsg.PushMessage("Successfully closed handle", PUSHMSG_SEVERITY_NORMAL);
 		}
@@ -415,30 +415,42 @@ DWORD CLOSE_handleAndReturn(HANDLE a_handle, DWORD error_sum, bool a_writeError)
 /****************************************************************************
 @function   MOVE_pointer
 @brief      function moves the pointer in handled file 
-			to distance relative to current position/ absolute to start 
-			as defined by [MoveMethod]
-@param[in]  
-@param[out] 
-@return     error_sum
+			to distance relative to current position / absolute to start 
+			as set by [MoveMethod]
+			if the function fails -> closes the handle and returns error_sum
+____________________________________________________
+@param[in]  (HANDLE)a_hFile | handle to a file which is already open
+			LONG a_distance2move | number of bytes to move 
+			DWORD a_moveMethod=FILE_CURRENT | from which point to move
+			(bool)a_get_file_current_byte=true 
+			| if true, copy current file byte into a_file_current_byte
+			| else let it be
+			(bool)a_logError=true | to log errors
+____________________________________________________
+@param[out] (DWORD*) a_file_current_byte | viz [a_get_file_current_byte]
+@return     (DWORD) returns error_sum / FLAWLESS_EXECUTION
 ************/
-DWORD MOVE_pointerOrReturn(HANDLE hFile, LONG distance2move, DWORD* file_current_byte, DWORD MoveMethod=FILE_CURRENT)
+DWORD MOVE_pointer(HANDLE a_hFile, LONG a_distance2move, DWORD* a_file_current_byte, 
+	DWORD a_moveMethod, bool a_get_file_current_byte, bool a_logError)
 {
-	// char array for printing messages
-	char textMsg[LENGTH_OF_MESSAGE];
-#ifdef DEBUG_PRINT_READ_FUNCTIONS
-	//RtPrintf("Try to SetFilePointer.\n");
-	logMsg.PushMessage("Try to SetFilePointer.\n", SEVERITY_MAX - 4);
-#endif
-	*file_current_byte = SetFilePointer(hFile, distance2move, NULL, MoveMethod);
-	if (*file_current_byte == INVALID_SET_FILE_POINTER) 
+	char textMsg[LENGTH_OF_MESSAGE]; // char array for printing messages
+	if(a_logError)
+		logMsg.PushMessage("Try to SetFilePointer.\n", SEVERITY_MAX - 4);
+	DWORD file_current_byte = SetFilePointer(a_hFile, a_distance2move, NULL, a_moveMethod);
+	if(a_get_file_current_byte)
+	{
+		*a_file_current_byte = file_current_byte;
+	}
+	if(file_current_byte == INVALID_SET_FILE_POINTER) 
 	{ // Failed to SetFilePointer
-		//RtPrintf("Function SetFilePointer failed with 0x%04x\n", GetLastError());
-		sprintf_s(textMsg, LENGTH_OF_MESSAGE, "Function SetFilePointer failed with 0x%04x\n", GetLastError());
-		logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
-		return(CLOSE_handleAndReturn(hFile, ERROR_SETFILEPOINTER_FAIL));
+		if(a_logError)
+		{
+			sprintf_s(textMsg, LENGTH_OF_MESSAGE, "Function SetFilePointer failed with 0x%04x\n", GetLastError());
+			logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+		}
+		return(CLOSE_handleAndReturn(a_hFile, ERROR_SETFILEPOINTER_FAIL));
 	}
 #ifdef DEBUG_PRINT_READ_FUNCTIONS
-	//RtPrintf("file_current_byte = %lu\n",*file_current_byte);
 	logMsg.PushMessage("file_current_byte = %lu\n",*file_current_byte);
 #endif
 	return(FLAWLESS_EXECUTION);
@@ -446,13 +458,15 @@ DWORD MOVE_pointerOrReturn(HANDLE hFile, LONG distance2move, DWORD* file_current
 
 /****************************************************************************
 @function   char2num
-@brief      
-@param[in]  
-@param[out] 
-@return     
+@brief      convert char represented digit into integer representation
+@param[in]  (char)ch - input character
+@param[out] -
+@return     (int)
+			|if the char is not a digit -> return ERROR_IS_NOT_NUMBER
+			|else return the integer represetation 
 ************/
 int char2num(char ch){
-	int digit = (int)ch - (int)('0');
+	int digit = (int)ch - (int)('0');	
 	if(digit<0 || digit>9)
 		return(ERROR_IS_NOT_NUMBER);
 	else
