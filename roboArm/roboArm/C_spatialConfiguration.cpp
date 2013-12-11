@@ -20,13 +20,16 @@ DWORD C_spatialConfiguration::i_phase_max = 0;
 @param[out] 
 @return     
 ************/
-C_spatialConfiguration::C_spatialConfiguration(void){
-	phaseInterval.QuadPart = 0;
+C_spatialConfiguration::C_spatialConfiguration(void)
+{
+	phaseInterval.QuadPart = 1000;
 	for(int i=0; i<SUM_SERVOMOTORS; i++)
 	{
 		servIntervalOneChanged[i] = false;
 		servIntervalOne[i].QuadPart = 0;
 	}
+	i_phase = i_phase_max + 1;
+	i_phase_max++;
 }
 
 /****************************************************************************

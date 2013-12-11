@@ -113,74 +113,81 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 	std::list<C_spatialConfiguration>::iterator actPhase = ROB->phases.begin();
 	while(!phaseDone)
 	{
-		if(actPhase != ROB->phases.end())
-		{ //	 if iterator is not past-the-end element in the list container
-			// load next phase
-			printf("Load phase[%i] values\n", actPhase->i_phase);
+		try{
+			if(actPhase != ROB->phases.end())
+			{ //	 if iterator is not past-the-end element in the list container
+				// load next phase
+				printf("Load phase[%i] values\n", actPhase->i_phase);
 			
-			try	{
-				LOAD_actualPhase(ROB,&PWM_period,&actPhase);
+					LOAD_actualPhase(ROB,&PWM_period,&actPhase);
 			}
-			catch (std::exception & e) {
-				printf("ERR-exception:\n%s\n", e.what());
-				ExitThread(ERROR_STRING_LENGHT_LARGER_THAN_TRESHOLD);
-			}
-		}
-		while(!ticDone)	// tics loop
-		{
-			// ask each servo if this tic the interval zero has passed = time [to write 1]
-			for(i_serv=0; i_serv<SUM_SERVOMOTORS; i_serv++)
+			while(!ticDone)	// tics loop
 			{
-				// get the pointer of ROB->serv[i_serv] into serv
-				error_sum = ROB->GET_servoMotor(i_serv, &serv);
-				if(error_sum != FLAWLESS_EXECUTION)
+				// ask each servo if this tic the interval zero has passed = time [to write 1]
+				for(i_serv=0; i_serv<SUM_SERVOMOTORS; i_serv++)
 				{
-					serv = NULL;
-					ROB = NULL;
-					//printf("Could not get servoMotor[%i] pointer\n", i_serv);
-					sprintf_s(textMsg, LENGTH_OF_BUFFER, "Could not get servoMotor[%i] pointer\n", i_serv);
-					logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
-					//printf("Terminating thread with error_sum %lu\n", error_sum);
-					sprintf_s(textMsg, LENGTH_OF_BUFFER, "Terminating thread with error_sum %lu\n", error_sum);
-					logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
-					ExitThread(error_sum);
+					// get the pointer of ROB->serv[i_serv] into serv
+					error_sum = ROB->GET_servoMotor(i_serv, &serv);
+					if(error_sum != FLAWLESS_EXECUTION)
+					{
+						serv = NULL;
+						ROB = NULL;
+						//printf("Could not get servoMotor[%i] pointer\n", i_serv);
+						sprintf_s(textMsg, LENGTH_OF_BUFFER, "Could not get servoMotor[%i] pointer\n", i_serv);
+						logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+						//printf("Terminating thread with error_sum %lu\n", error_sum);
+						sprintf_s(textMsg, LENGTH_OF_BUFFER, "Terminating thread with error_sum %lu\n", error_sum);
+						logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+						ExitThread(error_sum);
+					}
+					if(tic.QuadPart >= serv->intervalZero.QuadPart)
+					{ // time for writing 1 has come
+						// write to the right digit
+						ROB->SET_DOportBitUchar(serv->servoMotorDigit);
+					}
 				}
-				if(tic.QuadPart >= serv->intervalZero.QuadPart)
-				{ // time for writing 1 has come
-					// write to the right digit
-					ROB->SET_DOportBitUchar(serv->servoMotorDigit);
+				// ____________________________________________________
+				// iteration & tic-waiting
+				RtSleepFt(&tic_interval);
+				//RtPrintf("tic=%I64d/%I64d\n",tic,DEFAULT_PWM_PERIOD);
+				tic.QuadPart += tic_interval.QuadPart;
+				tic_phase.QuadPart += tic_interval.QuadPart;
+				if(tic_phase.QuadPart >= actPhase->phaseInterval.QuadPart)
+				{
+					tic.QuadPart = 0;
+					tic_phase.QuadPart = 0;
+					break;
 				}
-			}
-			// ____________________________________________________
-			// iteration & tic-waiting
-			RtSleepFt(&tic_interval);
-			//RtPrintf("tic=%I64d/%I64d\n",tic,DEFAULT_PWM_PERIOD);
-			tic.QuadPart += tic_interval.QuadPart;
-			tic_phase.QuadPart += tic_interval.QuadPart;
-			if(tic_phase.QuadPart >= actPhase->phaseInterval.QuadPart)
-			{
-				tic.QuadPart = 0;
-				tic_phase.QuadPart = 0;
-				break;
-			}
-			// ____________________________________________________
-			// end of each period
-			if(tic.QuadPart >= PWM_period.QuadPart)
-			{ // end of one period
-				ROB->RESET_DOport();
-				tic.QuadPart = 0;
+				// ____________________________________________________
+				// end of each period
+				if(tic.QuadPart >= PWM_period.QuadPart)
+				{ // end of one period
+					ROB->RESET_DOport();
+					tic.QuadPart = 0;
 		
-				RtGetClockTime(CLOCK_X,&tim2);
-				tim2.QuadPart = tim2.QuadPart-tim1.QuadPart;
-				//printf("PWM_period = %I64d [100ns] = %I64d [1s]  \n", tim2.QuadPart, tim2.QuadPart / NS100_1S);
-				sprintf_s(textMsg, LENGTH_OF_BUFFER, "PWM_period = %I64d [100ns] = %I64d [1s]  \n", tim2.QuadPart, tim2.QuadPart / NS100_1S);
-				logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
-				RtGetClockTime(CLOCK_X,&tim1);
-			// stop after first period (for debug - to terminate threads)<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-				//done = true;
+					RtGetClockTime(CLOCK_X,&tim2);
+					tim2.QuadPart = tim2.QuadPart-tim1.QuadPart;
+					//printf("PWM_period = %I64d [100ns] = %I64d [1s]  \n", tim2.QuadPart, tim2.QuadPart / NS100_1S);
+					sprintf_s(textMsg, LENGTH_OF_BUFFER, "End of one period - PWM_period = %I64d [100ns] = %I64d [1s]  \n", tim2.QuadPart, tim2.QuadPart / NS100_1S);
+					logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+					RtGetClockTime(CLOCK_X,&tim1);
+				// stop after first period (for debug - to terminate threads)<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+					//done = true;
+				}
+			}//tic loop
+
+			actPhase++;
+			if(actPhase == ROB->phases.end())
+			{
+				actPhase--;
 			}
-		}//tic loop
-		if(actPhase != ROB->phases.end()) actPhase++;
+
+		}
+		catch (std::exception & e) {
+			printf("ERR-exception:\n%s\n", e.what());
+			ExitThread(10000);
+		}
+
 	}// phase loop
 	ROB = NULL;
 	ExitThread(FLAWLESS_EXECUTION);

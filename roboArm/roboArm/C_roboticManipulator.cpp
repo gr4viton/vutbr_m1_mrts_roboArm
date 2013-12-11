@@ -24,16 +24,20 @@ void C_roboticManipulator::DEBUG_fillPhases(void){
 	int i_serv = 0;
 
 	phases.push_back(C_spatialConfiguration());
-	std::list<C_spatialConfiguration>::iterator it=phases.begin();
-
+	std::list<C_spatialConfiguration>::iterator actPhase = phases.end();
+	actPhase--;
+	// add 5 phases to the back
 	for(int i_phase = 0; i_phase < 5; i_phase++)
 	{ // phases
 		for(i_serv = 3; i_serv<SUM_SERVOMOTORS; i_serv++)
 		{
-			it->SET_servIntervalOne(i_serv, &intervalZero);
+			actPhase->SET_servIntervalOne(i_serv, &intervalZero);
 		}
 		intervalZero.QuadPart += 100;
+		actPhase->phaseInterval.QuadPart = 5*NS100_1S;
+		// push back next
 		phases.push_back(C_spatialConfiguration());
+		actPhase++;
 	}
 	//phases.end();
 		//it->
@@ -90,7 +94,7 @@ DWORD C_roboticManipulator::PUSHFRONT_InitialPhases(void)
 	//std::list<C_spatialConfiguration> tmp;
 	phases.push_front(C_spatialConfiguration()); 
 	// initial phase interval
-	phases.begin()->phaseInterval.QuadPart = 100;
+	phases.begin()->phaseInterval.QuadPart = DEFAULT_INITIAL_PHASE_INTERVAL;
 	// set initial position
 	return(FLAWLESS_EXECUTION);
  }
