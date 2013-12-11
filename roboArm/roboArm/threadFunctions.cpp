@@ -32,6 +32,41 @@ void RTFCNDCL LogMessageThread(void *)
 }
 
 /****************************************************************************
+@function   LOAD_actualPhase
+@brief      
+@param[in]  
+@param[out] 
+@return     
+************/
+void LOAD_actualPhase(C_roboticManipulator* a_ROB, LARGE_INTEGER* PWM_period, 
+	std::list<C_spatialConfiguration>::iterator * a_actualPhase)
+{	
+	char textMsg[LENGTH_OF_BUFFER]; // char array for printing messages
+	DWORD error_sum = FLAWLESS_EXECUTION;
+	
+	LARGE_INTEGER intervalZero;		// tics for holding one on defined pin
+	intervalZero.QuadPart = 0;
+	C_servoMotor* serv = NULL;
+	for(int i_serv=0 ; i_serv < SUM_SERVOMOTORS ; i_serv++)
+	{
+		error_sum = a_ROB->GET_servoMotor(i_serv, &serv);
+		if(error_sum != FLAWLESS_EXECUTION)
+		{
+			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Could not get servoMotor[%i] pointer\n", i_serv);
+			logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+			//printf("Terminating thread with error_sum %lu\n", error_sum);
+			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Terminating thread with error_sum %lu\n", error_sum);
+			logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+			ExitThread(error_sum);
+		}
+		// count the [zero interval] from [pwm period - one interval]
+		intervalZero.QuadPart = PWM_period->QuadPart - (*a_actualPhase)->servIntervalOne[i_serv].QuadPart;
+		// write it to actual
+		serv->SET_intervalZero( intervalZero );
+	}
+}
+
+/****************************************************************************
 @function		PWM_dutyCycle
 @brief			Function of thread writing into the DO register 
 				in the main loop there are tic waitings
@@ -45,8 +80,7 @@ void RTFCNDCL LogMessageThread(void *)
 ***************/
 void RTFCNDCL TIM_PWMfunction(void *a_manip)
 {
-	// char array for printing messages
-	char textMsg[LENGTH_OF_BUFFER];
+	char textMsg[LENGTH_OF_BUFFER]; // char array for printing messages
 	//____________________________________________________
 	// time measurement
 	LARGE_INTEGER tim1; tim1.QuadPart = 0;
@@ -59,13 +93,10 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 	LARGE_INTEGER tic;			// iterating variable
 	LARGE_INTEGER tic_interval;	// how long does one tic take
 	LARGE_INTEGER tic_phase;		// counting phase time
-	LARGE_INTEGER intervalOne;	// counting phase time
 
-	intervalOne.QuadPart = 0;
 	tic.QuadPart = 0;
 	tic_phase.QuadPart = 0;
-	//PWM_period.QuadPart = NS100_1S / 100; // 1/100 s = 100 Hz
-	PWM_period.QuadPart = NS100_1S / 1;				// 1/1 s = 1 Hz
+	PWM_period.QuadPart = DEFAULT_PWM_PERIOD;
 	RtGetClockTimerPeriod(CLOCK_X, &tic_interval);	// time to wait between individual tics
 	
 	int i_serv = 0;
@@ -79,26 +110,20 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 	//____________________________________________________
 	// main thread loop
 	ROB->RESET_DOport();
-	std::list<C_spatialConfiguration>::iterator it =ROB->phases.begin();
+	std::list<C_spatialConfiguration>::iterator actPhase = ROB->phases.begin();
 	while(!phaseDone)
 	{
-		if(it != ROB->phases.end())
-		{			
-			// read phase
-			for(int i_serv=0 ; i_serv < SUM_SERVOMOTORS ; i_serv++)
-			{
-				error_sum = ROB->GET_servoMotor(i_serv, &serv);
-				if(error_sum != FLAWLESS_EXECUTION)
-				{
-					sprintf_s(textMsg, LENGTH_OF_BUFFER, "Could not get servoMotor[%i] pointer\n", i_serv);
-					logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
-					//printf("Terminating thread with error_sum %lu\n", error_sum);
-					sprintf_s(textMsg, LENGTH_OF_BUFFER, "Terminating thread with error_sum %lu\n", error_sum);
-					logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
-					ExitThread(error_sum);
-				}
-				intervalOne.QuadPart = PWM_period.QuadPart - it->servIntervalZero[i_serv].QuadPart;
-				serv->SET_intervalZero( intervalOne );
+		if(actPhase != ROB->phases.end())
+		{ //	 if iterator is not past-the-end element in the list container
+			// load next phase
+			printf("Load phase[%i] values\n", actPhase->i_phase);
+			
+			try	{
+				LOAD_actualPhase(ROB,&PWM_period,&actPhase);
+			}
+			catch (std::exception & e) {
+				printf("ERR-exception:\n%s\n", e.what());
+				ExitThread(ERROR_STRING_LENGHT_LARGER_THAN_TRESHOLD);
 			}
 		}
 		while(!ticDone)	// tics loop
@@ -129,10 +154,10 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 			// ____________________________________________________
 			// iteration & tic-waiting
 			RtSleepFt(&tic_interval);
-			//RtPrintf("tic=%I64d/%I64d\n",tic,PWM_period);
+			//RtPrintf("tic=%I64d/%I64d\n",tic,DEFAULT_PWM_PERIOD);
 			tic.QuadPart += tic_interval.QuadPart;
 			tic_phase.QuadPart += tic_interval.QuadPart;
-			if(tic_phase.QuadPart >= it->phaseInterval.QuadPart)
+			if(tic_phase.QuadPart >= actPhase->phaseInterval.QuadPart)
 			{
 				tic.QuadPart = 0;
 				tic_phase.QuadPart = 0;
@@ -155,7 +180,7 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 				//done = true;
 			}
 		}//tic loop
-		if(it != ROB->phases.end()) it++;
+		if(actPhase != ROB->phases.end()) actPhase++;
 	}// phase loop
 	ROB = NULL;
 	ExitThread(FLAWLESS_EXECUTION);

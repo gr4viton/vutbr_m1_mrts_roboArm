@@ -8,6 +8,9 @@
 ***********/
 
 #include "roboArm.h"
+//____________________________________________________
+// static variables definition
+DWORD C_spatialConfiguration::i_phase_max = 0;
 
 /****************************************************************************
 @function   C_spatialConfiguration
@@ -21,8 +24,8 @@ C_spatialConfiguration::C_spatialConfiguration(void){
 	phaseInterval.QuadPart = 0;
 	for(int i=0; i<SUM_SERVOMOTORS; i++)
 	{
-		servIntervalZeroChanged[i] = false;
-		servIntervalZero[i].QuadPart = 0;
+		servIntervalOneChanged[i] = false;
+		servIntervalOne[i].QuadPart = 0;
 	}
 }
 
@@ -34,12 +37,12 @@ C_spatialConfiguration::C_spatialConfiguration(void){
 @param[out] 
 @return     
 ************/
-C_spatialConfiguration::C_spatialConfiguration(LARGE_INTEGER* a_phaseInterval, LARGE_INTEGER* a_servIntervalZero){
+C_spatialConfiguration::C_spatialConfiguration(LARGE_INTEGER* a_phaseInterval, LARGE_INTEGER* a_servIntervalOne){
 	phaseInterval.QuadPart = a_phaseInterval->QuadPart;
 	for(int i=0; i<SUM_SERVOMOTORS; i++)
 	{
-		servIntervalZeroChanged[i] = true;
-		servIntervalZero[i].QuadPart = a_servIntervalZero[i].QuadPart;
+		servIntervalOneChanged[i] = true;
+		servIntervalOne[i].QuadPart = a_servIntervalOne[i].QuadPart;
 	}
 }
 
@@ -52,21 +55,21 @@ C_spatialConfiguration::C_spatialConfiguration(LARGE_INTEGER* a_phaseInterval, L
 @return     
 ************/
 C_spatialConfiguration::~C_spatialConfiguration(void){
-	//nope delete[] servIntervalZero;
+	//nope delete[] servIntervalOne;
 }
 
 /****************************************************************************
-@function   SET_servIntervalZero
+@function   SET_servIntervalOne
 @class		C_spatialConfiguration
 @brief      
 @param[in]  
 @param[out] 
 @return     
 ************/
-void C_spatialConfiguration::SET_servIntervalZero(int a_i_serv, LARGE_INTEGER *a_servIntervalZero)
+void C_spatialConfiguration::SET_servIntervalOne(int a_i_serv, LARGE_INTEGER *a_servIntervalOne)
 {
-	servIntervalZero[a_i_serv].QuadPart = a_servIntervalZero->QuadPart;
-	servIntervalZeroChanged[a_i_serv] = true;
+	servIntervalOne[a_i_serv].QuadPart = a_servIntervalOne->QuadPart;
+	servIntervalOneChanged[a_i_serv] = true;
 }
 
 

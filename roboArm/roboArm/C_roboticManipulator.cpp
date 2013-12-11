@@ -22,15 +22,18 @@ void C_roboticManipulator::DEBUG_fillPhases(void){
 	LARGE_INTEGER intervalZero;
 	intervalZero.QuadPart = 1750;
 	int i_serv = 0;
+
+	phases.push_back(C_spatialConfiguration());
+	std::list<C_spatialConfiguration>::iterator it=phases.begin();
+
 	for(int i_phase = 0; i_phase < 5; i_phase++)
 	{ // phases
-		phases.push_back(C_spatialConfiguration());
-		std::list<C_spatialConfiguration>::iterator it=phases.begin();
 		for(i_serv = 3; i_serv<SUM_SERVOMOTORS; i_serv++)
 		{
-			it->SET_servIntervalZero(i_serv, &intervalZero);
+			it->SET_servIntervalOne(i_serv, &intervalZero);
 		}
 		intervalZero.QuadPart += 100;
+		phases.push_back(C_spatialConfiguration());
 	}
 	//phases.end();
 		//it->
@@ -73,6 +76,24 @@ int C_roboticManipulator::CONVERT_angle2intervalOne(int a_angle, int a_i_serv, L
 	return(FLAWLESS_EXECUTION);
 }
 
+
+/****************************************************************************
+@function   PUSHFRONT_InitialPhases
+@class		C_roboticManipulator
+@brief      appends initial phases to the begining of list
+@param[in]  
+@param[out] 
+@return     
+************/
+DWORD C_roboticManipulator::PUSHFRONT_InitialPhases(void)
+{
+	//std::list<C_spatialConfiguration> tmp;
+	phases.push_front(C_spatialConfiguration()); 
+	// initial phase interval
+	phases.begin()->phaseInterval.QuadPart = 100;
+	// set initial position
+	return(FLAWLESS_EXECUTION);
+ }
 /****************************************************************************
 @function   C_roboticManipulator
 @class		C_roboticManipulator
@@ -84,13 +105,15 @@ int C_roboticManipulator::CONVERT_angle2intervalOne(int a_angle, int a_i_serv, L
 C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 {
 	error_sum = FLAWLESS_EXECUTION;
-	
+
+	// init phases
+	PUSHFRONT_InitialPhases();
+	// init addresses and write zeros to register
 	DOport_ByteAddress = (PUCHAR)(baseAddress + DO_High_Byte);
-	WRITE_portUchar(DOport_ByteAddress,0);
+	DOport_lastValue = 1; // to work-around WRITE_portUchar not writing the addres if it is the same
+	WRITE_portUchar(DOport_ByteAddress, 0);
 	
-	//PWM_period.QuadPart = NS100_1S / 100; // 1/100 s = 100 Hz
-	PWM_period.QuadPart = NS100_1S / 1; // 1/1 s = 1 Hz
-	
+	PWM_period.QuadPart = DEFAULT_PWM_PERIOD; 
 	angle_min = 0;
 	angle_max = 1800;
 

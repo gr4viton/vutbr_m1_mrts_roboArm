@@ -97,7 +97,10 @@
 
 //____________________________________________________
 // class servoMotor macros
-#define SUM_SERVOMOTORS					6
+#define SUM_SERVOMOTORS				6
+// 1[s]/x = x Hz
+#define DEFAULT_PWM_PERIOD			NS100_1S / 1
+//#define DEFAULT_PWM_PERIOD			NS100_1S / 100
 
 //____________________________________________________
 // reading constants
