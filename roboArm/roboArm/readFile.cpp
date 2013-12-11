@@ -58,8 +58,8 @@ DWORD READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_f
 	if(error_sum != FLAWLESS_EXECUTION)
 	{
 		delete[] G_controlString;
-		//printf("READ_file failed with error_sum %i\n", error_sum);
-		sprintf_s(textMsg, LENGTH_OF_BUFFER, "READ_file failed with error_sum %i\n", error_sum);
+		//printf("READ_file failed with error_sum %lu\n", error_sum);
+		sprintf_s(textMsg, LENGTH_OF_BUFFER, "READ_file failed with error_sum %lu\n", error_sum);
 		logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 		return(error_sum);
 	}
@@ -69,8 +69,8 @@ DWORD READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_f
 	if(error_sum != FLAWLESS_EXECUTION)
 	{
 		delete[] G_controlString;
-		//printf("READ_file failed with error_sum %i\n", error_sum);
-		sprintf_s(textMsg, LENGTH_OF_BUFFER, "READ_file failed with error_sum %i\n", error_sum);
+		//printf("READ_file failed with error_sum %lu\n", error_sum);
+		sprintf_s(textMsg, LENGTH_OF_BUFFER, "READ_file failed with error_sum %lu\n", error_sum);
 		logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 		return(error_sum);
 	}

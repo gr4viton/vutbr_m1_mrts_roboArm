@@ -92,8 +92,8 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 				{
 					sprintf_s(textMsg, LENGTH_OF_BUFFER, "Could not get servoMotor[%i] pointer\n", i_serv);
 					logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
-					//printf("Terminating thread with error_sum %i\n", error_sum);
-					sprintf_s(textMsg, LENGTH_OF_BUFFER, "Terminating thread with error_sum %i\n", error_sum);
+					//printf("Terminating thread with error_sum %lu\n", error_sum);
+					sprintf_s(textMsg, LENGTH_OF_BUFFER, "Terminating thread with error_sum %lu\n", error_sum);
 					logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 					ExitThread(error_sum);
 				}
@@ -115,8 +115,8 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 					//printf("Could not get servoMotor[%i] pointer\n", i_serv);
 					sprintf_s(textMsg, LENGTH_OF_BUFFER, "Could not get servoMotor[%i] pointer\n", i_serv);
 					logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
-					//printf("Terminating thread with error_sum %i\n", error_sum);
-					sprintf_s(textMsg, LENGTH_OF_BUFFER, "Terminating thread with error_sum %i\n", error_sum);
+					//printf("Terminating thread with error_sum %lu\n", error_sum);
+					sprintf_s(textMsg, LENGTH_OF_BUFFER, "Terminating thread with error_sum %lu\n", error_sum);
 					logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 					ExitThread(error_sum);
 				}
@@ -175,8 +175,8 @@ void CLOSE_handleAndExitThread(HANDLE handle, DWORD error_sum)
 	// char array for printing messages
 	char textMsg[LENGTH_OF_BUFFER];
 	error_sum = CLOSE_handleAndReturn(handle,error_sum);
-	//printf("Exiting thread with error_sum %8i\n", error_sum);
-	sprintf_s(textMsg, LENGTH_OF_BUFFER, "Exiting thread with error_sum %8i\n", error_sum);
+	//printf("Exiting thread with error_sum %lu\n", error_sum);
+	sprintf_s(textMsg, LENGTH_OF_BUFFER, "Exiting thread with error_sum %lu\n", error_sum);
 	logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 	ExitThread(error_sum);
 }
@@ -192,7 +192,7 @@ void CLOSE_handleAndExitThread(HANDLE handle, DWORD error_sum)
 void TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, DWORD error_sum)
 {
 	char textMsg[LENGTH_OF_BUFFER];
-	sprintf_s(textMsg, LENGTH_OF_BUFFER, "Starting to terminate all threads with error_sum %8i\n", error_sum);
+	sprintf_s(textMsg, LENGTH_OF_BUFFER, "Starting to terminate all threads with error_sum %lu\n", error_sum);
 	logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 
 	for(int iTh = 0; iTh<iTh_max; iTh++){

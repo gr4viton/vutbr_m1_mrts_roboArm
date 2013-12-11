@@ -52,7 +52,7 @@ DWORD MEAN_adc(UCHAR channel, UCHAR gain, int c)
 @return
 ***************/
 void EXIT_process(DWORD error_sum){
-	printf("Exiting process with error_sum %i\n",error_sum);
+	printf("Exiting process with error_sum %lu\n",error_sum);
 	ExitProcess(error_sum);
 }
 
@@ -106,7 +106,7 @@ void _cdecl main(int  argc, char **argv)
 	printf("> Try to initialize hardware\n");
 	error_sum = INIT_HW();
 	if(error_sum != FLAWLESS_EXECUTION){
-		printf("Initialization process failed with error_sum %i\n", error_sum);
+		printf("Initialization process failed with error_sum %lu\n", error_sum);
 		EXIT_process(error_sum);
 	}	
 	//____________________________________________________
@@ -115,7 +115,7 @@ void _cdecl main(int  argc, char **argv)
 	C_roboticManipulator ROB(error_sum);
 	if(error_sum != FLAWLESS_EXECUTION)
 	{
-		printf("Initialization of robotic manipulator failed with error_sum %i\n", error_sum);
+		printf("Initialization of robotic manipulator failed with error_sum %lu\n", error_sum);
 		EXIT_process(error_sum);
 	}
 
