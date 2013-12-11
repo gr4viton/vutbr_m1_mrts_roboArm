@@ -273,18 +273,18 @@ void _cdecl main(int  argc, char **argv)
 
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	// End of logging -> ends thread hTh[0]
+	// End of logging -> ends thread hTh[TH_LOG_I],  TH_LOG_I = 0
 	printf("main() - Try to stop Loggign function.\n");
 	logMsg->LoggingStop();
 	printf("main() - Waiting for the Logging thread to terminate.\n");
-	// Wait to end of thread hTh[0]
+	// Wait to end of thread hTh[TH_LOG_I]
 	do{
-		if(GetExitCodeThread(hTh[0], (thExitCode[0]) ) == FALSE){
+		if(GetExitCodeThread(hTh[TH_LOG_I], (thExitCode[TH_LOG_I]) ) == FALSE){
 			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Function of thread[%i] failed, returned FALSE with exit-code %lu\n", 0, *thExitCode);
 			logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			break;
 		}
-		if( *thExitCode[0] == STILL_ACTIVE ) 
+		if( *thExitCode[TH_LOG_I] == STILL_ACTIVE ) 
 		{
 			still_active_threads = 1;
 		}
@@ -302,7 +302,7 @@ void _cdecl main(int  argc, char **argv)
 	//    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	// only debugging
+	// for debugging purposes only
 #ifndef DEBUGGING_WITHOUT_HW
 	LARGE_INTEGER interval_one; 
 	LARGE_INTEGER intervalZero; 

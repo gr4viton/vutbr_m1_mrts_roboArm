@@ -22,15 +22,12 @@ HANDLE* CREATE_threads(void)
 ***************/
 void RTFCNDCL LogMessageThread(void *)
 {
-	// DEBUG - logging do not wanna
-	
 	// logging - do NOT modify
 	while(logMsg->GetState())
 	{
 		logMsg->WriteBuffToFile();
 		Sleep(10);
 	}
-
 	ExitThread(FLAWLESS_EXECUTION);
 }
 

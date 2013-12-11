@@ -28,26 +28,24 @@
 #endif // UNDER_RTSS
 
 // std
-//#include <iostream>
 #include <stdio.h>
+#include <exception>		// for [new] allocation
+#include <list>			// for ROB->phase-list
+
+// functional only in rtx64(2013)
+//#include <string>
 
 //#include <iostream>
 //#include <ctype.h>
-#include <exception> // for [new] allocation
 //#include <conio.h>
 //#include <stdlib.h>
 //#include <math.h>
 //#include <errno.h>
 
-// problematic
-//#include <string>
-#include <list> // for ROB->phase-list
-
 //____________________________________________________
-// this project headerfiles
-// return codes
-#include "returnCodeDefines.h"
+// this project headerfiles - (not the class headerfiles)
 #include "LogMessageA.h"
+#include "returnCodeDefines.h"
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // setup defines and macros
