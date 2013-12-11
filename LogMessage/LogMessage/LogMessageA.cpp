@@ -22,14 +22,11 @@ C_CircBuffer::C_CircBuffer()
 	Start = 0;
 	End = 0;
 	freeSpace = LENGTH_OF_BUFF;
-
-	buf = new char[LENGTH_OF_BUFF];
 }
 
 // Destructor C_CircBuffer
 C_CircBuffer::~C_CircBuffer()
 {
-	delete buf;
 }
 
 bool C_CircBuffer::IsEmpthy()
@@ -38,72 +35,48 @@ bool C_CircBuffer::IsEmpthy()
 	else return FALSE;
 }
 
-char C_CircBuffer::ReadOne()
-{
-	char ret = buf[Start];
-	Start++;
-	freeSpace++;
-	if(Start >= LENGTH_OF_BUFF)Start = 0;
-	if(LENGTH_OF_BUFF-freeSpace < 0)return 0;
-	return ret;
-}
-
-void C_CircBuffer::WriteOne(char in)
-{
-	if(freeSpace > 0)
-	{
-		buf[End] = in;
-		End++;
-		if(End >= LENGTH_OF_BUFF)End = 0;
-		freeSpace--;
-	}
-}
 
 unsigned int  C_CircBuffer::Write(char *in)
 {
 	unsigned int inStrLen = strlen(in);
 
-	if(inStrLen > freeSpace)
+	// if in message is larger than message max length
+	if(inStrLen > LENGTH_OF_MESSAGE)
 	{
 		return 1;
 	}
 
-	for(unsigned int i = 0 ; i < inStrLen ; i++)
-	{
-		WriteOne(in[i]);
-	}
+	// put in message to buffer
+	strcpy(buf[End], in);
+	End++;
+	if(End >= LENGTH_OF_BUFF)End = 0;
+	freeSpace--;
+	
 	return 0;
 }
 
-unsigned int C_CircBuffer::Read(char* out)
+unsigned int C_CircBuffer::Read(char out[LENGTH_OF_MESSAGE_HEAD])
 {
+	// no message here
 	if(freeSpace == LENGTH_OF_BUFF)return 1;
 	
-	char r = 1;
-	unsigned int len = LENGTH_OF_BUFF-freeSpace;
-	unsigned int i;
-	for(i = 0 ; i < len; i++)
-	{
-		r = ReadOne();
-		if(r != 0)
-		{
-			out[i] = r;
-		}
-		else out[i] = ' ';
-	}
-	out[i] = '\0';
+	// pull message
+	strcpy(out, buf[Start]);
+	Start++;
+	freeSpace++;
+	if(Start >= LENGTH_OF_BUFF)Start = 0;
+	if(LENGTH_OF_BUFF-freeSpace < 0)return 0;
+
 	return 0;
 }
 
 /****************************************************************************
-@class	C_CircBuffer
-@brief	circular buffer class
+@class	C_LogMessageA
+@brief	class for asynchronous logging
 ***************/
 // Constructor C_LogMessageA
 C_LogMessageA::C_LogMessageA()
 {
-	// init buffer
-	buf = new C_CircBuffer();
 	// init mutex
 	hMutex = RtCreateMutex(NULL, FALSE, HMUTEX_SHARED_NAME);
 
@@ -113,58 +86,25 @@ C_LogMessageA::C_LogMessageA()
 // Destructor C_LogMessageA
 C_LogMessageA::~C_LogMessageA()
 {
-	delete buf;
 	RtReleaseMutex(hMutex);
 }
 
-unsigned int C_LogMessageA::PushMessage(char* in, int iSeverity)
-{
-	if(!bLogging)
-	{
-		RtPrintf("(Logging stopped)\t%s\n",in);
-		return 1;
-	}
-	actSeverity = iSeverity;
-	while(!buf->IsEmpthy())Sleep(50);
-	RtWaitForSingleObject(hMutex,INFINITE); // wait to own hMutex
-	// Critical section
-	buf->Write(in);
-	RtReleaseMutex(hMutex);
-
-	return 0;
-}
-
-unsigned int C_LogMessageA::WriteBuffToFile()
-{
-	if(!bLogging)return 10;
-
-	CHAR cMessage[LENGTH_OF_BUFF];
-	unsigned int err = 0;
-	RtWaitForSingleObject(hMutex,INFINITE); // wait to own hMutex
-	// Critical section
-	err = buf->Read(cMessage);
-	RtReleaseMutex(hMutex);
-
-	if(err == 1)return 9;
-
-	// Write to file
-	DWORD BytesWritten;
-	CHAR  DataBuffer[512];
-
+unsigned int C_LogMessageA::PushMessage(char in[LENGTH_OF_MESSAGE], int iSeverity)
+{	
 	// Time
 	FILETIME FileTime; 
 	SYSTEMTIME SystemTime;
-	LARGE_INTEGER pTime;
+	LARGE_INTEGER pTime;	
 
-	if ( actSeverity > SEVERITY_MAX || SEVERITY_MIN > actSeverity )
+	if ( iSeverity > SEVERITY_MAX || SEVERITY_MIN > iSeverity )
 	{
-		RtPrintf("\nLogMessage() Error: Invalid severity %d: %s\n", actSeverity , cMessage);
+		RtPrintf("\nLogMessage() Error: Invalid severity %d: %s\n", iSeverity , in);
 		return 1;
 	}
 
-	if ( actSeverity < SEVERITY_LEVEL)
+	if ( iSeverity < SEVERITY_LEVEL)
 	{
-		return 2;
+		return 2; // lower than set severity - throw away
 	}
 
 	if ( RtGetClockTime(CLOCK_1,&pTime) == FALSE )
@@ -179,10 +119,45 @@ unsigned int C_LogMessageA::WriteBuffToFile()
 		RtPrintf("\nLogMessage() Error: FileTimeToSystemTime\n");
 		return 4;
 	}
-	sprintf_s(DataBuffer,512,"%02d.%02d.%04d %02d:%02d:%02d.%03d %02d: %s \r\n",
+
+	CHAR  DataBuffer[LENGTH_OF_MESSAGE_HEAD];
+
+	if(sprintf_s(DataBuffer,LENGTH_OF_MESSAGE_HEAD,"%02d.%02d.%04d %02d:%02d:%02d.%03d %02d: %s \r\n",
 		(int)SystemTime.wDay,(int)SystemTime.wMonth,(int)SystemTime.wYear,
 		(int)SystemTime.wHour,(int)SystemTime.wMinute,(int)SystemTime.wSecond, (int)SystemTime.wMilliseconds ,
-		actSeverity,cMessage);
+		iSeverity,in) == -1)
+	{
+		RtPrintf("\nLogMessage() Error: sprintf_s fail.\n");
+		return 5;
+	}
+
+	RtWaitForSingleObject(hMutex,INFINITE); // wait to own hMutex
+	// Critical section
+	buf.Write(DataBuffer);
+	RtReleaseMutex(hMutex);
+
+	return 0;
+}
+
+unsigned int C_LogMessageA::WriteBuffToFile()
+{
+	if(!bLogging)return 10;
+
+	CHAR cMessage[LENGTH_OF_MESSAGE_HEAD];
+	unsigned int err = 0;
+	RtWaitForSingleObject(hMutex,INFINITE); // wait to own hMutex
+	// Critical section
+	err = buf.Read(cMessage);
+	RtReleaseMutex(hMutex);
+
+	if(err == 1)
+	{	
+		// buffer is empthy, nothing to log
+		return 1;
+	}
+
+	// Write to file
+	DWORD BytesWritten;	
 
 	// CreateFile
 	Hfile = CreateFile(
@@ -198,7 +173,7 @@ unsigned int C_LogMessageA::WriteBuffToFile()
 	if ( Hfile == INVALID_HANDLE_VALUE ) 
 	{	
 		RtPrintf("\nLogMessage() Error: Could not create file\r\n");
-		return 5;
+		return 2;
 	}
 
 	if ( SetFilePointer(	
@@ -209,31 +184,31 @@ unsigned int C_LogMessageA::WriteBuffToFile()
 		) == 0xFFFFFFFF )
 	{
 		RtPrintf("\nLogMessage() Error: SetFilePointer failed\r\n");
-		return 6;
+		return 3;
 	}
 	
 	// WriteFile
 	if ( WriteFile(
 			Hfile,
-			(LPCVOID) DataBuffer,
-			strlen(DataBuffer),
+			(LPCVOID) cMessage,
+			strlen(cMessage),
 			(LPDWORD) &BytesWritten,
 			0
 		) == FALSE ) 
 	{
 		RtPrintf("\nLogMessage() Error: Could not wrtie to file\r\n"); 
-		return 7;
+		return 4;
 	}
 
 #if defined LOG_SCREEN
-	RtPrintf("%s",DataBuffer);
+	RtPrintf("%s",cMessage);
 #endif
 	
 	// [DD:MM:YYYY HH:MM:SS:MSS] 
 	 if (CloseHandle(Hfile) == FALSE)
      {
 		RtPrintf("\nLogMessage() Error: Could not close file\r\n"); 
-        return 8;
+        return 5;
      }
 
 	return 0;

@@ -16,23 +16,29 @@ unsigned int timerCounter;
 
 ULONG RTFCNDCL ThreadHandler(void *nContext);
 ULONG RTFCNDCL ThreadHandler2(void *nContext);
-
+C_CircBuffer buff;
 void  _cdecl main(int  argc, char **argv, char **envp)
 {
-	//// Test C_CircBuffer
-	//C_CircBuffer buff;
+	//// Test C_CircBuffer	
 	//char pStr[512];
 	//
-	//for(int i = 0 ; i < 50 ; i++)
+	//// Write to circular buffer
+	//unsigned int err = buff.Write("Test string 1\n");
+	//err = buff.Write("Test string 2\n");
+	//err = buff.Write("Test string 3\n");
+	//err = buff.Write("Test string 4\n");
+
+	//// Read from buffer all messages
+	//while(!buff.IsEmpthy())
 	//{
-	//	// Write to circular buffer
-	//	unsigned int err = buff.Write("Test string");
-
-	//	// Read
 	//	err = buff.Read(pStr);
+	//	if(err == 0)printf("%s", pStr);
+	//}
 
-	//	printf("%s", pStr);
-	//}	
+	logMsg.PushMessage("Test message 1", SEVERITY_MAX - 1);
+	logMsg.PushMessage("Test message 2", SEVERITY_MAX - 1);
+	logMsg.PushMessage("Test message 3", SEVERITY_MAX - 1);
+
 	logMsg.LoggingStart();
 	hThread1 = CreateThread(0, 0, ThreadHandler, NULL, CREATE_SUSPENDED, 0);
 	// Handle thread creation fail
@@ -102,11 +108,9 @@ void  _cdecl main(int  argc, char **argv, char **envp)
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //		Test asyn. log message
-	logMsg.PushMessage("Test message 1", SEVERITY_MAX - 1);
-	logMsg.PushMessage("Test message 2", SEVERITY_MAX - 1);
-	logMsg.PushMessage("Test message 3", SEVERITY_MAX - 1);
-
-
+	logMsg.PushMessage("Test message 4", SEVERITY_MAX - 1);
+	logMsg.PushMessage("Test message 5", SEVERITY_MAX - 1);
+	logMsg.PushMessage("Test message 6", SEVERITY_MAX - 1);
 	// Timer test
 	timerCounter = 0;
 	LARGE_INTEGER timerLastTime, minTmrPeriod, tmrPeriod;
@@ -124,7 +128,7 @@ void  _cdecl main(int  argc, char **argv, char **envp)
 		logMsg.PushMessage(strMessage, SEVERITY_MAX - 1);
 	}
 	tmrPeriod.QuadPart = minTmrPeriod.QuadPart * 10;				
-	printf("\nPeriod = %I64d\n", tmrPeriod.QuadPart);
+	printf("Period = %I64d\n", tmrPeriod.QuadPart);
 	RtSetTimerRelative(hTimerPWM, &tmrPeriod, &tmrPeriod);								// Set required (1ms) timer period
 
 	Sleep(1000);		// 1s
@@ -192,7 +196,7 @@ ULONG RTFCNDCL ThreadHandler(void *nContext)
 	while(logMsg.GetState())
 	{
 		logMsg.WriteBuffToFile();
-		Sleep(10);
+		Sleep(1);
 	}
 
 	ExitThread(0);
@@ -201,10 +205,10 @@ ULONG RTFCNDCL ThreadHandler(void *nContext)
 ULONG RTFCNDCL ThreadHandler2(void *nContext) 
 {
 	// test multithread logging OK :]
-	logMsg.PushMessage("Test message 4", SEVERITY_MAX - 1);
+	logMsg.PushMessage("Test message 7", SEVERITY_MAX - 1);
 	Sleep(5);
-	logMsg.PushMessage("Test message 5", SEVERITY_MAX - 1);
-	logMsg.PushMessage("Test message 6", SEVERITY_MAX - 1);
+	logMsg.PushMessage("Test message 8", SEVERITY_MAX - 1);
+	logMsg.PushMessage("Test message 9", SEVERITY_MAX - 1);
 	ExitThread(0);
 }
 

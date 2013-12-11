@@ -12,10 +12,12 @@
 #ifndef __LOGMESSAGEA__
 #define __LOGMESSAGEA__
 
-//#include "main.h"
-#include "roboArm.h"
+#include "main.h"
+//#include "roboArm.h"
 
-#define LENGTH_OF_BUFF	512
+#define LENGTH_OF_BUFF	256
+#define LENGTH_OF_MESSAGE	512
+#define LENGTH_OF_MESSAGE_HEAD	512 + 30 //(30 is for tame, date, severity)
 #define HMUTEX_SHARED_NAME TEXT("C_LogMessageA_hMutex.Name")
 
 #define SEVERITY_MIN 0
@@ -34,12 +36,10 @@
 class C_CircBuffer
 {
 private:
-	char *buf;					// buffer array
+	char buf[LENGTH_OF_BUFF][LENGTH_OF_MESSAGE_HEAD];	// buffer array 
 	unsigned int Start, End;	// actual start and end positions
 	unsigned int freeSpace;		// actual free space
 
-	char ReadOne();				// method for read one symbol
-	void WriteOne(char in);		// method for write one symbol
 public:
 	// Constructor
 	C_CircBuffer();
@@ -47,7 +47,7 @@ public:
 	~C_CircBuffer();
 
 	unsigned int Write(char *in);
-	unsigned int Read(char* out);
+	unsigned int Read(char out[LENGTH_OF_MESSAGE_HEAD]);
 	bool IsEmpthy();
 };
 
@@ -62,9 +62,8 @@ private:
 	HANDLE hMutex;
 	// File handle
 	HANDLE Hfile; 
-	int actSeverity;
 	// Circular buffer
-	C_CircBuffer *buf;
+	C_CircBuffer buf;
 	// Flag indicating start/stop (true/false) of logging
 	bool bLogging;
 public:
@@ -74,7 +73,7 @@ public:
 	// Destructor
 	~C_LogMessageA();
 
-	unsigned int PushMessage(char* in, int iSeverity);
+	unsigned int PushMessage(char in[LENGTH_OF_MESSAGE], int iSeverity);
 
 	unsigned int WriteBuffToFile();
 
