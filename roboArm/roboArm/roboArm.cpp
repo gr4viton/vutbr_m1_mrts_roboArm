@@ -21,7 +21,7 @@ HMODULE hLibModule = NULL;
 char* G_controlString = NULL;
 //char str[FILE_MAX_CHARS+CZERO] = ""; 
 // Pointer of C_LogMessageA, used for all logging
-C_LogMessageA *logMsg;
+C_LogMessageA logMsg;
 
 
 /****************************************************************************
@@ -98,9 +98,9 @@ void _cdecl main(int  argc, char **argv)
 	// INITIALIZATIONS
 	printf("Starting initialization process.\n");
 	// ____________________________________________________
-	// init logMsg
-	printf("> Try to logging class\n");
-	logMsg = new C_LogMessageA();
+	// init logMsg = global initialized before main
+	// printf("> Try to logging class\n");
+	//logMsg = new C_LogMessageA();
 	// ____________________________________________________
 	// init HW
 	printf("> Try to initialize hardware\n");
@@ -163,7 +163,7 @@ void _cdecl main(int  argc, char **argv)
 		switch(iTh){
 			//____________________________________________________
 			case(TH_LOG_I): // Logging thread				
-				logMsg->LoggingStart();	// Before log thread started, LoggingStart() must be called
+				logMsg.LoggingStart();	// Before log thread started, LoggingStart() must be called
 				wanted_priority = TH_LOG_PRIORITY;
 				// create thread
 				hTh[iTh] = RtCreateThread(NULL, 0, 
@@ -185,7 +185,7 @@ void _cdecl main(int  argc, char **argv)
 		// the other rutines are same for all types of threads 
 		if(hTh[iTh] == NULL){
 			sprintf_s(textMsg, LENGTH_OF_BUFFER, "ERROR:\tCannot create thread[%i].\n",iTh);
-			logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+			logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_CREATE_THREAD);
 		}
 		RtPrintf("Thread[%i] created and suspended with priority %i.\n", iTh, RtGetThreadPriority(hTh[iTh]) );
@@ -196,12 +196,12 @@ void _cdecl main(int  argc, char **argv)
 			thread_priority = RtGetThreadPriority(hTh[iTh]);
 			if( thread_priority == wanted_priority ){
 				sprintf_s(textMsg, LENGTH_OF_BUFFER, "Priority of thread[%i] sucessfully set to %i\n", iTh, wanted_priority );
-				logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+				logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			}
 			else{
 				sprintf_s(textMsg, LENGTH_OF_BUFFER, "ERROR:\tCannot set thread[%i] priority to %i! It currently has priority %i.\n", 
 					iTh, wanted_priority , thread_priority);
-				logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+				logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 				TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_CHANGE_PRIORITY);
 			}
 		}
@@ -215,15 +215,15 @@ void _cdecl main(int  argc, char **argv)
 		// RtResumeThread - unsuspend 
 		if( RtResumeThread(hTh[iTh]) != 0xFFFFFFFF ){
 			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Succesfully resumed thread[%i].\n", iTh);
-			logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+			logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			if(iTh == 0)
 			{
-				logMsg->PushMessage("Logging started.\n", SEVERITY_MAX - 5);
+				logMsg.PushMessage("Logging started.\n", SEVERITY_MAX - 5);
 			}
 		}
 		else{
 			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Could not resume thread[%i].\n", iTh);
-			logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+			logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_RESUME_THREAD);
 		}
 	}
@@ -251,7 +251,7 @@ void _cdecl main(int  argc, char **argv)
 		{ // the function failed 
 			error_sum = GetLastError();
 			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Function GetExitCodeThread called with thread[%i] failed, returned FALSE with error %lu\n", iTh, error_sum);
-			logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+			logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			break;
 		}
 		// is this thread still active?
@@ -270,20 +270,20 @@ void _cdecl main(int  argc, char **argv)
 	
 	for(iTh = 1; iTh<iTh_max; iTh++){
 		sprintf_s(textMsg, LENGTH_OF_BUFFER, "Thread[%i] terminated with exit code %lu\n", iTh, thExitCode[iTh]);
-		logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);		
+		logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);		
 	}			
 
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// End of logging -> ends thread hTh[TH_LOG_I],  TH_LOG_I = 0
 	printf("main() - Try to stop Loggign function.\n");
-	logMsg->LoggingStop();
+	logMsg.LoggingStop();
 	printf("main() - Waiting for the Logging thread to terminate.\n");
 	// Wait to end of thread hTh[TH_LOG_I]
 	do{
 		if(GetExitCodeThread(hTh[TH_LOG_I], &(thExitCode[TH_LOG_I]) ) == FALSE){
 			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Function of thread[%i] failed, returned FALSE with exit-code %lu\n", TH_LOG_I, thExitCode[TH_LOG_I]);
-			logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+			logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			break;
 		}
 		if( thExitCode[TH_LOG_I] == STILL_ACTIVE ) 
@@ -400,7 +400,7 @@ DWORD GET_ADC(UCHAR channel, UCHAR gain)
 
 	if ( c > 10 ) {
 		//RtPrintf("GetADC: Reading timeout\n");
-		logMsg->PushMessage("GetADC: Reading timeout\n", PUSHMSG_SEVERITY_NORMAL);
+		logMsg.PushMessage("GetADC: Reading timeout\n", PUSHMSG_SEVERITY_NORMAL);
 		return 0;		
 	}
 

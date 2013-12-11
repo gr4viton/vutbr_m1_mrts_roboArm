@@ -165,7 +165,7 @@ class C_LogMessageA;
 extern unsigned int		baseAddress;		
 extern HMODULE			hLibModule;	
 extern char*				G_controlString;			
-extern C_LogMessageA*	logMsg;
+extern C_LogMessageA		logMsg;
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // function declarations of roboArm.cpp

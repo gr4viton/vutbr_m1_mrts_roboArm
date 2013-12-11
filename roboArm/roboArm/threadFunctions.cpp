@@ -23,9 +23,9 @@ HANDLE* CREATE_threads(void)
 void RTFCNDCL LogMessageThread(void *)
 {
 	// logging - do NOT modify
-	while(logMsg->GetState())
+	while(logMsg.GetState())
 	{
-		logMsg->WriteBuffToFile();
+		logMsg.WriteBuffToFile();
 		Sleep(10);
 	}
 	ExitThread(FLAWLESS_EXECUTION);
@@ -47,20 +47,24 @@ void LOAD_actualPhase(C_roboticManipulator* a_ROB, LARGE_INTEGER* PWM_period,
 	LARGE_INTEGER intervalZero;		// tics for holding one on defined pin
 	intervalZero.QuadPart = 0;
 	C_servoMotor* serv = NULL;
-	for(int i_serv=0 ; i_serv < SUM_SERVOMOTORS ; i_serv++)
+for(int i_serv=0 ; i_serv < SUM_SERVOMOTORS ; i_serv++)
 	{
 		error_sum = a_ROB->GET_servoMotor(i_serv, &serv);
 		if(error_sum != FLAWLESS_EXECUTION)
 		{
 			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Could not get servoMotor[%i] pointer\n", i_serv);
-			logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+			logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			//printf("Terminating thread with error_sum %lu\n", error_sum);
 			sprintf_s(textMsg, LENGTH_OF_BUFFER, "Terminating thread with error_sum %lu\n", error_sum);
-			logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+			logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			ExitThread(error_sum);
 		}
+		//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!!!<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<		
+		// DEBUG
+		intervalZero.QuadPart = PWM_period->QuadPart - 1750 * NS100_1US;
 		// count the [zero interval] from [pwm period - one interval]
-		intervalZero.QuadPart = PWM_period->QuadPart - (*a_actualPhase)->servIntervalOne[i_serv].QuadPart;
+		//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!!!<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+		//intervalZero.QuadPart = PWM_period->QuadPart - a_actualPhase->servIntervalOne[i_serv].QuadPart;
 		// write it to actual
 		serv->SET_intervalZero( intervalZero );
 	}
@@ -119,7 +123,7 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 				// load next phase
 				printf("Load phase[%i] values\n", actPhase->i_phase);
 			
-					LOAD_actualPhase(ROB,&PWM_period,&actPhase);
+					LOAD_actualPhase(ROB,&PWM_period, &actPhase);
 			}
 			while(!ticDone)	// tics loop
 			{
@@ -134,10 +138,10 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 						ROB = NULL;
 						//printf("Could not get servoMotor[%i] pointer\n", i_serv);
 						sprintf_s(textMsg, LENGTH_OF_BUFFER, "Could not get servoMotor[%i] pointer\n", i_serv);
-						logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+						logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 						//printf("Terminating thread with error_sum %lu\n", error_sum);
 						sprintf_s(textMsg, LENGTH_OF_BUFFER, "Terminating thread with error_sum %lu\n", error_sum);
-						logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+						logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 						ExitThread(error_sum);
 					}
 					if(tic.QuadPart >= serv->intervalZero.QuadPart)
@@ -162,14 +166,15 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 				// end of each period
 				if(tic.QuadPart >= PWM_period.QuadPart)
 				{ // end of one period
+					sprintf_s(textMsg, LENGTH_OF_BUFFER, "End of one period - PWM_period = %I64d [100ns] = %I64d [1s]  \n", tim2.QuadPart, tim2.QuadPart / NS100_1S);
+					logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 					ROB->RESET_DOport();
 					tic.QuadPart = 0;
 		
 					RtGetClockTime(CLOCK_X,&tim2);
 					tim2.QuadPart = tim2.QuadPart-tim1.QuadPart;
 					//printf("PWM_period = %I64d [100ns] = %I64d [1s]  \n", tim2.QuadPart, tim2.QuadPart / NS100_1S);
-					sprintf_s(textMsg, LENGTH_OF_BUFFER, "End of one period - PWM_period = %I64d [100ns] = %I64d [1s]  \n", tim2.QuadPart, tim2.QuadPart / NS100_1S);
-					logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+
 					RtGetClockTime(CLOCK_X,&tim1);
 				// stop after first period (for debug - to terminate threads)<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 					//done = true;
@@ -210,7 +215,7 @@ void CLOSE_handleAndExitThread(HANDLE handle, DWORD error_sum)
 	error_sum = CLOSE_handleAndReturn(handle,error_sum);
 	//printf("Exiting thread with error_sum %lu\n", error_sum);
 	sprintf_s(textMsg, LENGTH_OF_BUFFER, "Exiting thread with error_sum %lu\n", error_sum);
-	logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+	logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 	ExitThread(error_sum);
 }
 
@@ -226,7 +231,7 @@ void TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, DWORD error_su
 {
 	char textMsg[LENGTH_OF_BUFFER];
 	sprintf_s(textMsg, LENGTH_OF_BUFFER, "Starting to terminate all threads with error_sum %lu\n", error_sum);
-	logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+	logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 
 	for(int iTh = 0; iTh<iTh_max; iTh++){
 		if(FALSE == TerminateThread(hTh[iTh], EXITCODE_TERMINATED_BY_MAIN)){

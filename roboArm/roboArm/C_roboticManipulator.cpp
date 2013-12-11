@@ -116,6 +116,7 @@ C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 	DOport_ByteAddress = (PUCHAR)(baseAddress + DO_High_Byte);
 	DOport_lastValue = 1; // to work-around WRITE_portUchar not writing the addres if it is the same
 	WRITE_portUchar(DOport_ByteAddress, 0);
+	DOport_lastValue = 0; 
 	
 	PWM_period.QuadPart = DEFAULT_PWM_PERIOD; 
 	angle_min = 0;
@@ -140,7 +141,7 @@ C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 	i++;
 	//____________________________________________________
 	// servo1
-	ret_i = serv[i].SET_constants( i, 1, true, 1,255, 5 );
+	ret_i = serv[i].SET_constants( i, 1, true, min_intervalZero, max_intervalZero, 5 );
 	if(ret_i != i){ 
 		error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
 	} 
@@ -148,7 +149,7 @@ C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 	i++;
 	//____________________________________________________
 	// servo2
-	ret_i = serv[i].SET_constants( i, 2, true, 1,255, 5 );
+	ret_i = serv[i].SET_constants( i, 2, true, min_intervalZero, max_intervalZero, 5 );
 	if(ret_i != i){ 
 		error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
 	} 
@@ -156,7 +157,7 @@ C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 	i++;
 	//____________________________________________________
 	// servo3
-	ret_i = serv[i].SET_constants( i, 3 );
+	ret_i = serv[i].SET_constants( i, 3, false, min_intervalZero, max_intervalZero, 5 );
 	if(ret_i != i){ 
 		error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
 	} 
@@ -164,7 +165,7 @@ C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 	i++;
 	//____________________________________________________
 	// servo4
-	ret_i = serv[i].SET_constants( i, 4 );
+	ret_i = serv[i].SET_constants( i, 4, false, min_intervalZero, max_intervalZero, 5 );
 	if(ret_i != i){ 
 		error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
 	} 
@@ -172,7 +173,7 @@ C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 	i++;
 	//____________________________________________________
 	// servo5
-	ret_i = serv[i].SET_constants( i, 5 );
+	ret_i = serv[i].SET_constants( i, 5, false, min_intervalZero, max_intervalZero, 5 );
 	if(ret_i != i){ 
 		error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
 	} 
@@ -269,13 +270,13 @@ void C_roboticManipulator::RESET_DOport()
 ***************/
 void C_roboticManipulator::SET_DOportBitUchar(UCHAR a_port_bit)
 {	
-	if(DOport_lastValue && 1<<a_port_bit)
-	{ // the port byt is already SET
+	if(DOport_lastValue & 1<<a_port_bit)
+	{ // the port byt is already SET - no change
 		return;
 	}
 	else
-	{
-		WRITE_portUchar(DOport_ByteAddress, DOport_lastValue || 1<<a_port_bit);
+	{ // write changed register byte
+		WRITE_portUchar(DOport_ByteAddress, DOport_lastValue | 1<<a_port_bit);
 	}
 }
 

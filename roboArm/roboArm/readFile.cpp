@@ -60,7 +60,7 @@ DWORD READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_f
 		delete[] G_controlString;
 		//printf("READ_file failed with error_sum %lu\n", error_sum);
 		sprintf_s(textMsg, LENGTH_OF_BUFFER, "READ_file failed with error_sum %lu\n", error_sum);
-		logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+		logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 		return(error_sum);
 	}
 	//____________________________________________________
@@ -71,7 +71,7 @@ DWORD READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_f
 		delete[] G_controlString;
 		//printf("READ_file failed with error_sum %lu\n", error_sum);
 		sprintf_s(textMsg, LENGTH_OF_BUFFER, "READ_file failed with error_sum %lu\n", error_sum);
-		logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+		logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 		return(error_sum);
 	}
 	// AFTER creation of new prvek in array of C_spatialConf you must copy non-changed angles from previous phase
@@ -168,7 +168,7 @@ DWORD PARSE_controlString(C_roboticManipulator* a_manip){
 				return(ERROR_IS_NOT_NUMBER);
 #endif		
 				//printf("Continuing with next servo, because IGNORE_NOT_NUMBER_ANGLE_IN_CONTROL_FILE is defined\n");
-				logMsg->PushMessage("Continuing with next servo, because IGNORE_NOT_NUMBER_ANGLE_IN_CONTROL_FILE is defined", PUSHMSG_SEVERITY_NORMAL);
+				logMsg.PushMessage("Continuing with next servo, because IGNORE_NOT_NUMBER_ANGLE_IN_CONTROL_FILE is defined", PUSHMSG_SEVERITY_NORMAL);
 			}
 			else
 			{ // i_serv is a number
@@ -196,7 +196,7 @@ DWORD PARSE_controlString(C_roboticManipulator* a_manip){
 								done = true;
 								//printf("One of digits from angle [%s] is not a number!\n",token.c_str());
 								sprintf_s(textMsg, LENGTH_OF_BUFFER, "One of digits from angle [%s] is not a number!\n",token.c_str());
-								logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+								logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 								return(ERROR_IS_NOT_NUMBER);
 							}
 							int_value*=10;
@@ -225,19 +225,40 @@ DWORD PARSE_controlString(C_roboticManipulator* a_manip){
 		//std::cout << token << std::endl;
 		//printf("token = \"%s\"\n", token.c_str());
 		sprintf_s(textMsg, LENGTH_OF_BUFFER, "token = \"%s\"\n", token.c_str());
-		logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+		logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 		controlString.erase(0, pos + delimiter.length());
 	}
 	// last
   //  std::cout << controlString << std::endl;
 	//printf("%s\n",controlString.c_str());
 	sprintf_s(textMsg, LENGTH_OF_BUFFER, "%s",controlString.c_str());
-	logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+	logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 
 	ROB->RESET_DOport();
 	ROB = NULL;
 	*/
 	return(FLAWLESS_EXECUTION);
+}
+/****************************************************************************
+@function   
+@brief      
+@param[in]  
+@param[out] 
+@return     error_sum
+************/
+DWORD CREATE_file(HANDLE* hFile)
+{
+	return(FLAWLESS_EXECUTION);
+	/*
+	hFile = CreateFile(a_filePath, GENERIC_READ, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (hFile == INVALID_HANDLE_VALUE) { // Failed CreateFile
+		//LogMessage()
+		// ifdef
+		//RtPrintf("Function CreateFile failed with 0x%04x - INVALID_HANDLE_VALUE\n", GetLastError());
+		sprintf_s(textMsg, LENGTH_OF_BUFFER, "Function CreateFile failed with 0x%04x - INVALID_HANDLE_VALUE\n", GetLastError());
+		logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+		return(ERROR_CREATEFILE_FAIL);
+	}*/
 }
 
 
@@ -258,23 +279,28 @@ DWORD READ_file(char* a_filePath){
 	// CreateFile - for read handle 
 #ifdef DEBUG_PRINT_READ_FUNCTIONS
 	//RtPrintf("Try to CreateFile.\n");
-	logMsg->PushMessage("Try to CreateFile.", SEVERITY_MAX - 4);
+	logMsg.PushMessage("Try to CreateFile.", SEVERITY_MAX - 4);
 #endif
 	// CONST CHAR * = LPCSTR 
 	//char file_path[] = "D:\\EDUC\\m1\\R_MRTS\\float.txt";
 
+	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!!!<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+	//rewrite to function
+	//hFile = CREATE_file(hFile..
 	hFile = CreateFile(a_filePath, GENERIC_READ, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hFile == INVALID_HANDLE_VALUE) { // Failed CreateFile
 		//LogMessage()
 		// ifdef
 		//RtPrintf("Function CreateFile failed with 0x%04x - INVALID_HANDLE_VALUE\n", GetLastError());
 		sprintf_s(textMsg, LENGTH_OF_BUFFER, "Function CreateFile failed with 0x%04x - INVALID_HANDLE_VALUE\n", GetLastError());
-		logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+		logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 		return(ERROR_CREATEFILE_FAIL);
 	}
+	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!!!<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
 #ifdef DEBUG_PRINT_READ_FUNCTIONS
 	//RtPrintf("CreateFile completed successfully.\n");
-	logMsg->PushMessage("CreateFile completed successfully.", SEVERITY_MAX - 4);
+	logMsg.PushMessage("CreateFile completed successfully.", SEVERITY_MAX - 4);
 #endif
 	
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -282,7 +308,7 @@ DWORD READ_file(char* a_filePath){
 	DWORD file_end_byte = 0;
 #ifdef DEBUG_PRINT_READ_FUNCTIONS
 	RtPrintf("Try to SetFilePointer to FILE_END:\n");
-	logMsg->PushMessage("Try to SetFilePointer to FILE_END:", SEVERITY_MAX - 4);
+	logMsg.PushMessage("Try to SetFilePointer to FILE_END:", SEVERITY_MAX - 4);
 #endif
 	error_sum = MOVE_pointerOrReturn(hFile, 0, &file_end_byte, FILE_END);
 	if(error_sum != FLAWLESS_EXECUTION)	return(CLOSE_handleAndReturn(hFile, error_sum));
@@ -290,7 +316,7 @@ DWORD READ_file(char* a_filePath){
 	DWORD file_begin_byte = 0;
 #ifdef DEBUG_PRINT_READ_FUNCTIONS
 	RtPrintf("Try to SetFilePointer to FILE_BEGIN:\n");
-	logMsg->PushMessage("Try to SetFilePointer to FILE_BEGIN:", SEVERITY_MAX - 4);
+	logMsg.PushMessage("Try to SetFilePointer to FILE_BEGIN:", SEVERITY_MAX - 4);
 #endif
 	error_sum = MOVE_pointerOrReturn(hFile, 0, &file_begin_byte, FILE_BEGIN);
 	if(error_sum != FLAWLESS_EXECUTION)	return(CLOSE_handleAndReturn(hFile, error_sum));
@@ -316,7 +342,7 @@ DWORD READ_file(char* a_filePath){
 //	RtPrintf("Try to READ_chunk [%lu bytes] from file.\n",bytes2get);
 	//RtPrintf("Try to ReadFile. Read whole file [%lu bytes] from [%s], \n", bytes2get, a_filePath);
 	sprintf_s(textMsg, LENGTH_OF_BUFFER, "Try to ReadFile. Read whole file [%lu bytes] from [%s], \n", bytes2get, a_filePath);
-	logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+	logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 #endif
 	DWORD bytes_got;
 	// BOOL ReadFile(HANDLE hFile, LPVOID lpBuffer, DWORD nbytes2get, LPDWORD lpbytes_got, LPOVERLAPPED lpOverlapped);
@@ -324,25 +350,25 @@ DWORD READ_file(char* a_filePath){
 	{ // Failed to ReadFile
 		//RtPrintf("ERROR:\tFunction ReadFile failed with 0x%04x - returned FALSE\n", GetLastError());
 		sprintf_s(textMsg, LENGTH_OF_BUFFER, "ERROR:\tFunction ReadFile failed with 0x%04x - returned FALSE\n", GetLastError());
-		logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+		logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 		return(CLOSE_handleAndReturn(hFile, ERROR_READFILE_FAIL));
 	}
 	else if( bytes_got == 0){
 		// reading beyond EOF
 #ifdef DEBUG_PRINT_READ_FUNCTIONS
 		RtPrintf("Reading ended = EOF\n");
-		logMsg->PushMessage("Reading ended = EOF", SEVERITY_MAX - 4);
+		logMsg.PushMessage("Reading ended = EOF", SEVERITY_MAX - 4);
 #endif
 	}
 #ifdef DEBUG_PRINT_READ_FUNCTIONS
 	//RtPrintf("bytes_got = %lu\n", bytes_got);	
 	sprintf_s(textMsg, LENGTH_OF_BUFFER, "bytes_got = %lu\n", bytes_got);	
-	logMsg->PushMessage(textMsg, SEVERITY_MAX - 4);
+	logMsg.PushMessage(textMsg, SEVERITY_MAX - 4);
 #endif
 	G_controlString[bytes_got] = '\0';
 	//printf("[FILE_START]\n%s\n[FILE_END]",G_controlString);
 	sprintf_s(textMsg, LENGTH_OF_BUFFER, "[FILE_START]\n%s\n[FILE_END]",G_controlString);
-	logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+	logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// CloseHandle
@@ -364,21 +390,24 @@ DWORD CLOSE_handleAndReturn(HANDLE handle, DWORD error_sum)
 {
 	// char array for printing messages
 	char textMsg[LENGTH_OF_BUFFER];
+	if(error_sum != FLAWLESS_EXECUTION)
+	{
 #ifdef DEBUG
 	RtPrintf("Try to CloseHandle.\n");
-	logMsg->PushMessage("Try to CloseHandle.", PUSHMSG_SEVERITY_NORMAL);
+	logMsg.PushMessage("Try to CloseHandle.", PUSHMSG_SEVERITY_NORMAL);
 #endif
+	}
 	if( CloseHandle(handle) == 0 )
 	{
 		//RtPrintf("Function CloseHandle failed with 0x%04x\n", GetLastError());
 		sprintf_s(textMsg, LENGTH_OF_BUFFER, "Function CloseHandle failed with 0x%04x\n", GetLastError());
-		logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+		logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 		return(error_sum + ERROR_CLOSEHANDLE_FAIL);
 	}
 	else 
 	{
 		//printf("Successfully closed handle\n");
-		logMsg->PushMessage("Successfully closed handle", PUSHMSG_SEVERITY_NORMAL);
+		logMsg.PushMessage("Successfully closed handle", PUSHMSG_SEVERITY_NORMAL);
 		if(error_sum != 0)
 			return(error_sum);
 		else 
@@ -401,19 +430,19 @@ DWORD MOVE_pointerOrReturn(HANDLE hFile, LONG distance2move, DWORD* file_current
 	char textMsg[LENGTH_OF_BUFFER];
 #ifdef DEBUG_PRINT_READ_FUNCTIONS
 	//RtPrintf("Try to SetFilePointer.\n");
-	logMsg->PushMessage("Try to SetFilePointer.\n", SEVERITY_MAX - 4);
+	logMsg.PushMessage("Try to SetFilePointer.\n", SEVERITY_MAX - 4);
 #endif
 	*file_current_byte = SetFilePointer(hFile, distance2move, NULL, MoveMethod);
 	if (*file_current_byte == INVALID_SET_FILE_POINTER) 
 	{ // Failed to SetFilePointer
 		//RtPrintf("Function SetFilePointer failed with 0x%04x\n", GetLastError());
 		sprintf_s(textMsg, LENGTH_OF_BUFFER, "Function SetFilePointer failed with 0x%04x\n", GetLastError());
-		logMsg->PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+		logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 		return(CLOSE_handleAndReturn(hFile, ERROR_SETFILEPOINTER_FAIL));
 	}
 #ifdef DEBUG_PRINT_READ_FUNCTIONS
 	//RtPrintf("file_current_byte = %lu\n",*file_current_byte);
-	logMsg->PushMessage("file_current_byte = %lu\n",*file_current_byte);
+	logMsg.PushMessage("file_current_byte = %lu\n",*file_current_byte);
 #endif
 	return(FLAWLESS_EXECUTION);
 }

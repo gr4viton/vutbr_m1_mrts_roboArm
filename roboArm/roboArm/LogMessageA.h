@@ -20,16 +20,21 @@
 
 #include "returnCodeDefines.h"
 
-#define LENGTH_OF_BUFFER			512
-#define HMUTEX_SHARED_NAME		TEXT("C_LogMessageA_hMutex.Name")
+// buffer dimensions - user choise
+	#define LENGTH_OF_BUFFER	256
+	#define LENGTH_OF_MESSAGE	512
 
-#define SEVERITY_MIN				0
-#define SEVERITY_MAX				16
-#define SEVERITY_LEVEL			7
+// do not modify
+#define LENGTH_OF_MESSAGE_HEAD	LENGTH_OF_MESSAGE + 30 //(30 is for tame, date, severity)
+#define HMUTEX_SHARED_NAME TEXT("C_LogMessageA_hMutex.Name")
+
+#define SEVERITY_MIN 0
+#define SEVERITY_MAX 16
+#define SEVERITY_LEVEL 7
 
 //#define LOG_FILE "C:\\mrts\\xslizj00\\cv6\\LogMessage.txt"
 #define LOG_FILE "D:\\LogMessage.txt"
-#define SHOW_LOG_ON_SCREEN	// comment for hide logs on screen
+#define LOG_SCREEN	// comment for hide logs on screen
 
 
 /****************************************************************************
@@ -39,12 +44,11 @@
 class C_CircBuffer
 {
 private:
-	char *buf;					// buffer array
-	unsigned int Start, End;		// actual start and end positions
+	char buf[LENGTH_OF_BUFFER][LENGTH_OF_MESSAGE_HEAD];	// buffer array 
+	unsigned int Start, End;	// actual start and end positions
 	unsigned int freeSpace;		// actual free space
+	unsigned int strcpySafe(char *dest, char *in);
 
-	char ReadOne();				// method for read one symbol
-	void WriteOne(char in);		// method for write one symbol
 public:
 	// Constructor
 	C_CircBuffer();
@@ -52,7 +56,7 @@ public:
 	~C_CircBuffer();
 
 	unsigned int Write(char *in);
-	unsigned int Read(char* out);
+	unsigned int Read(char out[LENGTH_OF_MESSAGE_HEAD]);
 	bool IsEmpty();
 };
 
@@ -67,8 +71,7 @@ class C_LogMessageA
 private:
 	HANDLE hMutex;		// Mutex handle
 	HANDLE Hfile;		// File handle
-	int actSeverity;
-	C_CircBuffer *buf;	// Circular buffer
+	C_CircBuffer buf;	// Circular buffer
 	bool bLogging;		// Flag indicating start/stop (true/false) of logging
 
 public:
@@ -77,7 +80,7 @@ public:
 	C_LogMessageA();
 	~C_LogMessageA();
 
-	unsigned int PushMessage(char* in, int iSeverity);
+	unsigned int PushMessage(char in[LENGTH_OF_MESSAGE], int iSeverity);
 	unsigned int WriteBuffToFile();
 
 	void LoggingStart(){bLogging = true;}

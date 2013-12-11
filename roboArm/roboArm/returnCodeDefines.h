@@ -54,7 +54,7 @@
 
 //____________________________________________________
 //LogMessageA
-#define ERROR_SPRINTF_S								98002
+#define ERROR_SPRINTF_S_FAIL							98002
 #define ERROR_SEVERITY_LOWER_THAN_MIN				98003
 #define ERROR_SEVERITY_BIGGER_THAN_MAX				98004
 #define LOG_IS_NOT_SEVERE_ENAUGH						98005
