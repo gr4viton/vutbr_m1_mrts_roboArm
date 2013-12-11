@@ -20,7 +20,7 @@
 ************/
 void C_roboticManipulator::DEBUG_fillPhases(void){
 	LARGE_INTEGER intervalZero;
-	intervalZero.QuadPart = 1750;
+	intervalZero.QuadPart = 1750 * NS100_1US;
 	int i_serv = 0;
 
 	phases.push_back(C_spatialConfiguration());

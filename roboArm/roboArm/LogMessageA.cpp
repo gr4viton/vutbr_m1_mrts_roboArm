@@ -176,11 +176,6 @@ C_LogMessageA::~C_LogMessageA()
 ************/
 unsigned int C_LogMessageA::PushMessage(char* in, int iSeverity)
 {
-	printf("%s",in);
-	return(FLAWLESS_EXECUTION);
-	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	// nope
-	/*
 	// Time
 	FILETIME FileTime; 
 	SYSTEMTIME SystemTime;
@@ -234,7 +229,7 @@ unsigned int C_LogMessageA::PushMessage(char* in, int iSeverity)
 	RtReleaseMutex(hMutex);
 	
 	return(FLAWLESS_EXECUTION);
-	*/
+	
 }
 
 /****************************************************************************
@@ -311,7 +306,7 @@ unsigned int C_LogMessageA::WriteBuffToFile()
 	
 	// [DD:MM:YYYY HH:MM:SS:MSS] 
 #if defined SHOW_LOG_ON_SCREEN
-	RtPrintf("%s",DataBuffer);
+	RtPrintf("%s", cMessage);
 #endif
 	
 	return( CLOSE_handleAndReturn(Hfile, FLAWLESS_EXECUTION) );

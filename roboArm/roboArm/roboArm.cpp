@@ -73,6 +73,7 @@ void _cdecl main(int  argc, char **argv)
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// program parameters aquisition
 	//printf("_________________________(: Clean start :)___________________________\n");
+	logMsg.PushMessage("cokoliv",10);
 	printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>> roboArm started <<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
 	printf("function main()\n");
 	if ( argc != 2 )	 
@@ -356,6 +357,9 @@ void _cdecl main(int  argc, char **argv)
 	//____________________________________________________
 	// everything should be unallocated and closed
 	printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> roboArm ended <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
+	//____________________________________________________
+	// write all messages 
+	while( ERROR_BUFFER_IS_EMPTY != logMsg.WriteBuffToFile());
 	printf("Exiting process.\n");
     EXIT_process(FLAWLESS_EXECUTION);
 }

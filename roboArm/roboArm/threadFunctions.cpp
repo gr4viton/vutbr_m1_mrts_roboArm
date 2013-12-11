@@ -47,7 +47,7 @@ void LOAD_actualPhase(C_roboticManipulator* a_ROB, LARGE_INTEGER* PWM_period,
 	LARGE_INTEGER intervalZero;		// tics for holding one on defined pin
 	intervalZero.QuadPart = 0;
 	C_servoMotor* serv = NULL;
-for(int i_serv=0 ; i_serv < SUM_SERVOMOTORS ; i_serv++)
+	for(int i_serv=0 ; i_serv < SUM_SERVOMOTORS ; i_serv++)
 	{
 		error_sum = a_ROB->GET_servoMotor(i_serv, &serv);
 		if(error_sum != FLAWLESS_EXECUTION)
@@ -59,12 +59,10 @@ for(int i_serv=0 ; i_serv < SUM_SERVOMOTORS ; i_serv++)
 			logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			ExitThread(error_sum);
 		}
-		//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!!!<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<		
-		// DEBUG
-		intervalZero.QuadPart = PWM_period->QuadPart - 1750 * NS100_1US;
 		// count the [zero interval] from [pwm period - one interval]
-		//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!!!<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-		//intervalZero.QuadPart = PWM_period->QuadPart - a_actualPhase->servIntervalOne[i_serv].QuadPart;
+		intervalZero.QuadPart = PWM_period->QuadPart - (*a_actualPhase)->servIntervalOne[i_serv].QuadPart;
+		// DEBUG
+		//intervalZero.QuadPart = PWM_period->QuadPart - 1750 * NS100_1US;
 		// write it to actual
 		serv->SET_intervalZero( intervalZero );
 	}
@@ -181,6 +179,8 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 				}
 			}//tic loop
 
+			// next phase
+			printf("Next phase.\n");
 			actPhase++;
 			if(actPhase == ROB->phases.end())
 			{

@@ -57,6 +57,9 @@
 #define DEBUGGING_WITHOUT_HW
 #define DEBUG_PRINT_READ_FUNCTIONS
 
+
+//#define SHOW_LOG_ON_SCREEN
+
 //____________________________________________________
 // optional walk-arounds for little file inconsistency
 #define IGNORE_NOT_NUMBER_ANGLE_IN_CONTROL_FILE

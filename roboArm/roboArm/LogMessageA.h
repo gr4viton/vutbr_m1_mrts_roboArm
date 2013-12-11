@@ -21,8 +21,8 @@
 #include "returnCodeDefines.h"
 
 // buffer dimensions - user choise
-	#define LENGTH_OF_BUFFER	256
-	#define LENGTH_OF_MESSAGE	512
+#define LENGTH_OF_BUFFER		256
+#define LENGTH_OF_MESSAGE	512
 
 // do not modify
 #define LENGTH_OF_MESSAGE_HEAD	LENGTH_OF_MESSAGE + 30 //(30 is for tame, date, severity)
