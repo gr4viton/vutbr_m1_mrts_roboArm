@@ -179,7 +179,8 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 			actPhase++;
 			if(actPhase == ROB->phases.end())
 			{
-				actPhase--;
+				//actPhase--;
+				phaseDone = true;
 			}
 
 		}
