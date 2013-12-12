@@ -126,7 +126,8 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 	
 	LARGE_INTEGER lastIntervalOne;
 	lastIntervalOne.QuadPart = 0;
-
+	
+	DWORD n = 0;
 	while(!phaseDone)
 	{
 		//____________________________________________________
@@ -140,7 +141,6 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 
 		
 		LONGLONG nKrok = actPhase->phaseInterval.QuadPart/PWM_period.QuadPart ;
-		DWORD n = 0;
 		
 		//____________________________________________
 		// tics loop - PWM periodical register writing
@@ -222,7 +222,7 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 
 				RtGetClockTime(CLOCK_X, &tim1);
 			}
-		} //tic loop
+		} //tic loop == PWM period end
 		n++;
 
 		//____________________________________________________

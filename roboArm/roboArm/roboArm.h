@@ -54,7 +54,7 @@
 //____________________________________________________
 // debug
 //#define DEBUG
-//#define DEBUGGING_WITHOUT_HW
+#define DEBUGGING_WITHOUT_HW
 #define HIDE_TEST_CODES
 // not needed #define DEBUG_PRINT_READ_FUNCTIONS
 
