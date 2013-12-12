@@ -197,6 +197,7 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 			phaseDone = true;
 			break;
 			//printf("All phases are done, continuing with the last phase [%i].\n", actPhase->i_phase);
+			//
 		}
 		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Continuing with next phase[%i/%i].\n", actPhase->i_phase, actPhase->i_phase_max);
 		logMsg.PushMessage(textMsg, LOG_SEVERITY_PWM_PHASE);
