@@ -141,7 +141,9 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 
 		
 		LONGLONG nKrok = actPhase->phaseInterval.QuadPart/PWM_period.QuadPart ;
-		
+		actPhasePrev = actPhase;
+		actPhasePrev--;
+
 		//____________________________________________
 		// tics loop - PWM periodical register writing
 		while(!ticDone)	
@@ -172,15 +174,13 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 					else
 					{
 						LARGE_INTEGER intervalOneDif;
-						actPhasePrev = actPhase;
-						actPhasePrev--;
 						// Get last and actual interval one (angle) differention
 						if(actPhase != ROB->phases.begin())
 							intervalOneDif.QuadPart = actPhase->servIntervalOne[i_serv].QuadPart - actPhasePrev->servIntervalOne[i_serv].QuadPart;
 						else intervalOneDif.QuadPart = 0;
 						LARGE_INTEGER actIntervalOne;
 						// evaluate new value of angle
-						actIntervalOne.QuadPart = actPhasePrev->servIntervalOne[i_serv].QuadPart + n*intervalOneDif.QuadPart/nKrok;
+						actIntervalOne.QuadPart = actPhasePrev->servIntervalOne[i_serv].QuadPart + (DWORD)((double)(n*intervalOneDif.QuadPart))/nKrok;
 
 						//logMsg.PushMessage("Ramp act val = %llu", actIntervalOne.QuadPart);						
 
