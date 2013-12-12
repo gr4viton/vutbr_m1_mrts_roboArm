@@ -102,7 +102,7 @@ unsigned int  C_CircBuffer::Write(char *in)
 	// put in message to buffer
 	strcpySafe(buf[End], in);
 	End++;
-	if(End >= LENGTH_OF_BUFFER)End = 0;
+	if(End >= LENGTH_OF_BUFFER) End = 0;
 	freeSpace--;
 	
 	return(FLAWLESS_EXECUTION);
@@ -175,7 +175,7 @@ C_LogMessageA::~C_LogMessageA()
 @return     (unsigned int)
 ************/
 unsigned int C_LogMessageA::PushMessage(char* inMsg, int iSeverity)
-{
+{	
 	// Time
 	FILETIME			FileTime; 
 	SYSTEMTIME		SystemTime;
@@ -245,6 +245,13 @@ unsigned int C_LogMessageA::PushMessage(char* inMsg, int iSeverity)
 		RtPrintf("\nLogMessage() Error: sprintf_s fail.\n");
 		return ERROR_SPRINTF_S_FAIL;
 	}
+	
+#if defined SHOW_LOG_ON_SCREEN
+	// write it before it is written into file -> 
+	// when debugging you see it as you step through program 
+	// and not after writing to file after a few steps
+	RtPrintf("%s\n", DataBuffer);
+#endif
 
 	RtWaitForSingleObject(hMutex,INFINITE); // wait to own hMutex
 	// Critical section [START]
@@ -319,9 +326,6 @@ unsigned int C_LogMessageA::WriteBuffToFile()
 	}
 	
 	// [DD:MM:YYYY HH:MM:SS:MSS] 
-#if defined SHOW_LOG_ON_SCREEN
-	RtPrintf("%s\n", cMessage);
-#endif
 	
 	return( CLOSE_handleAndReturn(Hfile, FLAWLESS_EXECUTION, false) );
 }
