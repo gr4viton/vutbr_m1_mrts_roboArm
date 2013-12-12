@@ -21,14 +21,14 @@ int INIT_HW(){
 	printf("> Try to initialize Library\n");
 	error_sum = INIT_Library();
 	if(error_sum){
-		logMsg.PushMessage("Cannot init library\n", PUSHMSG_SEVERITY_NORMAL);
+		logMsg.PushMessage("Cannot init library\n", LOG_SEVERITY_NORMAL);
 #ifndef DEBUGGING_WITHOUT_HW //if NOT defined
 		return(ERR_INIT_CANNOT_LOAD_LIBRARY);	
 #endif
-		logMsg.PushMessage(">> Continuing as DEBUGGING_WITHOUT_HW was defined!\n", PUSHMSG_SEVERITY_NORMAL);
+		logMsg.PushMessage(">> Continuing as DEBUGGING_WITHOUT_HW was defined!\n", LOG_SEVERITY_NORMAL);
 	}
 	else 
-		logMsg.PushMessage(">> Library was opened successfully!\n", PUSHMSG_SEVERITY_NORMAL);
+		logMsg.PushMessage(">> Library was opened successfully!\n", LOG_SEVERITY_NORMAL);
 	
 	//____________________________________________________
 	// Initialize ADC
@@ -106,7 +106,7 @@ int INIT_Library()
 	baseAddress = (DWORD) functionPointer();
 
 	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "baseAddress = %i = hex = %x \n", baseAddress, baseAddress);
-	logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+	logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
 	// Free the Library
 	printf("Free the Library.\n");
 	FreeLibrary(hLibModule);

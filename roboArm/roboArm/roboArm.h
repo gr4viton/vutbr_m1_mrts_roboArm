@@ -68,19 +68,31 @@
 
 //____________________________________________________
 // severities
-#define 	PUSHMSG_SEVERITY_ALL				SEVERITY_MIN
-#define 	PUSHMSG_SEVERITY_LOWEST			SEVERITY_MAX - 9
-#define 	PUSHMSG_SEVERITY_LOWER			SEVERITY_MAX - 8
-#define 	PUSHMSG_SEVERITY_LOW				SEVERITY_MAX - 7 
-#define PUSHMSG_SEVERITY_MEDIUM			SEVERITY_MAX - 5	
-#define 	PUSHMSG_SEVERITY_HIGH			SEVERITY_MAX - 3
-#define 	PUSHMSG_SEVERITY_HIGHER			SEVERITY_MAX - 2
-#define 	PUSHMSG_SEVERITY_HIGHEST			SEVERITY_MAX - 1
+// SEVERITY VALUES
+#define 	LOG_SEVERITY_VALUE_MIN				SEVERITY_MIN
+#define 	LOG_SEVERITY_VALUE_LOWEST			SEVERITY_MAX - 9
+#define 	LOG_SEVERITY_VALUE_LOWER				SEVERITY_MAX - 8
+#define 	LOG_SEVERITY_VALUE_LOW				SEVERITY_MAX - 7 
+#define LOG_SEVERITY_VALUE_MEDIUM			SEVERITY_MAX - 5	
+#define 	LOG_SEVERITY_VALUE_HIGH				SEVERITY_MAX - 3
+#define 	LOG_SEVERITY_VALUE_HIGHER			SEVERITY_MAX - 2
+#define 	LOG_SEVERITY_VALUE_HIGHEST			SEVERITY_MAX - 1
 
-#define PUSHMSG_SEVERITY_NORMAL			PUSHMSG_SEVERITY_MEDIUM		
+// LOG_SEVERITIES - used in program
+// Severe errors logs with this value - (overwriting local severity)
+#define LOG_SEVERITY_ERROR					LOG_SEVERITY_VALUE_HIGHEST
 
-// which messages to print
-#define SEVERITY_LEVEL					PUSHMSG_SEVERITY_LOW
+#define LOG_SEVERITY_EXITING_THREAD			LOG_SEVERITY_VALUE_MEDIUM
+// thread PWM severities
+#define LOG_SEVERITY_PWM_PERIOD				LOG_SEVERITY_VALUE_LOWEST
+#define LOG_SEVERITY_PWM_PHASE				LOG_SEVERITY_VALUE_MEDIUM
+
+// other - normal log messages
+#define LOG_SEVERITY_NORMAL					LOG_SEVERITY_VALUE_MEDIUM		
+
+//____________________________________________________
+// WHICH SEVERITIES TO PRINT
+#define SEVERITY_LEVEL						LOG_SEVERITY_VALUE_LOW
 
 //____________________________________________________
 // file path

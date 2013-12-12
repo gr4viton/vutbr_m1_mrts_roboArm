@@ -53,9 +53,9 @@ void LOAD_actualPhase(C_roboticManipulator* a_ROB, LARGE_INTEGER* PWM_period,
 		if(error_sum != FLAWLESS_EXECUTION)
 		{
 			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Could not get servoMotor[%i] pointer\n", i_serv);
-			logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+			logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
 			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Terminating thread with error_sum %lu\n", error_sum);
-			logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+			logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
 			ExitThread(error_sum);
 		}
 		// count the [zero interval] from [pwm period - one interval]
@@ -69,7 +69,7 @@ void LOAD_actualPhase(C_roboticManipulator* a_ROB, LARGE_INTEGER* PWM_period,
 	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Actual phase[%i/%i] interval = %I64d[ms]\n", 
 		(*a_actualPhase)->i_phase, (*a_actualPhase)->i_phase_max, 
 		(*a_actualPhase)->phaseInterval.QuadPart / NS100_1MS );
-	logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+	logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
 }
 
 /****************************************************************************
@@ -119,96 +119,88 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 	std::list<C_spatialConfiguration>::iterator actPhase = ROB->phases.begin();
 	while(!phaseDone)
 	{
-		try{
-			if(actPhase != ROB->phases.end())
-			{ //	 if iterator is not past-the-end element in the list container
-				// load next phase
-				sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Load phase[%i/%i] values\n", actPhase->i_phase, actPhase->i_phase_max);
-				logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
-				LOAD_actualPhase(ROB,&PWM_period, &actPhase);
+		//____________________________________________________
+		// LOAD this phase
+		if(actPhase != ROB->phases.end())
+		{ //	 if iterator is not past-the-end element in the list container
+			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Load phase[%i/%i] values\n", actPhase->i_phase, actPhase->i_phase_max);
+			logMsg.PushMessage(textMsg, LOG_SEVERITY_PWM_PHASE);
+			LOAD_actualPhase(ROB,&PWM_period, &actPhase);
+		}
+		//____________________________________________________
+		// tics loop - PWM periodical register writing
+		while(!ticDone)	
+		{
+			//____________________________________________________
+			//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!!!<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+			// FUNCTION
+			// ask each servo if this tic the interval zero has passed = time [to write 1]
+			for(i_serv=0; i_serv<SUM_SERVOMOTORS; i_serv++)
+			{
+				// get the pointer of ROB->serv[i_serv] into serv
+				error_sum = ROB->GET_servoMotor(i_serv, &serv);
+				if(error_sum != FLAWLESS_EXECUTION)
+				{
+					serv = NULL; ROB = NULL;
+					sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Terminating thread with error_sum %lu\n", error_sum);
+					logMsg.PushMessage(textMsg, LOG_SEVERITY_PWM_PERIOD);
+					ExitThread(error_sum);
+				}
+				if(tic.QuadPart >= serv->intervalZero.QuadPart)
+				{ // time for writing 1 has come
+					ROB->SET_DOportBitUchar(serv->servoMotorDigit);
+				}
 			}
-			while(!ticDone)	// tics loop
+			ROB->WRITE_DOport_thisPeriodNewValue();
+			// ____________________________________________________
+			// iteration & tic-waiting
+			RtSleepFt(&tic_interval);
+			//RtPrintf("tic=%I64d/%I64d\n",tic,DEFAULT_PWM_PERIOD);
+			tic.QuadPart += tic_interval.QuadPart;
+			tic_phase.QuadPart += tic_interval.QuadPart;
+			if(tic_phase.QuadPart >= actPhase->phaseInterval.QuadPart)
 			{
-				// ask each servo if this tic the interval zero has passed = time [to write 1]
-				for(i_serv=0; i_serv<SUM_SERVOMOTORS; i_serv++)
-				{
-					// get the pointer of ROB->serv[i_serv] into serv
-					error_sum = ROB->GET_servoMotor(i_serv, &serv);
-					if(error_sum != FLAWLESS_EXECUTION)
-					{
-						serv = NULL;
-						ROB = NULL;
-						//printf("Could not get servoMotor[%i] pointer\n", i_serv);
-						sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Could not get servoMotor[%i] pointer\n", i_serv);
-						logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
-						//printf("Terminating thread with error_sum %lu\n", error_sum);
-						sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Terminating thread with error_sum %lu\n", error_sum);
-						logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
-						ExitThread(error_sum);
-					}
-					if(tic.QuadPart >= serv->intervalZero.QuadPart)
-					{ // time for writing 1 has come
-						// write to the right digit
-						ROB->SET_DOportBitUchar(serv->servoMotorDigit);
-					}
-				}
-				ROB->WRITE_DOport_thisPeriodNewValues();
-				// ____________________________________________________
-				// iteration & tic-waiting
-				RtSleepFt(&tic_interval);
-				//RtPrintf("tic=%I64d/%I64d\n",tic,DEFAULT_PWM_PERIOD);
-				tic.QuadPart += tic_interval.QuadPart;
-				tic_phase.QuadPart += tic_interval.QuadPart;
-				if(tic_phase.QuadPart >= actPhase->phaseInterval.QuadPart)
-				{
-					tic.QuadPart = 0;
-					tic_phase.QuadPart = 0;
-					break;
-				}
-				// ____________________________________________________
-				// end of each period
-				if(tic.QuadPart >= PWM_period.QuadPart)
-				{
-					sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "period ended - phase[%i/%i] - PWM_period = %I64d [100ns] = %I64d [1s]\n", 
-						actPhase->i_phase, actPhase->i_phase_max,
-						tim2.QuadPart, tim2.QuadPart / NS100_1S);
-					logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_LOWER);
-					ROB->RESET_DOport();
-					tic.QuadPart = 0;
-		
-					RtGetClockTime(CLOCK_X,&tim2);
-					tim2.QuadPart = tim2.QuadPart-tim1.QuadPart;
-					//printf("PWM_period = %I64d [100ns] = %I64d [1s]  \n", tim2.QuadPart, tim2.QuadPart / NS100_1S);
-
-					RtGetClockTime(CLOCK_X,&tim1);
-				// stop after first period (for debug - to terminate threads)<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-					//done = true;
-				}
-			}//tic loop
-
-			// next phase
-			actPhase++;
-			if(actPhase == ROB->phases.end())
-			{
-				logMsg.PushMessage("All phases are done!\n", PUSHMSG_SEVERITY_NORMAL);
-				//actPhase--;
-				phaseDone = true;
+				tic.QuadPart = 0;
+				tic_phase.QuadPart = 0;
 				break;
-				//printf("All phases are done, continuing with the last phase [%i].\n", actPhase->i_phase);
 			}
-			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Continuing with next phase[%i/%i].\n", actPhase->i_phase, actPhase->i_phase_max);
-			logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+			// ____________________________________________________
+			// end of each period
+			if(tic.QuadPart >= PWM_period.QuadPart)
+			{
+				sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "period ended - phase[%i/%i] - PWM_period = %I64d [100ns] = %I64d [1s]\n", 
+					actPhase->i_phase, actPhase->i_phase_max,
+					tim2.QuadPart, tim2.QuadPart / NS100_1S);
+				logMsg.PushMessage(textMsg, LOG_SEVERITY_PWM_PERIOD);
+				ROB->RESET_DOport();
+				tic.QuadPart = 0;
+		
+				RtGetClockTime(CLOCK_X, &tim2);
+				tim2.QuadPart = tim2.QuadPart-tim1.QuadPart;
+				//printf("PWM_period = %I64d [100ns] = %I64d [1s]  \n", tim2.QuadPart, tim2.QuadPart / NS100_1S);
 
-		}
-		catch (std::exception & e) {
-			printf("ERR-exception:\n%s\n", e.what());
-			ExitThread(10000);
-		}
+				RtGetClockTime(CLOCK_X, &tim1);
+			}
+		} //tic loop
 
-	}// phase loop
+		//____________________________________________________
+		// iteration to next phase
+		actPhase++;
+		if(actPhase == ROB->phases.end())
+		{
+			logMsg.PushMessage("All phases are done!\n", LOG_SEVERITY_PWM_PHASE);
+			//actPhase--;
+			phaseDone = true;
+			break;
+			//printf("All phases are done, continuing with the last phase [%i].\n", actPhase->i_phase);
+		}
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Continuing with next phase[%i/%i].\n", actPhase->i_phase, actPhase->i_phase_max);
+		logMsg.PushMessage(textMsg, LOG_SEVERITY_PWM_PHASE);
+	} // phase loop
 	// something
 	ROB = NULL;
-	printf("Exitting thread PWM\n");
+	
+	logMsg.PushMessage("Exitting thread PWM\n", LOG_SEVERITY_EXITING_THREAD);
 	ExitThread(FLAWLESS_EXECUTION);
 }
 
@@ -222,13 +214,12 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 ***************/
 void CLOSE_handleAndExitThread(HANDLE handle, DWORD error_sum)
 {
-	//PUSHMSG_SEVERITY_HIGH
 	// char array for printing messages
 	char textMsg[MAX_MESSAGE_LENGTH];
 	error_sum = CLOSE_handleAndReturn(handle,error_sum);
 	//printf("Exiting thread with error_sum %lu\n", error_sum);
 	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Exiting thread with error_sum %lu\n", error_sum);
-	logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+	logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
 	ExitThread(error_sum);
 }
 
@@ -244,7 +235,7 @@ void TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, DWORD error_su
 {
 	char textMsg[MAX_MESSAGE_LENGTH];
 	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Starting to terminate all threads with error_sum %lu\n", error_sum);
-	logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+	logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
 
 	for(int iTh = 0; iTh<iTh_max; iTh++){
 		if(FALSE == TerminateThread(hTh[iTh], EXITCODE_TERMINATED_BY_MAIN)){

@@ -209,7 +209,12 @@ DWORD C_roboticManipulator::GET_servoMotor(int a_servo_i, C_servoMotor** servoMo
 {
 	DWORD error_sum = IS_in_bounds(a_servo_i);
 	if(error_sum != FLAWLESS_EXECUTION) 
+	{
+		char textMsg[MAX_MESSAGE_LENGTH]; // char array for printing messages
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Could not get servoMotor[%i] pointer - index out of bounds\n", a_servo_i);
+		logMsg.PushMessage(textMsg, SEVERITY_ERROR);
 		return(error_sum);
+	}
 	else 
 		*servoMotor = &serv[a_servo_i];
 	return(error_sum);
@@ -230,18 +235,23 @@ void C_roboticManipulator::WRITE_portUchar(PUCHAR a_port_address, UCHAR a_port_d
 {	
 	if(DOport_lastPeriodValue == a_port_data)
 	{ // register byte did not change
-		printf("Do not have to write byte - port has not changed.\n");
+		logMsg.PushMessage("Do not have to write byte - port has not changed.\n", LOG_SEVERITY_PWM_PERIOD);		
 	}
 	else
 	{ // write new byte
+		char textMsg[MAX_MESSAGE_LENGTH]; // char array for printing messages
 		DOport_lastPeriodValue = a_port_data; // actualize - last from the view of the next period
-		DOport_thisPeriodNewValues = DOport_lastPeriodValue; // actualize - this from the view of the next period
+		DOport_thisPeriodNewValue = DOport_lastPeriodValue; // actualize - this from the view of the next period
 #ifndef DEBUGGING_WITHOUT_HW // if NOT defined
-		printf("WRITE > address= 0x%02x | data= 0x%02x\n", a_port_address, a_port_data);
+		
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "WRITE > address= 0x%02x | data= 0x%02x\n", a_port_address, a_port_data);
 		RtWritePortUchar(PUCHAR Port, UCHAR Data);
-		return;
+#else
+		
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "DEBUG > address= 0x%02x | data= 0x%02x\n", a_port_address, a_port_data);
+		// not writing anywhere
 #endif
-		printf("DEBUG > address= 0x%02x | data= 0x%02x\n", a_port_address, a_port_data);
+		logMsg.PushMessage(textMsg, LOG_SEVERITY_PWM_PERIOD);
 	}
 }
 
@@ -271,29 +281,29 @@ void C_roboticManipulator::RESET_DOport()
 ***************/
 void C_roboticManipulator::SET_DOportBitUchar(UCHAR a_port_bit)
 {	
-	if(DOport_thisPeriodNewValues & 1<<a_port_bit)
+	if(DOport_thisPeriodNewValue & 1<<a_port_bit)
 	{ // the port bit is already SET - no change
 		return;
 	}
 	else
-	{ // write changed bit to DOport_thisPeriodNewValues
+	{ // write changed bit to DOport_thisPeriodNewValue
 		// WRITE_portUchar(DOport_ByteAddress, DOport_lastPeriodValue | 1<<a_port_bit);
-		DOport_thisPeriodNewValues = DOport_thisPeriodNewValues | 1<<a_port_bit;
+		DOport_thisPeriodNewValue = DOport_thisPeriodNewValue | 1<<a_port_bit;
 	}
 }
 /****************************************************************************
-@function	WRITE_DOport_thisPeriodNewValues
+@function	WRITE_DOport_thisPeriodNewValue
 @class		C_roboticManipulator
 @brief
 @param[in]
 @param[out]
 @return
 ***************/
-void C_roboticManipulator::WRITE_DOport_thisPeriodNewValues()
+void C_roboticManipulator::WRITE_DOport_thisPeriodNewValue()
 {
-	if(DOport_thisPeriodNewValues != DOport_lastPeriodValue)
+	if(DOport_thisPeriodNewValue != DOport_lastPeriodValue)
 	{
-		WRITE_portUchar(DOport_ByteAddress, DOport_thisPeriodNewValues);
+		WRITE_portUchar(DOport_ByteAddress, DOport_thisPeriodNewValue);
 	}
 }
 

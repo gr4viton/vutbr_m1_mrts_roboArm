@@ -24,8 +24,8 @@ class C_roboticManipulator
 private:
 	C_servoMotor serv[SUM_SERVOMOTORS];	
 	PUCHAR DOport_ByteAddress; // address of DO port in register to whom are servoMotors connected to
-	UCHAR DOport_lastPeriodValue; // value from last period
-	UCHAR DOport_thisPeriodNewValues; // new port value before writing it to register -> more servos at the same angle
+	UCHAR DOport_lastPeriodValue; // value of DOport from last period
+	UCHAR DOport_thisPeriodNewValue; // new DOport value before writing it to register -> more servos at the same angle
 	LARGE_INTEGER PWM_period;
 	int angle_min;
 	int angle_max;
@@ -44,7 +44,7 @@ public:		DWORD GET_servoMotor(int a_servo_i, C_servoMotor** servoMotor);
 //public:		DWORD GET_servoMotor(int a_servo_i, C_servoMotor* servoMotor);
 			
 public:		void WRITE_portUchar(PUCHAR a_port_address, UCHAR a_port_data);
-public:		void WRITE_DOport_thisPeriodNewValues();
+public:		void WRITE_DOport_thisPeriodNewValue();
 public:		void SET_DOportBitUchar(UCHAR a_port_bit);
 
 public:		void RESET_DOport();
