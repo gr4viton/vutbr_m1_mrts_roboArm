@@ -30,6 +30,7 @@ C_spatialConfiguration::C_spatialConfiguration(void)
 	}
 	i_phase = i_phase_max + 1;
 	i_phase_max++;
+	bNoRamp = false;
 }
 
 /****************************************************************************
@@ -47,6 +48,7 @@ C_spatialConfiguration::C_spatialConfiguration(LARGE_INTEGER* a_phaseInterval, L
 		servIntervalOneChanged[i] = true;
 		servIntervalOne[i].QuadPart = a_servIntervalOne[i].QuadPart;
 	}
+	bNoRamp = false;
 }
 
 /****************************************************************************

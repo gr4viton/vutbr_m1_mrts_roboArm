@@ -30,7 +30,7 @@ void C_roboticManipulator::DEBUG_fillPhases(void){
 	int i_phase_max = 21;
 	for(int i_phase = 0; i_phase < i_phase_max ; i_phase++)
 	{ // phases
-		for(i_serv = 5; i_serv<SUM_SERVOMOTORS; i_serv++)
+		for(i_serv = 4 ; i_serv<SUM_SERVOMOTORS; i_serv++)
 		{
 			actPhase->SET_servIntervalOne(i_serv, &intervalZero);
 		}
@@ -147,7 +147,7 @@ C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 
 	//____________________________________________________
 	// servo0
-	ret_i = serv[i].SET_constants( i, 0, true, min_intervalZero, max_intervalZero, 5 );
+	ret_i = serv[i].SET_constants( i, S1, true, min_intervalZero, max_intervalZero, 5 );
 	if(ret_i != i){ 
 		error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
 	} 
@@ -155,7 +155,7 @@ C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 	i++;
 	//____________________________________________________
 	// servo1
-	ret_i = serv[i].SET_constants( i, 1, true, min_intervalZero, max_intervalZero, 5 );
+	ret_i = serv[i].SET_constants( i, S2, true, min_intervalZero, max_intervalZero, 5 );
 	if(ret_i != i){ 
 		error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
 	} 
@@ -163,7 +163,7 @@ C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 	i++;
 	//____________________________________________________
 	// servo2
-	ret_i = serv[i].SET_constants( i, 2, true, min_intervalZero, max_intervalZero, 5 );
+	ret_i = serv[i].SET_constants( i, S3, true, min_intervalZero, max_intervalZero, 5 );
 	if(ret_i != i){ 
 		error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
 	} 
@@ -171,7 +171,7 @@ C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 	i++;
 	//____________________________________________________
 	// servo3
-	ret_i = serv[i].SET_constants( i, 3, false, min_intervalZero, max_intervalZero, 5 );
+	ret_i = serv[i].SET_constants( i, S4, false, min_intervalZero, max_intervalZero, 5 );
 	if(ret_i != i){ 
 		error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
 	} 
@@ -179,7 +179,7 @@ C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 	i++;
 	//____________________________________________________
 	// servo4
-	ret_i = serv[i].SET_constants( i, 4, false, min_intervalZero, max_intervalZero, 5 );
+	ret_i = serv[i].SET_constants( i, S5, false, min_intervalZero, max_intervalZero, 5 );
 	if(ret_i != i){ 
 		error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
 	} 
@@ -187,7 +187,7 @@ C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 	i++;
 	//____________________________________________________
 	// servo5
-	ret_i = serv[i].SET_constants( i, 5, false, min_intervalZero, max_intervalZero, 5 );
+	ret_i = serv[i].SET_constants( i, S6, false, min_intervalZero, max_intervalZero, 5 );
 	if(ret_i != i){ 
 		error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
 	} 
