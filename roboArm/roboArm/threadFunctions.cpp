@@ -75,7 +75,7 @@ void LOAD_actualPhase(C_roboticManipulator* a_ROB, LARGE_INTEGER* PWM_period,
 }
 
 /****************************************************************************
-@function		PWM_dutyCycle
+@function		TIM_PWMfunction
 @brief			Function of thread writing into the DO register 
 				in the main loop there are tic waitings
 				if the number of them is same as PWM_period -> new period starts
@@ -107,6 +107,8 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 	PWM_period.QuadPart = DEFAULT_PWM_PERIOD;
 	RtGetClockTimerPeriod(CLOCK_X, &tic_interval);	// time to wait between individual tics
 	
+	printf("RtGetClockTimerPeriod = %I64d\n", tic_interval);
+
 	int i_serv = 0;
 	C_roboticManipulator* ROB = (C_roboticManipulator*)a_manip;
 	C_servoMotor* serv = NULL;

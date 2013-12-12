@@ -24,7 +24,7 @@
 #include <rtapi.h> // must be after windows.h
 
 #ifdef UNDER_RTSS
-	#include <rtssapi.h>
+	//#include <rtssapi.h>
 #endif // UNDER_RTSS
 
 // std
@@ -53,8 +53,9 @@
 #define RUNNING_ON_1CPU
 //____________________________________________________
 // debug
-#define DEBUG
-#define DEBUGGING_WITHOUT_HW
+//#define DEBUG
+//#define DEBUGGING_WITHOUT_HW
+#define HIDE_TEST_CODES
 // not needed #define DEBUG_PRINT_READ_FUNCTIONS
 
 #define SHOW_LOG_ON_SCREEN
@@ -92,8 +93,8 @@
 
 //____________________________________________________
 // WHICH SEVERITIES TO PRINT
-//#define SEVERITY_LEVEL						LOG_SEVERITY_PWM_PHASE
-#define SEVERITY_LEVEL						LOG_SEVERITY_PWM_PERIOD
+#define SEVERITY_LEVEL						LOG_SEVERITY_PWM_PHASE
+//#define SEVERITY_LEVEL						LOG_SEVERITY_PWM_PERIOD
 
 //____________________________________________________
 // file path
@@ -118,8 +119,8 @@
 // class servoMotor macros
 #define SUM_SERVOMOTORS					6
 // 1[s]/x = x Hz
-#define DEFAULT_PWM_PERIOD				NS100_1S / 1
-//#define DEFAULT_PWM_PERIOD				NS100_1S / 100
+//#define DEFAULT_PWM_PERIOD				NS100_1S / 1
+#define DEFAULT_PWM_PERIOD				NS100_1S / 100
 #define DEFAULT_INITIAL_PHASE_INTERVAL	(5*NS100_1S)
 //____________________________________________________
 // reading constants
@@ -161,7 +162,27 @@
 // typedefs
 //____________________________________________________
 // defines connection of real physical position indexing (SX) to port address DO bit of each servoMotor
-typedef enum {S1=2, S2=3, S3=4, S5=6, S4=5, S6=7}E_servos;
+#define GAIN_OFFSET				2
+// COMP 2nd row in the middle
+/*
+typedef enum {
+	S1=GAIN_OFFSET + 0, 
+	S2=GAIN_OFFSET + 1, 
+	S3=GAIN_OFFSET + 2, 
+	S5=GAIN_OFFSET + 4, 
+	S4=GAIN_OFFSET + 3, 
+	S6=GAIN_OFFSET + 5
+}E_servos;
+*/
+// COMP 3nd row in the middle
+typedef enum {
+	S1=GAIN_OFFSET + 0, 
+	S2=GAIN_OFFSET + 1, 
+	S3=GAIN_OFFSET + 2, 
+	S5=GAIN_OFFSET + 3, 
+	S4=GAIN_OFFSET + 4, 
+	S6=GAIN_OFFSET + 5
+}E_servos;
 
 
 

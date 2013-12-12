@@ -79,13 +79,14 @@ void _cdecl main(int  argc, char **argv)
 	printf("SET preemptive_interval\n");
 	preemptive_interval.QuadPart = 100;	
 	printf("function main()\n");
+	DWORD error_sum = 0;
+	/*
 	if ( argc != 2 )	 
 	{// argc should be 2 for correct execution
 		printf("You must specify the control txt file! Run:\n");
 		printf("$ %s <control_file_path>\n", argv[0]);
 		EXIT_process(ERROR_CONTROLFILE_PATH_NOT_SPECIFIED);
 	}
-	DWORD error_sum = 0;
 	// We assume argv[1] is a filename to open - try lenght of string file_path 
 	if( GET_stringLength(argv[1], MAX_PATH, &error_sum) == 0)
 	{
@@ -97,7 +98,8 @@ void _cdecl main(int  argc, char **argv)
 	}
 	// the filename lenght is short enaght
 	printf("Control-file: %s\n", argv[1]);
-		
+		*/
+	
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// INITIALIZATIONS
 	printf("Starting initialization process.\n");
@@ -307,7 +309,7 @@ void _cdecl main(int  argc, char **argv)
 	//  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// for debugging purposes only
-#ifndef DEBUGGING_WITHOUT_HW
+#ifndef HIDE_TEST_CODES
 	LARGE_INTEGER interval_one; 
 	LARGE_INTEGER intervalZero; 
 	LARGE_INTEGER interval_wait; 
