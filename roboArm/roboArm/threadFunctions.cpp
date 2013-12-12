@@ -180,13 +180,15 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 			}//tic loop
 
 			// next phase
-			printf("Next phase.\n");
 			actPhase++;
 			if(actPhase == ROB->phases.end())
 			{
+				printf("All phases are done!\n", actPhase->i_phase);
 				//actPhase--;
 				phaseDone = true;
+				//printf("All phases are done, continuing with next phase [%i].\n", actPhase->i_phase);
 			}
+			printf("Continuing with next phase [%i].\n", actPhase->i_phase);
 
 		}
 		catch (std::exception & e) {
@@ -196,6 +198,7 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 
 	}// phase loop
 	ROB = NULL;
+	printf("Exitting PWM thread.\n", actPhase->i_phase);
 	ExitThread(FLAWLESS_EXECUTION);
 }
 

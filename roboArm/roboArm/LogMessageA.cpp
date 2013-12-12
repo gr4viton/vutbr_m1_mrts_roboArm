@@ -93,7 +93,7 @@ unsigned int  C_CircBuffer::Write(char *in)
 {
 	// secure strlen
 	unsigned int inStrLen = 0;
-	for(inStrLen=0; in[inStrLen] != 0; inStrLen++){
+	for(inStrLen=0; in[inStrLen] != '\0'; inStrLen++){
 		if(inStrLen > LENGTH_OF_BUFFER) return(ERROR_STRING_TO_WRITE_IS_TOO_LONG);
 	}
 	// is there enaugh space?
@@ -277,8 +277,7 @@ unsigned int C_LogMessageA::WriteBuffToFile()
 
 	if(err != FLAWLESS_EXECUTION) return(err);
 	
-	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!!!<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-	// to CREATE_file
+	//____________________________________________________
 	// CreateFile
 	Hfile = CreateFile(
 				TEXT(LOG_FILE),
@@ -295,10 +294,14 @@ unsigned int C_LogMessageA::WriteBuffToFile()
 		RtPrintf("\nLogMessage() Error: Could not create file\r\n");
 		return ERROR_CREATEFILE_FAIL;
 	}
-	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!!!<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-	// to MOVE_pointer
-	MOVE_pointer( Hfile, 0, NULL, FILE_END, false, false);
 
+	//____________________________________________________
+	// SetFilePointer
+	if ( SetFilePointer(	Hfile, 0, NULL, FILE_END) == 0xFFFFFFFF )
+	{
+		RtPrintf("\nLogMessage() Error: SetFilePointer failed\r\n");
+		return( CLOSE_handleAndReturn(Hfile,ERROR_SETFILEPOINTER_FAIL) );
+	}
 	
 	// WriteFile
 	DWORD BytesWritten;	
@@ -307,12 +310,8 @@ unsigned int C_LogMessageA::WriteBuffToFile()
 	for(inStrLen=0; cMessage[inStrLen] != 0; inStrLen++){
 		if(inStrLen > LENGTH_OF_BUFFER) return(ERROR_STRING_TO_WRITE_IS_TOO_LONG);
 	}
-	if ( WriteFile(
-			Hfile,
-			(LPCVOID) cMessage,
-			(DWORD) inStrLen,
-			(LPDWORD) &BytesWritten,
-			0
+	if ( WriteFile(Hfile, (LPCVOID) cMessage, 
+		(DWORD) inStrLen, (LPDWORD) &BytesWritten, 0
 		) == FALSE ) 
 	{
 		RtPrintf("\nLogMessage() Error: Could not wrtie to file\r\n");
