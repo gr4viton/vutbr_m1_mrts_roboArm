@@ -92,7 +92,8 @@
 
 //____________________________________________________
 // WHICH SEVERITIES TO PRINT
-#define SEVERITY_LEVEL						LOG_SEVERITY_VALUE_LOW
+//#define SEVERITY_LEVEL						LOG_SEVERITY_PWM_PHASE
+#define SEVERITY_LEVEL						LOG_SEVERITY_PWM_PERIOD
 
 //____________________________________________________
 // file path
