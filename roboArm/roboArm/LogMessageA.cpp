@@ -224,7 +224,11 @@ unsigned int C_LogMessageA::PushMessage(char* inMsg, int iSeverity)
 		return(ERROR_STRING_LENGHT_LARGER_THAN_TRESHOLD);
 	}
 	// filter all ending new-line characters (\n)
-	while(inMsg[strlen-1] == '\n') {strlen--;}
+	while(inMsg[strlen-1] == '\n') 
+	{
+		inMsg[strlen-1]='\0';
+		strlen--;
+	}
 	// possible --> FILTER_invalidMessageChars();
 	
 	CHAR  DataBuffer[MAX_FULL_MESSAGE_LENGTH];
