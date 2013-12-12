@@ -47,7 +47,9 @@ DWORD GET_stringLength(char *a_string, DWORD a_max_lenght, DWORD* a_error_sum)
 			on Error		= error_sum of ERRORS defined in returnCodeDefines.h
 ************/
 DWORD READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_filePath){
-	if(*a_filePath == 0 && a_manip->IS_in_bounds(1)) return(100000);
+	
+	
+	//if(*a_filePath == 0 && a_manip->IS_in_bounds(1)) return(100000);
 	/*
 	// char array for printing messages
 	char textMsg[MAX_MESSAGE_LENGTH];
@@ -239,6 +241,8 @@ DWORD PARSE_controlString(C_roboticManipulator* a_manip){
 	*/
 	return(FLAWLESS_EXECUTION);
 }
+
+
 /****************************************************************************
 @function   
 @brief      
@@ -246,19 +250,16 @@ DWORD PARSE_controlString(C_roboticManipulator* a_manip){
 @param[out] 
 @return     error_sum
 ************/
-DWORD CREATE_file(HANDLE* a_hFile)
+DWORD CREATE_file(HANDLE* a_hFile, LPCSTR a_filePath)
 {
-	return(FLAWLESS_EXECUTION);
-	/*
-	hFile = CreateFile(a_filePath, GENERIC_READ, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-	if (hFile == INVALID_HANDLE_VALUE) { // Failed CreateFile
-		//LogMessage()
-		// ifdef
-		//RtPrintf("Function CreateFile failed with 0x%04x - INVALID_HANDLE_VALUE\n", GetLastError());
+	char textMsg[MAX_MESSAGE_LENGTH];// char array for printing messages
+	*a_hFile = CreateFile(a_filePath, GENERIC_READ, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (*a_hFile == INVALID_HANDLE_VALUE) 
+	{ // Failed CreateFile
 		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Function CreateFile failed with 0x%04x - INVALID_HANDLE_VALUE\n", GetLastError());
 		logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
 		return(ERROR_CREATEFILE_FAIL);
-	}*/
+	}
 }
 
 
