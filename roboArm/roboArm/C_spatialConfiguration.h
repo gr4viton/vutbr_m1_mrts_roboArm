@@ -25,6 +25,7 @@ class C_spatialConfiguration
 public:
 	DWORD i_phase;										// phase index
 	static DWORD i_phase_max;							// num of currently added phases
+	bool bNoRamp;
 	LARGE_INTEGER phaseInterval;							// how long to be in this phase
 	LARGE_INTEGER servIntervalOne[SUM_SERVOMOTORS];		// intervalZeros for each servo in this phase
 	bool servIntervalOneChanged[SUM_SERVOMOTORS];		// if it was changed after constructor = true
