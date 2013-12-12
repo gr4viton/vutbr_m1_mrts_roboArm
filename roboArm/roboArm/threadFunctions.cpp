@@ -126,8 +126,9 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 	
 	LARGE_INTEGER lastIntervalOne;
 	lastIntervalOne.QuadPart = 0;
-	
 	DWORD n = 0;
+	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!!!<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+	DWORD n_last = 0;
 	while(!phaseDone)
 	{
 		//____________________________________________________
@@ -141,9 +142,11 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 
 		
 		LONGLONG nKrok = actPhase->phaseInterval.QuadPart/PWM_period.QuadPart ;
-		actPhasePrev = actPhase;
-		actPhasePrev--;
-
+		if(actPhase != ROB->phases.begin())
+		{
+			actPhasePrev = actPhase;
+			actPhasePrev--;
+		}
 		//____________________________________________
 		// tics loop - PWM periodical register writing
 		while(!ticDone)	
@@ -168,25 +171,31 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 				{ // time for writing 1 has come
 					
 					if(actPhase->bNoRamp)
-					{
+					{ // not ramp
 						ROB->SET_DOportBitUchar(serv->servoMotorDigit);
 					}
 					else
-					{
+					{ // ramp - linear
 						LARGE_INTEGER intervalOneDif;
 						// Get last and actual interval one (angle) differention
 						if(actPhase != ROB->phases.begin())
-							intervalOneDif.QuadPart = actPhase->servIntervalOne[i_serv].QuadPart - actPhasePrev->servIntervalOne[i_serv].QuadPart;
+							intervalOneDif.QuadPart = 
+								actPhase->servIntervalOne[i_serv].QuadPart 
+								- actPhasePrev->servIntervalOne[i_serv].QuadPart;
 						else intervalOneDif.QuadPart = 0;
 						LARGE_INTEGER actIntervalOne;
 						// evaluate new value of angle
-						actIntervalOne.QuadPart = actPhasePrev->servIntervalOne[i_serv].QuadPart + (DWORD)((double)(n*intervalOneDif.QuadPart))/nKrok;
+						actIntervalOne.QuadPart = actPhasePrev->servIntervalOne[i_serv].QuadPart 
+							+ LONGLONG(((double)(n*intervalOneDif.QuadPart))/nKrok);
 
 						//logMsg.PushMessage("Ramp act val = %llu", actIntervalOne.QuadPart);						
 
 						if(tic.QuadPart >= (PWM_period.QuadPart - actIntervalOne.QuadPart))
 						{
 							ROB->SET_DOportBitUchar(serv->servoMotorDigit);
+						}
+						if(n != n_last){
+							n_last = n;
 						}
 					}
 				}
@@ -209,6 +218,7 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 			// end of each period
 			if(tic.QuadPart >= PWM_period.QuadPart)
 			{
+				n++;
 				sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "period ended - phase[%i/%i] - PWM_period = %I64d [100ns] = %I64d [1s]\n", 
 					actPhase->i_phase, actPhase->i_phase_max,
 					tim2.QuadPart, tim2.QuadPart / NS100_1S);
@@ -222,12 +232,11 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 
 				RtGetClockTime(CLOCK_X, &tim1);
 			}
-		} //tic loop == PWM period end
-		n++;
-
+		} //tic loop == PHASE END
 		//____________________________________________________
 		// iteration to next phase
 		actPhase++;
+		n_last = 0;
 		if(actPhase == ROB->phases.end())
 		{
 			logMsg.PushMessage("All phases are done!\n", LOG_SEVERITY_PWM_PHASE);
