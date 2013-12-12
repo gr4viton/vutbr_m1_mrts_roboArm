@@ -205,8 +205,9 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 		}
 
 	}// phase loop
+	// something
 	ROB = NULL;
-	printf("Exitting PWM thread.\n", actPhase->i_phase);
+	printf("Exitting thread PWM\n");
 	ExitThread(FLAWLESS_EXECUTION);
 }
 

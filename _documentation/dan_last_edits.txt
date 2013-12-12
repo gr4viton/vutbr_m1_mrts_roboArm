@@ -1,3 +1,3 @@
-docu
-MACROS
-
+dane dane, schválnì co je zvláštního na následujícím øádku?
+printf("Exitting PWM thread.\n", actPhase->i_phase);
+kromì toho že zpùsobí GSOD & BSOD? asi nic :D
