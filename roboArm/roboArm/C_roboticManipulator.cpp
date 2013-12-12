@@ -114,9 +114,9 @@ C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 	PUSHFRONT_InitialPhases();
 	// init addresses and write zeros to register
 	DOport_ByteAddress = (PUCHAR)(baseAddress + DO_High_Byte);
-	DOport_lastValue = 1; // to work-around WRITE_portUchar not writing the addres if it is the same
+	DOport_lastPeriodValue = 1; // to work-around WRITE_portUchar not writing the addres if it is the same
 	WRITE_portUchar(DOport_ByteAddress, 0);
-	DOport_lastValue = 0; 
+	DOport_lastPeriodValue = 0; 
 	
 	PWM_period.QuadPart = DEFAULT_PWM_PERIOD; 
 	angle_min = 0;
@@ -228,13 +228,14 @@ DWORD C_roboticManipulator::GET_servoMotor(int a_servo_i, C_servoMotor** servoMo
 ***************/
 void C_roboticManipulator::WRITE_portUchar(PUCHAR a_port_address, UCHAR a_port_data)
 {	
-	if(DOport_lastValue == a_port_data)
+	if(DOport_lastPeriodValue == a_port_data)
 	{ // register byte did not change
 		printf("Do not have to write byte - port has not changed.\n");
 	}
 	else
 	{ // write new byte
-		DOport_lastValue = a_port_data;
+		DOport_lastPeriodValue = a_port_data; // actualize - last from the view of the next period
+		DOport_thisPeriodNewValues = DOport_lastPeriodValue; // actualize - this from the view of the next period
 #ifndef DEBUGGING_WITHOUT_HW // if NOT defined
 		printf("WRITE > address= 0x%02x | data= 0x%02x\n", a_port_address, a_port_data);
 		RtWritePortUchar(PUCHAR Port, UCHAR Data);
@@ -270,16 +271,31 @@ void C_roboticManipulator::RESET_DOport()
 ***************/
 void C_roboticManipulator::SET_DOportBitUchar(UCHAR a_port_bit)
 {	
-	if(DOport_lastValue & 1<<a_port_bit)
-	{ // the port byt is already SET - no change
+	if(DOport_thisPeriodNewValues & 1<<a_port_bit)
+	{ // the port bit is already SET - no change
 		return;
 	}
 	else
-	{ // write changed register byte
-		WRITE_portUchar(DOport_ByteAddress, DOport_lastValue | 1<<a_port_bit);
+	{ // write changed bit to DOport_thisPeriodNewValues
+		// WRITE_portUchar(DOport_ByteAddress, DOport_lastPeriodValue | 1<<a_port_bit);
+		DOport_thisPeriodNewValues = DOport_thisPeriodNewValues | 1<<a_port_bit;
 	}
 }
-
+/****************************************************************************
+@function	WRITE_DOport_thisPeriodNewValues
+@class		C_roboticManipulator
+@brief
+@param[in]
+@param[out]
+@return
+***************/
+void C_roboticManipulator::WRITE_DOport_thisPeriodNewValues()
+{
+	if(DOport_thisPeriodNewValues != DOport_lastPeriodValue)
+	{
+		WRITE_portUchar(DOport_ByteAddress, DOport_thisPeriodNewValues);
+	}
+}
 
 
 /****************************************************************************

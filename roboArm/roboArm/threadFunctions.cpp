@@ -152,6 +152,7 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 						ROB->SET_DOportBitUchar(serv->servoMotorDigit);
 					}
 				}
+				ROB->WRITE_DOport_thisPeriodNewValues();
 				// ____________________________________________________
 				// iteration & tic-waiting
 				RtSleepFt(&tic_interval);
@@ -167,11 +168,11 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 				// ____________________________________________________
 				// end of each period
 				if(tic.QuadPart >= PWM_period.QuadPart)
-				{ // end of one period
+				{
 					sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "period ended - phase[%i/%i] - PWM_period = %I64d [100ns] = %I64d [1s]\n", 
 						actPhase->i_phase, actPhase->i_phase_max,
 						tim2.QuadPart, tim2.QuadPart / NS100_1S);
-					logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+					logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_LOWER);
 					ROB->RESET_DOport();
 					tic.QuadPart = 0;
 		
