@@ -26,7 +26,7 @@
 // macro definitions
 //____________________________________________________
 // VARIABLES
-#define SEVERITY_LEVEL			7
+// #define SEVERITY_LEVEL			7 --> defined in roboArm.h
 // buffer dimensions - user choise
 #define LENGTH_OF_BUFFER			256
 #define MAX_MESSAGE_LENGTH		512

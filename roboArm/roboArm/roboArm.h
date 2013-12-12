@@ -68,6 +68,7 @@
 
 //____________________________________________________
 // severities
+#define 	PUSHMSG_SEVERITY_ALL				SEVERITY_MIN
 #define 	PUSHMSG_SEVERITY_LOWEST			SEVERITY_MAX - 9
 #define 	PUSHMSG_SEVERITY_LOWER			SEVERITY_MAX - 8
 #define 	PUSHMSG_SEVERITY_LOW				SEVERITY_MAX - 7 
@@ -77,6 +78,9 @@
 #define 	PUSHMSG_SEVERITY_HIGHEST			SEVERITY_MAX - 1
 
 #define PUSHMSG_SEVERITY_NORMAL			PUSHMSG_SEVERITY_MEDIUM		
+
+// which messages to print
+#define SEVERITY_LEVEL					PUSHMSG_SEVERITY_LOW
 
 //____________________________________________________
 // file path

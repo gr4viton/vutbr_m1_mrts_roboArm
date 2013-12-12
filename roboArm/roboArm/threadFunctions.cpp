@@ -65,6 +65,11 @@ void LOAD_actualPhase(C_roboticManipulator* a_ROB, LARGE_INTEGER* PWM_period,
 		// write it to actual
 		serv->SET_intervalZero( intervalZero );
 	}
+
+	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Actual phase[%i/%i] interval = %I64d[ms]\n", 
+		(*a_actualPhase)->i_phase, (*a_actualPhase)->i_phase_max, 
+		(*a_actualPhase)->phaseInterval.QuadPart / NS100_1MS );
+	logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 }
 
 /****************************************************************************
@@ -118,7 +123,7 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 			if(actPhase != ROB->phases.end())
 			{ //	 if iterator is not past-the-end element in the list container
 				// load next phase
-				sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Load phase[%i] values\n", actPhase->i_phase);
+				sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Load phase[%i/%i] values\n", actPhase->i_phase, actPhase->i_phase_max);
 				logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 				LOAD_actualPhase(ROB,&PWM_period, &actPhase);
 			}
@@ -163,7 +168,9 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 				// end of each period
 				if(tic.QuadPart >= PWM_period.QuadPart)
 				{ // end of one period
-					sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "End of one period - PWM_period = %I64d [100ns] = %I64d [1s]\n", tim2.QuadPart, tim2.QuadPart / NS100_1S);
+					sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "period ended - phase[%i/%i] - PWM_period = %I64d [100ns] = %I64d [1s]\n", 
+						actPhase->i_phase, actPhase->i_phase_max,
+						tim2.QuadPart, tim2.QuadPart / NS100_1S);
 					logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 					ROB->RESET_DOport();
 					tic.QuadPart = 0;
@@ -185,9 +192,10 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 				logMsg.PushMessage("All phases are done!\n", PUSHMSG_SEVERITY_NORMAL);
 				//actPhase--;
 				phaseDone = true;
+				break;
 				//printf("All phases are done, continuing with next phase [%i].\n", actPhase->i_phase);
 			}
-			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Continuing with next phase [%i].\n", actPhase->i_phase);
+			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Continuing with next phase[%i/%i].\n", actPhase->i_phase, actPhase->i_phase_max);
 			logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 
 		}

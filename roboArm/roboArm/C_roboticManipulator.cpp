@@ -236,11 +236,11 @@ void C_roboticManipulator::WRITE_portUchar(PUCHAR a_port_address, UCHAR a_port_d
 	{ // write new byte
 		DOport_lastValue = a_port_data;
 #ifndef DEBUGGING_WITHOUT_HW // if NOT defined
-		printf("WRITE > address= 0x%08x | data= 0x%08x\n", a_port_address, a_port_data);
+		printf("WRITE > address= 0x%02x | data= 0x%02x\n", a_port_address, a_port_data);
 		RtWritePortUchar(PUCHAR Port, UCHAR Data);
 		return;
 #endif
-		printf("DEBUG > address= 0x%08x | data= 0x%08x\n", a_port_address, a_port_data);
+		printf("DEBUG > address= 0x%02x | data= 0x%02x\n", a_port_address, a_port_data);
 	}
 }
 
