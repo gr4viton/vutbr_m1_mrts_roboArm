@@ -19,16 +19,34 @@
 @return     
 ************/
 void C_roboticManipulator::DEBUG_fillPhases(void){
-	LARGE_INTEGER intervalZero;
-	intervalZero.QuadPart = 500 * NS100_1US;
+	LARGE_INTEGER intervalOne;
+	intervalOne.QuadPart = 500 * NS100_1US;
 	int i_serv = 0;
 	
 	phases.push_back(C_spatialConfiguration());
 	std::list<C_spatialConfiguration>::iterator actPhase = phases.end();
 	actPhase--;
 	LONGLONG addVal = 100;
+	
+	i_serv = 5;
+	LONGLONG milliS = 4000;
+
+	intervalOne.QuadPart = 500;
+	actPhase->SET_servIntervalOne(i_serv, &intervalOne);
+	actPhase->phaseInterval.QuadPart = milliS*NS100_1MS;
+		phases.push_back(C_spatialConfiguration());
+
+	intervalOne.QuadPart = 2500;
+	actPhase->SET_servIntervalOne(i_serv, &intervalOne);
+	actPhase->phaseInterval.QuadPart = milliS*NS100_1MS;
+		phases.push_back(C_spatialConfiguration());
+	i_serv++;
+
+
+
 
 	// add 5 phases to the back
+	/*
 	int i_phase_max = 21;
 	int i_serv_min = 5;
 	
@@ -36,9 +54,9 @@ void C_roboticManipulator::DEBUG_fillPhases(void){
 	{ // phases
 		for(i_serv = i_serv_min; i_serv<SUM_SERVOMOTORS; i_serv++)
 		{
-			actPhase->SET_servIntervalOne(i_serv, &intervalZero);
+			actPhase->SET_servIntervalOne(i_serv, &intervalOne);
 		}
-		intervalZero.QuadPart += addVal * NS100_1US;
+		intervalOne.QuadPart += addVal * NS100_1US;
 		actPhase->phaseInterval.QuadPart = 800*NS100_1MS;
 		// push back next
 		if( i_phase < i_phase_max )
@@ -48,15 +66,15 @@ void C_roboticManipulator::DEBUG_fillPhases(void){
 		}
 	}
 
-	//intervalZero.QuadPart = 2500 * NS100_1US;
+	//intervalOne.QuadPart = 2500 * NS100_1US;
 	addVal = -addVal; 
 	for(int i_phase = 0; i_phase < i_phase_max ; i_phase++)
 	{ // phases
 		for(i_serv = i_serv_min; i_serv<SUM_SERVOMOTORS; i_serv++)
 		{
-			actPhase->SET_servIntervalOne(i_serv, &intervalZero);
+			actPhase->SET_servIntervalOne(i_serv, &intervalOne);
 		}
-		intervalZero.QuadPart += addVal * NS100_1US;
+		intervalOne.QuadPart += addVal * NS100_1US;
 		actPhase->phaseInterval.QuadPart = 800*NS100_1MS;
 		// push back next
 		if( i_phase < i_phase_max )
@@ -65,6 +83,7 @@ void C_roboticManipulator::DEBUG_fillPhases(void){
 			actPhase++;
 		}
 	}
+	*/
 	
 }
 
