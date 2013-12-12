@@ -126,9 +126,9 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 	
 	LARGE_INTEGER lastIntervalOne;
 	lastIntervalOne.QuadPart = 0;
-	DWORD n = 0;
+	DWORD nPWM = 0;
 	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!!!<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-	DWORD n_last = 0;
+	DWORD nPWM_last = 0;
 	while(!phaseDone)
 	{
 		//____________________________________________________
@@ -186,7 +186,7 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 						LARGE_INTEGER actIntervalOne;
 						// evaluate new value of angle
 						actIntervalOne.QuadPart = actPhasePrev->servIntervalOne[i_serv].QuadPart 
-							+ LONGLONG(((double)(n*intervalOneDif.QuadPart))/nKrok);
+							+ LONGLONG(((double)(nPWM*intervalOneDif.QuadPart))/nKrok);
 
 						//logMsg.PushMessage("Ramp act val = %llu", actIntervalOne.QuadPart);						
 
@@ -194,8 +194,8 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 						{
 							ROB->SET_DOportBitUchar(serv->servoMotorDigit);
 						}
-						if(n != n_last){
-							n_last = n;
+						if( nPWM != nPWM_last){
+							nPWM_last = nPWM;
 						}
 					}
 				}
@@ -218,7 +218,7 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 			// end of each period
 			if(tic.QuadPart >= PWM_period.QuadPart)
 			{
-				n++;
+				nPWM++;
 				sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "period ended - phase[%i/%i] - PWM_period = %I64d [100ns] = %I64d [1s]\n", 
 					actPhase->i_phase, actPhase->i_phase_max,
 					tim2.QuadPart, tim2.QuadPart / NS100_1S);
@@ -236,7 +236,7 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 		//____________________________________________________
 		// iteration to next phase
 		actPhase++;
-		n_last = 0;
+		nPWM = 0;
 		if(actPhase == ROB->phases.end())
 		{
 			logMsg.PushMessage("All phases are done!\n", LOG_SEVERITY_PWM_PHASE);
