@@ -181,13 +181,15 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 						{
 							if( actPhase->servIntervalOne[i_serv].QuadPart 
 								<= actPhasePrev->servIntervalOne[i_serv].QuadPart)
-							{ // counting down
+							{ // intOne counting up
+							// seky
+								//functional
 								intervalOneDif.QuadPart = 
 									actPhase->servIntervalOne[i_serv].QuadPart 
 									- actPhasePrev->servIntervalOne[i_serv].QuadPart;
 							}
 							else
-							{ // counting up
+							{ // intOne counting down
 								intervalOneDif.QuadPart = 
 									actPhasePrev->servIntervalOne[i_serv].QuadPart 
 									- actPhase->servIntervalOne[i_serv].QuadPart;
@@ -206,12 +208,14 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 						// evaluate new value of angle
 						if( actPhase->servIntervalOne[i_serv].QuadPart 
 							<= actPhasePrev->servIntervalOne[i_serv].QuadPart)
-						{ // counting down
+						{ // intOne counting up
+								//functional
 							actIntervalOne.QuadPart = actPhasePrev->servIntervalOne[i_serv].QuadPart 
 								+ LONGLONG((   ((double)nPWM) * ((double)intervalOneDif.QuadPart)  ) / ( (double)nKrok) );
 						}
 						else
-						{ // counting up
+						{ // intOne counting down
+							// seky
 							actIntervalOne.QuadPart = actPhasePrev->servIntervalOne[i_serv].QuadPart 
 								- LONGLONG((   ((double)nPWM) * ((double)intervalOneDif.QuadPart)  ) / ( (double)nKrok) );
 						}

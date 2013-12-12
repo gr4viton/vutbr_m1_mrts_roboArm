@@ -27,26 +27,8 @@ void C_roboticManipulator::DEBUG_fillPhases(void){
 	std::list<C_spatialConfiguration>::iterator actPhase = phases.end();
 	actPhase--;
 	LONGLONG addVal = 100;
-	
-	i_serv = 5;
-	LONGLONG milliS = 4000;
-
-	intervalOne.QuadPart = 500;
-	actPhase->SET_servIntervalOne(i_serv, &intervalOne);
-	actPhase->phaseInterval.QuadPart = milliS*NS100_1MS;
-		phases.push_back(C_spatialConfiguration());
-
-	intervalOne.QuadPart = 2500;
-	actPhase->SET_servIntervalOne(i_serv, &intervalOne);
-	actPhase->phaseInterval.QuadPart = milliS*NS100_1MS;
-		phases.push_back(C_spatialConfiguration());
-	i_serv++;
-
-
-
-
 	// add 5 phases to the back
-	/*
+
 	int i_phase_max = 21;
 	int i_serv_min = 5;
 	
@@ -83,6 +65,20 @@ void C_roboticManipulator::DEBUG_fillPhases(void){
 			actPhase++;
 		}
 	}
+	/*
+	i_serv = 5;
+	LONGLONG milliS = 4000;
+
+	intervalOne.QuadPart = 500;
+	actPhase->SET_servIntervalOne(i_serv, &intervalOne);
+	actPhase->phaseInterval.QuadPart = milliS*NS100_1MS;
+		phases.push_back(C_spatialConfiguration());
+
+	intervalOne.QuadPart = 2500;
+	actPhase->SET_servIntervalOne(i_serv, &intervalOne);
+	actPhase->phaseInterval.QuadPart = milliS*NS100_1MS;
+		phases.push_back(C_spatialConfiguration());
+	i_serv++;
 	*/
 	
 }
