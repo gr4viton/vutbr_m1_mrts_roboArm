@@ -26,7 +26,9 @@ void RTFCNDCL LogMessageThread(void *)
 	while(logMsg.GetState())
 	{
 		logMsg.WriteBuffToFile();
-		Sleep(10);
+#ifdef RUNNING_ON_1CPU
+		RtSleepFt(&preemptive_interval);
+#endif
 	}
 	ExitThread(FLAWLESS_EXECUTION);
 }

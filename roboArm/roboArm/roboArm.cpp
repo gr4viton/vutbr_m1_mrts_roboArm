@@ -22,7 +22,8 @@ char* G_controlString = NULL;
 //char str[FILE_MAX_CHARS+CZERO] = ""; 
 // Pointer of C_LogMessageA, used for all logging
 C_LogMessageA logMsg;
-
+LARGE_INTEGER preemptive_interval; 
+	
 
 /****************************************************************************
 @function		MEAN_adc
@@ -73,8 +74,10 @@ void _cdecl main(int  argc, char **argv)
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// program parameters aquisition
 	//printf("_________________________(: Clean start :)___________________________\n");
-	logMsg.PushMessage("cokoliv",10);
+	//logMsg.PushMessage("cokoliv",10);
 	printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>> roboArm started <<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
+	printf("SET preemptive_interval\n");
+	preemptive_interval.QuadPart = 100;	
 	printf("function main()\n");
 	if ( argc != 2 )	 
 	{// argc should be 2 for correct execution
@@ -236,8 +239,6 @@ void _cdecl main(int  argc, char **argv)
 	// main thread-controlling super-loop
 
 	int still_active_threads;
-	LARGE_INTEGER preemptive_interval; 
-	preemptive_interval.QuadPart = 100;	
 
 
 	//____________________________________________________

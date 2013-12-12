@@ -185,6 +185,7 @@ extern unsigned int		baseAddress;
 extern HMODULE			hLibModule;	
 extern char*				G_controlString;			
 extern C_LogMessageA		logMsg;
+extern LARGE_INTEGER		preemptive_interval; 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // function declarations of roboArm.cpp
