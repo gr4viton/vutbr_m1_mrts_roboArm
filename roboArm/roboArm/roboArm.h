@@ -132,7 +132,7 @@
 #define CEND_LINE					2
 // maximal Wait time command number of digits
 #define MAX_WAIT_TIME_CMD_NUM_OF_DIGITS
-
+#define DEFAULT_ADC_GAIN			0
 
 //____________________________________________________
 // predefined time intervals

@@ -30,12 +30,12 @@ void C_roboticManipulator::DEBUG_fillPhases(void){
 	int i_phase_max = 21;
 	for(int i_phase = 0; i_phase < i_phase_max ; i_phase++)
 	{ // phases
-		for(i_serv = 4 ; i_serv<SUM_SERVOMOTORS; i_serv++)
+		for(i_serv = 0; i_serv<SUM_SERVOMOTORS; i_serv++)
 		{
 			actPhase->SET_servIntervalOne(i_serv, &intervalZero);
 		}
 		intervalZero.QuadPart += 100 * NS100_1US;
-		actPhase->phaseInterval.QuadPart = 1*NS100_1S;
+		actPhase->phaseInterval.QuadPart = 800*NS100_1MS;
 		// push back next
 		if( i_phase < i_phase_max )
 		{

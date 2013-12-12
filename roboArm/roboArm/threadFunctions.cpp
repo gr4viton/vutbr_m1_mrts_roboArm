@@ -179,10 +179,33 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 						LARGE_INTEGER intervalOneDif;
 						// Get last and actual interval one (angle) differention
 						if(actPhase != ROB->phases.begin())
+						{
 							intervalOneDif.QuadPart = 
 								actPhase->servIntervalOne[i_serv].QuadPart 
 								- actPhasePrev->servIntervalOne[i_serv].QuadPart;
-						else intervalOneDif.QuadPart = 0;
+						}
+						else 
+						{
+/*
+UCHAR GET_channel
+LONGLONG CONVERT_ADCRead(int i_serv){
+	LARGE_INTEGER intervalOne;
+	intervalOne.QuadPart = 0;
+	int value = GET_ADC(GET_channel(i_serv),DEFAULT_ADC_GAIN);
+	//serv[i_serv]
+	// min = 500
+	intervalOne = 500 + ((DWORD)-min_ADC + intervalOne.QuadPart)
+		
+	return((LONGLONG)intervalOne);
+}
+*/
+							/*
+							if(serv->FDBACK)
+							{
+								intervalOneDif.QuadPart = actPhase->servIntervalOne[i_serv].QuadPart 
+								- CONVERT_ADCRead(i_serv);
+							}*/
+						}
 						LARGE_INTEGER actIntervalOne;
 						// evaluate new value of angle
 						actIntervalOne.QuadPart = actPhasePrev->servIntervalOne[i_serv].QuadPart 

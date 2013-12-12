@@ -35,8 +35,8 @@ int C_servoMotor::SET_constants(
 	)
 {
 	// warning: should not change constants -> it resets intervals
-	interval_one.QuadPart = 0;
 	intervalZero.QuadPart = 0;
+	actualADvalue = 0;
 	// stop the PWM function and timers!!
 
 	FDBACK = a_FDBACK;

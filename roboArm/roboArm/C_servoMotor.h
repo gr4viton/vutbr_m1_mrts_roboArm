@@ -35,8 +35,8 @@ public:
 	int periodic_input; // parameter of timer periodic execution function
 	//____________________________________________________
 	// intervals
-	LARGE_INTEGER interval_one; // will depend on duty cycle
 	LARGE_INTEGER intervalZero; // will depend on periodic time interval and duty cycle
+	DWORD actualADvalue;		// periodicly read AD value 
 	// LARGE_INTEGER duty_cycle
 	
 	//____________________________________________________
