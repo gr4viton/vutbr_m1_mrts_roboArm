@@ -31,7 +31,7 @@ void C_roboticManipulator::DEBUG_fillPhases(void){
 	// add 5 phases to the back
 	int i_phase_max = 21;
 	int i_serv_min = 5;
-	/*
+	
 	for(int i_phase = 0; i_phase < i_phase_max ; i_phase++)
 	{ // phases
 		for(i_serv = i_serv_min; i_serv<SUM_SERVOMOTORS; i_serv++)
@@ -46,9 +46,9 @@ void C_roboticManipulator::DEBUG_fillPhases(void){
 			phases.push_back(C_spatialConfiguration());
 			actPhase++;
 		}
-	}*/
+	}
 
-	intervalZero.QuadPart = 2500 * NS100_1US;
+	//intervalZero.QuadPart = 2500 * NS100_1US;
 	addVal = -addVal; 
 	for(int i_phase = 0; i_phase < i_phase_max ; i_phase++)
 	{ // phases
