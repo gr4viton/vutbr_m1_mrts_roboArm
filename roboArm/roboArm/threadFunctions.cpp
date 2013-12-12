@@ -54,7 +54,6 @@ void LOAD_actualPhase(C_roboticManipulator* a_ROB, LARGE_INTEGER* PWM_period,
 		{
 			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Could not get servoMotor[%i] pointer\n", i_serv);
 			logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
-			//printf("Terminating thread with error_sum %lu\n", error_sum);
 			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Terminating thread with error_sum %lu\n", error_sum);
 			logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 			ExitThread(error_sum);
@@ -119,9 +118,9 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 			if(actPhase != ROB->phases.end())
 			{ //	 if iterator is not past-the-end element in the list container
 				// load next phase
-				printf("Load phase[%i] values\n", actPhase->i_phase);
-			
-					LOAD_actualPhase(ROB,&PWM_period, &actPhase);
+				sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Load phase[%i] values\n", actPhase->i_phase);
+				logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
+				LOAD_actualPhase(ROB,&PWM_period, &actPhase);
 			}
 			while(!ticDone)	// tics loop
 			{
@@ -164,7 +163,7 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 				// end of each period
 				if(tic.QuadPart >= PWM_period.QuadPart)
 				{ // end of one period
-					sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "End of one period - PWM_period = %I64d [100ns] = %I64d [1s]  \n", tim2.QuadPart, tim2.QuadPart / NS100_1S);
+					sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "End of one period - PWM_period = %I64d [100ns] = %I64d [1s]\n", tim2.QuadPart, tim2.QuadPart / NS100_1S);
 					logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 					ROB->RESET_DOport();
 					tic.QuadPart = 0;
@@ -183,12 +182,13 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 			actPhase++;
 			if(actPhase == ROB->phases.end())
 			{
-				printf("All phases are done!\n", actPhase->i_phase);
+				logMsg.PushMessage("All phases are done!\n", PUSHMSG_SEVERITY_NORMAL);
 				//actPhase--;
 				phaseDone = true;
 				//printf("All phases are done, continuing with next phase [%i].\n", actPhase->i_phase);
 			}
-			printf("Continuing with next phase [%i].\n", actPhase->i_phase);
+			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Continuing with next phase [%i].\n", actPhase->i_phase);
+			logMsg.PushMessage(textMsg, PUSHMSG_SEVERITY_NORMAL);
 
 		}
 		catch (std::exception & e) {
