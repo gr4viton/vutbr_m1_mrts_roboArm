@@ -126,8 +126,7 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 	
 	LARGE_INTEGER lastIntervalOne;
 	lastIntervalOne.QuadPart = 0;
-	DWORD nPWM = 0;
-	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!!!<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+	DWORD nPWM = 0; // counter of periods
 	DWORD nPWM_last = 0;
 	while(!phaseDone)
 	{
@@ -163,7 +162,7 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 				{
 					serv = NULL; ROB = NULL;
 					sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Terminating thread with error_sum %lu\n", error_sum);
-					logMsg.PushMessage(textMsg, LOG_SEVERITY_PWM_PERIOD);
+					logMsg.PushMessage(textMsg, LOG_SEVERITY_ERROR);
 					ExitThread(error_sum);
 				}
 
@@ -180,25 +179,22 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 						// Get last and actual interval one (angle) differention
 						if(actPhase != ROB->phases.begin())
 						{
-							intervalOneDif.QuadPart = 
-								actPhase->servIntervalOne[i_serv].QuadPart 
-								- actPhasePrev->servIntervalOne[i_serv].QuadPart;
+							if( actPhase->servIntervalOne[i_serv].QuadPart 
+								<= actPhasePrev->servIntervalOne[i_serv].QuadPart)
+							{ // counting down
+								intervalOneDif.QuadPart = 
+									actPhase->servIntervalOne[i_serv].QuadPart 
+									- actPhasePrev->servIntervalOne[i_serv].QuadPart;
+							}
+							else
+							{ // counting up
+								intervalOneDif.QuadPart = 
+									actPhasePrev->servIntervalOne[i_serv].QuadPart 
+									- actPhase->servIntervalOne[i_serv].QuadPart;
+							}
 						}
 						else 
-						{
-/*
-UCHAR GET_channel
-LONGLONG CONVERT_ADCRead(int i_serv){
-	LARGE_INTEGER intervalOne;
-	intervalOne.QuadPart = 0;
-	int value = GET_ADC(GET_channel(i_serv),DEFAULT_ADC_GAIN);
-	//serv[i_serv]
-	// min = 500
-	intervalOne = 500 + ((DWORD)-min_ADC + intervalOne.QuadPart)
-		
-	return((LONGLONG)intervalOne);
-}
-*/
+						{ // Feedback
 							/*
 							if(serv->FDBACK)
 							{
@@ -208,8 +204,17 @@ LONGLONG CONVERT_ADCRead(int i_serv){
 						}
 						LARGE_INTEGER actIntervalOne;
 						// evaluate new value of angle
-						actIntervalOne.QuadPart = actPhasePrev->servIntervalOne[i_serv].QuadPart 
-							+ LONGLONG(((double)(nPWM*intervalOneDif.QuadPart))/nKrok);
+						if( actPhase->servIntervalOne[i_serv].QuadPart 
+							<= actPhasePrev->servIntervalOne[i_serv].QuadPart)
+						{ // counting down
+							actIntervalOne.QuadPart = actPhasePrev->servIntervalOne[i_serv].QuadPart 
+								+ LONGLONG((   ((double)nPWM) * ((double)intervalOneDif.QuadPart)  ) / ( (double)nKrok) );
+						}
+						else
+						{ // counting up
+							actIntervalOne.QuadPart = actPhasePrev->servIntervalOne[i_serv].QuadPart 
+								- LONGLONG((   ((double)nPWM) * ((double)intervalOneDif.QuadPart)  ) / ( (double)nKrok) );
+						}
 
 						//logMsg.PushMessage("Ramp act val = %llu", actIntervalOne.QuadPart);						
 
@@ -218,6 +223,7 @@ LONGLONG CONVERT_ADCRead(int i_serv){
 							ROB->SET_DOportBitUchar(serv->servoMotorDigit);
 						}
 						if( nPWM != nPWM_last){
+							// ONLY for debugging
 							nPWM_last = nPWM;
 						}
 					}
@@ -227,10 +233,13 @@ LONGLONG CONVERT_ADCRead(int i_serv){
 			// ____________________________________________________
 			// iteration & tic-waiting
 			RtSleepFt(&tic_interval);
-			//RtPrintf("tic=%I64d/%I64d\n",tic,DEFAULT_PWM_PERIOD);
+
+			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "tic=%I64d/%I64d\n", tic, DEFAULT_PWM_PERIOD);
+			logMsg.PushMessage(textMsg, LOG_SEVERITY_PWM_TIC);
+
 			tic.QuadPart += tic_interval.QuadPart;
 			tic_phase.QuadPart += tic_interval.QuadPart;
-			// End of phase
+			// End of phase = EXIT PERIOD-PWM LOOP 
 			if(tic_phase.QuadPart >= actPhase->phaseInterval.QuadPart)
 			{
 				tic.QuadPart = 0;
@@ -238,7 +247,7 @@ LONGLONG CONVERT_ADCRead(int i_serv){
 				break;
 			}
 			// ____________________________________________________
-			// end of each period
+			// end of each period = PWM END
 			if(tic.QuadPart >= PWM_period.QuadPart)
 			{
 				nPWM++;
@@ -246,13 +255,19 @@ LONGLONG CONVERT_ADCRead(int i_serv){
 					actPhase->i_phase, actPhase->i_phase_max,
 					tim2.QuadPart, tim2.QuadPart / NS100_1S);
 				logMsg.PushMessage(textMsg, LOG_SEVERITY_PWM_PERIOD);
+
 				ROB->RESET_DOport();
 				tic.QuadPart = 0;
-		
+
+				/*
+				// READ ADC VALUES
+				for(int i_serv = 0; i_serv<
+					GET_ADC(UCHAR channel, UCHAR gain)
+					*/
+
 				RtGetClockTime(CLOCK_X, &tim2);
 				tim2.QuadPart = tim2.QuadPart-tim1.QuadPart;
 				//printf("PWM_period = %I64d [100ns] = %I64d [1s]  \n", tim2.QuadPart, tim2.QuadPart / NS100_1S);
-
 				RtGetClockTime(CLOCK_X, &tim1);
 			}
 		} //tic loop == PHASE END
@@ -279,6 +294,23 @@ LONGLONG CONVERT_ADCRead(int i_serv){
 	ExitThread(FLAWLESS_EXECUTION);
 }
 
+//
+//// convert a_serv
+//UCHAR GET_channel(C_servoMotor* a_serv){
+//
+//}
+/*
+LONGLONG CONVERT_ADCRead(C_servoMotor* a_serv){
+	LARGE_INTEGER intervalOne;
+	intervalOne.QuadPart = 0;
+	int value = GET_ADC(GET_channel(i_serv),DEFAULT_ADC_GAIN);
+	//serv[i_serv]
+	// min = 500
+	intervalOne = 500 + ((DWORD)-min_ADC + intervalOne.QuadPart)
+		
+	return((LONGLONG)intervalOne);
+}
+*/
 
 /****************************************************************************
 @function	CLOSE_handleAndExitThread

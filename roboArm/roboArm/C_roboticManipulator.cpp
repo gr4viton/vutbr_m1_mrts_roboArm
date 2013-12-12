@@ -26,15 +26,19 @@ void C_roboticManipulator::DEBUG_fillPhases(void){
 	phases.push_back(C_spatialConfiguration());
 	std::list<C_spatialConfiguration>::iterator actPhase = phases.end();
 	actPhase--;
+	LONGLONG addVal = 100;
+
 	// add 5 phases to the back
 	int i_phase_max = 21;
+	int i_serv_min = 5;
+	/*
 	for(int i_phase = 0; i_phase < i_phase_max ; i_phase++)
 	{ // phases
-		for(i_serv = 0; i_serv<SUM_SERVOMOTORS; i_serv++)
+		for(i_serv = i_serv_min; i_serv<SUM_SERVOMOTORS; i_serv++)
 		{
 			actPhase->SET_servIntervalOne(i_serv, &intervalZero);
 		}
-		intervalZero.QuadPart += 100 * NS100_1US;
+		intervalZero.QuadPart += addVal * NS100_1US;
 		actPhase->phaseInterval.QuadPart = 800*NS100_1MS;
 		// push back next
 		if( i_phase < i_phase_max )
@@ -42,19 +46,25 @@ void C_roboticManipulator::DEBUG_fillPhases(void){
 			phases.push_back(C_spatialConfiguration());
 			actPhase++;
 		}
-		/*
-		DWORD interv = actPhase->phaseInterval.LowPart;
-		printf("\n\n%u\n\n\n",interv);
-		printf("Phase[%i].interval = %I64d | serv.intervalZero[0-5] = %I64d, %I64d, %I64d, %I64d, %I64d, %I64d\n",
-			actPhase->phaseInterval,
-			actPhase->servIntervalOne[0], actPhase->servIntervalOne[1], actPhase->servIntervalOne[2], 
-			actPhase->servIntervalOne[3], actPhase->servIntervalOne[4], actPhase->servIntervalOne[5].QuadPart
-			
-		);
-		*/
+	}*/
+
+	intervalZero.QuadPart = 2500 * NS100_1US;
+	addVal = -addVal; 
+	for(int i_phase = 0; i_phase < i_phase_max ; i_phase++)
+	{ // phases
+		for(i_serv = i_serv_min; i_serv<SUM_SERVOMOTORS; i_serv++)
+		{
+			actPhase->SET_servIntervalOne(i_serv, &intervalZero);
+		}
+		intervalZero.QuadPart += addVal * NS100_1US;
+		actPhase->phaseInterval.QuadPart = 800*NS100_1MS;
+		// push back next
+		if( i_phase < i_phase_max )
+		{
+			phases.push_back(C_spatialConfiguration());
+			actPhase++;
+		}
 	}
-	//phases.end();
-		//it->
 	
 }
 

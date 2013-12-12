@@ -309,7 +309,22 @@ void _cdecl main(int  argc, char **argv)
 	//  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// for debugging purposes only
+	
+
 #ifndef HIDE_TEST_CODES
+	
+	int num = 5; // number_of_mean_values
+	// Reading Data 
+	while(num)
+	{
+		RtPrintf("FDBACK[1,2,3] = %5u;\t\t%5u;\t\t%5u;\n",
+			MEAN_adc(0,0,num),
+			MEAN_adc(1,0,num),
+			MEAN_adc(2,0,num)
+			);
+		RtSleep(100);
+	}
+
 	LARGE_INTEGER interval_one; 
 	LARGE_INTEGER intervalZero; 
 	LARGE_INTEGER interval_wait; 
@@ -344,17 +359,6 @@ void _cdecl main(int  argc, char **argv)
 		RtSleepFt(&interval_one);
 		RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 0x00);
 		RtSleepFt(&intervalZero);
-	}
-	int num = 5; // number_of_mean_values
-	// Reading Data 
-	while(num)
-	{
-		RtPrintf("FDBACK[1,2,3] = %5u;\t\t%5u;\t\t%5u;\n",
-			MEAN_adc(0,0,num),
-			MEAN_adc(1,0,num),
-			MEAN_adc(2,0,num)
-			);
-		RtSleep(100);
 	}
 #endif
 	//____________________________________________________
