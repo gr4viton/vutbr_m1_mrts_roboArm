@@ -49,7 +49,7 @@
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // setup defines and macros
-#define CLOCK_X							CLOCK_1
+#define CLOCK_X							CLOCK_2
 #define RUNNING_ON_1CPU
 //____________________________________________________
 // debug
