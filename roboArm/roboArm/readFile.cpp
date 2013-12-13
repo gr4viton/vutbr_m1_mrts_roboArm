@@ -48,8 +48,7 @@ DWORD GET_stringLength(char *a_string, DWORD a_max_lenght, DWORD* a_error_sum)
 ************/
 DWORD READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_filePath)
 {
-	//if(*a_filePath == 0 && a_manip->IS_in_bounds(1)) return(100000);
-	/*
+#ifdef RUNNING_ON_RTX64
 	// char array for printing messages
 	char textMsg[MAX_MESSAGE_LENGTH];
 	DWORD error_sum = 0;
@@ -59,7 +58,6 @@ DWORD READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_f
 	if(error_sum != FLAWLESS_EXECUTION)
 	{
 		delete[] G_controlString;
-		//printf("READ_file failed with error_sum %lu\n", error_sum);
 		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "READ_file failed with error_sum %lu\n", error_sum);
 		logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
 		return(error_sum);
@@ -70,14 +68,14 @@ DWORD READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_f
 	if(error_sum != FLAWLESS_EXECUTION)
 	{
 		delete[] G_controlString;
-		//printf("READ_file failed with error_sum %lu\n", error_sum);
 		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "READ_file failed with error_sum %lu\n", error_sum);
 		logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
 		return(error_sum);
 	}
-	// AFTER creation of new prvek in array of C_spatialConf you must copy non-changed angles from previous phase
+	
 	delete[] G_controlString;
 	//return(a_ROB->CONVERT_angle2intervalOne(i);*/
+#endif // RUNNING_ON_RTX64
 	return(FLAWLESS_EXECUTION);
 }
 
@@ -97,7 +95,7 @@ DWORD READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_f
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!!!<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 DWORD PARSE_controlString(C_roboticManipulator* a_manip){
 	if(a_manip->IS_in_bounds(1)) return(100000);
-	/*
+#ifdef RUNNING_ON_RTX64
 	// char array for printing messages
 	char textMsg[MAX_MESSAGE_LENGTH];
 
@@ -237,7 +235,7 @@ DWORD PARSE_controlString(C_roboticManipulator* a_manip){
 
 	ROB->RESET_DOport();
 	ROB = NULL;
-	*/
+#endif RUNNING_ON_RTX64
 	return(FLAWLESS_EXECUTION);
 }
 
