@@ -61,8 +61,8 @@ bool C_CircBuffer::IsEmpty()
 @class		C_CircBuffer
 @function   strcpySafe
 @brief      safe version of strcpy
-@param[out]	(char*)
-@param[in]	(char*)
+@param[out]	(char*) destination string
+@param[in]	(char*) input string
 @return     (unsigned int)
 ************/
 unsigned int C_CircBuffer::strcpySafe(char *dest, char *in)
@@ -84,10 +84,10 @@ unsigned int C_CircBuffer::strcpySafe(char *dest, char *in)
 /****************************************************************************
 @class		C_CircBuffer
 @function   WriteOne
-@brief      
-@param[in]	(char*)
+@brief      Write one message to buffer
+@param[in]	(char*) input string
 @param[out] -
-@return     (unsigned int)
+@return     (unsigned int) viz. returnCodeDefines.h
 ************/
 unsigned int  C_CircBuffer::Write(char *in)
 {
@@ -111,10 +111,10 @@ unsigned int  C_CircBuffer::Write(char *in)
 /****************************************************************************
 @class		C_CircBuffer
 @function   Read
-@brief      
+@brief      Reads one message from buffer
 @param[in]	-
-@param[out] (char*)
-@return     (unsigned int)
+@param[out] (char*) output string
+@return     (unsigned int) viz. returnCodeDefines.h
 ************/
 unsigned int C_CircBuffer::Read(char out[MAX_FULL_MESSAGE_LENGTH])
 {
@@ -172,7 +172,7 @@ C_LogMessageA::~C_LogMessageA()
 @param[in]	(char*)
 			(int)
 @param[out] -
-@return     (unsigned int)
+@return     (unsigned int)viz. returnCodeDefines.h
 ************/
 unsigned int C_LogMessageA::PushMessage(char* inMsg, int iSeverity)
 {	
@@ -266,10 +266,9 @@ unsigned int C_LogMessageA::PushMessage(char* inMsg, int iSeverity)
 @class		C_LogMessageA
 @function   WriteBuffToFile
 @brief      writes whole buffer to the file
-@param[in]	(char*)
-			(int)
+@param[in]	-
 @param[out] -
-@return     (unsigned int)
+@return     (unsigned int) viz. returnCodeDefines.h
 ************/
 unsigned int C_LogMessageA::WriteBuffToFile()
 {
