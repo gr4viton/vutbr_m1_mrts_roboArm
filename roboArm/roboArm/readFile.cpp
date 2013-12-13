@@ -222,13 +222,11 @@ DWORD PARSE_controlString(C_roboticManipulator* a_manip){
 		// wrap
 		
 		//std::cout << token << std::endl;
-		//printf("token = \"%s\"\n", token.c_str());
 		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "token = \"%s\"\n", token.c_str());
 		logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
 		controlString.erase(0, pos + delimiter.length());
 	}
 	// last
-  //  std::cout << controlString << std::endl;
 	//printf("%s\n",controlString.c_str());
 	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "%s",controlString.c_str());
 	logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
