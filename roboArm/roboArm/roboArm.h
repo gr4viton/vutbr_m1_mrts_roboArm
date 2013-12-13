@@ -68,6 +68,7 @@
 
 #define SHOW_LOG_ON_SCREEN
 
+
 //____________________________________________________
 // severities
 // SEVERITY VALUES
@@ -86,6 +87,9 @@
 
 #define LOG_SEVERITY_EXITING_PROCESS			LOG_SEVERITY_VALUE_HIGHER
 #define LOG_SEVERITY_EXITING_THREAD			LOG_SEVERITY_VALUE_HIGH
+#define LOG_SEVERITY_MAIN_FUNCTION			LOG_SEVERITY_VALUE_HIGHER
+#define LOG_SEVERITY_LOGGING_STARTED			LOG_SEVERITY_VALUE_HIGHEST
+
 // thread PWM severities
 #define LOG_SEVERITY_PWM_TIC					LOG_SEVERITY_VALUE_LOWEST
 #define LOG_SEVERITY_PWM_PERIOD				LOG_SEVERITY_VALUE_LOWER
@@ -232,8 +236,9 @@ extern C_LogMessageA		logMsg;				// Pointer of C_LogMessageA, used for all loggi
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // function declarations of roboArm.cpp
 void _cdecl	main(int  argc, char **argv);
-DWORD	GET_ADC(UCHAR channel, UCHAR gain);
-void		EXIT_process(DWORD error_sum);
+DWORD		GET_ADC(UCHAR channel, UCHAR gain);
+void			EXIT_process(DWORD error_sum);
+int			LogMessage(int iSeverity, char *cMessage, int bBlocking);
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // function declarations of non-headered .cpp files

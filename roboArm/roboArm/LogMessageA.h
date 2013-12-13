@@ -31,11 +31,10 @@
 #define LENGTH_OF_BUFFER			256
 #define MAX_MESSAGE_LENGTH		512
 
-#define LOG_SCREEN		// comment for hide logs on screen
 
-#define LOG_FILE				"D:\\LogMessage.txt"
-//#define LOG_FILE			"D:\\LogMessage.txt"
-#define LOGMSG_LINE_END		"\n"
+#define LOG_FILE_PATH			"D:\\LogMessage.txt"
+//#define LOG_FILE_PATH			"C:\\LogMessage.txt"
+#define LOGMSG_LINE_END			"\n"
 
 
 //____________________________________________________
@@ -59,16 +58,16 @@ class C_CircBuffer
 {
 private:
 	char buf[LENGTH_OF_BUFFER][MAX_FULL_MESSAGE_LENGTH];	// buffer array 
-	unsigned int Start, End;	// actual start and end positions
-	unsigned int freeSpace;		// actual free space
-	unsigned int strcpySafe(char *dest, char *in);
+	DWORD Start, End;	// actual start and end positions
+	DWORD freeSpace;		// actual free space
+	DWORD strcpySafe(char *dest, char *in);
 
 public:
 	C_CircBuffer();
 	~C_CircBuffer();
 
-	unsigned int Write(char *inMsg);
-	unsigned int Read(char out[MAX_FULL_MESSAGE_LENGTH]);
+	DWORD Write(char *inMsg);
+	DWORD Read(char out[MAX_FULL_MESSAGE_LENGTH]);
 	bool IsEmpty();
 };
 
@@ -92,8 +91,8 @@ public:
 	C_LogMessageA();
 	~C_LogMessageA();
 
-	unsigned int PushMessage(char in[MAX_MESSAGE_LENGTH], int iSeverity);
-	unsigned int WriteBuffToFile();
+	DWORD PushMessage(char in[MAX_MESSAGE_LENGTH], int iSeverity, int bBlocking = false);
+	DWORD WriteBuffToFile();
 
 	void LoggingStart(){bLogging = true;}
 	void LoggingStop(){bLogging = false;}

@@ -20,7 +20,7 @@ DWORD C_roboticManipulator::DEBUG_fillPhases(void)
 {
 	// add some phases
 	LONGLONG addVal = 0;
-	LONGLONG phaseInterval = 1000 * NS100_1MS;
+	LONGLONG phaseInterval = 100 * NS100_1MS;
 	int i_phase_max = 11;
 	int i_serv_min = 5;
 	C_spatialConfiguration new_phase;

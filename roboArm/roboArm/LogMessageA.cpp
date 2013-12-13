@@ -63,9 +63,9 @@ bool C_CircBuffer::IsEmpty()
 @brief      safe version of strcpy
 @param[out]	(char*) destination string
 @param[in]	(char*) input string
-@return     (unsigned int)
+@return     (DWORD)
 ************/
-unsigned int C_CircBuffer::strcpySafe(char *dest, char *in)
+DWORD C_CircBuffer::strcpySafe(char *dest, char *in)
 {
 	// secure strlen
 	unsigned int inStrLen = 0;
@@ -73,7 +73,7 @@ unsigned int C_CircBuffer::strcpySafe(char *dest, char *in)
 		if(inStrLen > LENGTH_OF_BUFFER) return(ERROR_STRING_TO_WRITE_IS_TOO_LONG);
 	}
 
-	for(unsigned int i = 0 ; i <= inStrLen ; i++)
+	for(DWORD i = 0 ; i <= inStrLen ; i++)
 	{
 		dest[i] = in[i];
 	}
@@ -87,9 +87,9 @@ unsigned int C_CircBuffer::strcpySafe(char *dest, char *in)
 @brief      Write one message to buffer
 @param[in]	(char*) input string
 @param[out] -
-@return     (unsigned int) viz. returnCodeDefines.h
+@return     (DWORD) viz. returnCodeDefines.h
 ************/
-unsigned int  C_CircBuffer::Write(char *in)
+DWORD  C_CircBuffer::Write(char *in)
 {
 	// secure strlen
 	unsigned int inStrLen = 0;
@@ -114,9 +114,9 @@ unsigned int  C_CircBuffer::Write(char *in)
 @brief      Reads one message from buffer
 @param[in]	-
 @param[out] (char*) output string
-@return     (unsigned int) viz. returnCodeDefines.h
+@return     (DWORD) viz. returnCodeDefines.h
 ************/
-unsigned int C_CircBuffer::Read(char out[MAX_FULL_MESSAGE_LENGTH])
+DWORD C_CircBuffer::Read(char out[MAX_FULL_MESSAGE_LENGTH])
 {
 	// no message here
 	if(freeSpace == LENGTH_OF_BUFFER) return(ERROR_BUFFER_IS_EMPTY);
@@ -148,7 +148,6 @@ C_LogMessageA::C_LogMessageA()
 {
 	// init mutex
 	hMutex = RtCreateMutex(NULL, FALSE, HMUTEX_SHARED_NAME);
-
 	bLogging = false;
 }
 
@@ -172,14 +171,10 @@ C_LogMessageA::~C_LogMessageA()
 @param[in]	(char*)
 			(int)
 @param[out] -
-@return     (unsigned int)viz. returnCodeDefines.h
+@return     (DWORD)error_sum | viz. returnCodeDefines.h
 ************/
-unsigned int C_LogMessageA::PushMessage(char* inMsg, int iSeverity)
+DWORD C_LogMessageA::PushMessage(char* inMsg, int iSeverity, int bBlocking)
 {	
-	// Time
-	FILETIME			FileTime; 
-	SYSTEMTIME		SystemTime;
-	LARGE_INTEGER	ClockTime;	
 	//____________________________________________________
 	// Severities
 	if ( iSeverity > SEVERITY_MAX )
@@ -200,6 +195,10 @@ unsigned int C_LogMessageA::PushMessage(char* inMsg, int iSeverity)
 		return LOG_IS_NOT_SEVERE_ENAUGH;
 	}
 	
+	// Time
+	FILETIME			FileTime; 
+	SYSTEMTIME		SystemTime;
+	LARGE_INTEGER	ClockTime;	
 	//____________________________________________________
 	// Clock time -> file time -> system time
 	if ( RtGetClockTime(CLOCK_LOG_ACTUAL, &ClockTime) == FALSE )
@@ -212,7 +211,10 @@ unsigned int C_LogMessageA::PushMessage(char* inMsg, int iSeverity)
 	if ( FileTimeToSystemTime(&FileTime, &SystemTime) == 0 )
 	{
 		RtPrintf("\nLogMessage() Error: FileTimeToSystemTime\n");
-		return ERROR_FILETIMETOSYSTEMTIME_FAIL;
+		if(bBlocking == 0)
+			return ERROR_FILETIMETOSYSTEMTIME_FAIL;
+		else
+			return ERROR_FILETIMETOSYSTEMTIME_FAIL;
 	}
 
 	//____________________________________________________
@@ -250,7 +252,7 @@ unsigned int C_LogMessageA::PushMessage(char* inMsg, int iSeverity)
 	// write it before it is written into file -> 
 	// when debugging you see it as you step through program 
 	// and not after writing to file after a few steps
-	RtPrintf("%s\n", DataBuffer);
+	RtPrintf("%s", DataBuffer);
 #endif
 
 	RtWaitForSingleObject(hMutex,INFINITE); // wait to own hMutex
@@ -258,8 +260,7 @@ unsigned int C_LogMessageA::PushMessage(char* inMsg, int iSeverity)
 	buf.Write(DataBuffer);
 	RtReleaseMutex(hMutex); // Critical section [END]
 	
-	return(FLAWLESS_EXECUTION);
-	
+	return(FLAWLESS_EXECUTION);	
 }
 
 /****************************************************************************
@@ -268,14 +269,14 @@ unsigned int C_LogMessageA::PushMessage(char* inMsg, int iSeverity)
 @brief      writes whole buffer to the file
 @param[in]	-
 @param[out] -
-@return     (unsigned int) viz. returnCodeDefines.h
+@return     (DWORD) viz. returnCodeDefines.h
 ************/
-unsigned int C_LogMessageA::WriteBuffToFile()
+DWORD C_LogMessageA::WriteBuffToFile()
 {
 	if(buf.IsEmpty())return ERROR_BUFFER_IS_EMPTY;
 
 	CHAR cMessage[MAX_FULL_MESSAGE_LENGTH];
-	unsigned int err = FLAWLESS_EXECUTION;
+	DWORD err = FLAWLESS_EXECUTION;
 	RtWaitForSingleObject(hMutex,INFINITE); // wait to own hMutex
 	// Critical section [Start]
 	err = buf.Read(cMessage);
@@ -286,7 +287,7 @@ unsigned int C_LogMessageA::WriteBuffToFile()
 	//____________________________________________________
 	// CreateFile
 	Hfile = CreateFile(
-				TEXT(LOG_FILE),
+				TEXT(LOG_FILE_PATH),
 				GENERIC_WRITE ,
 				0,
 				0,

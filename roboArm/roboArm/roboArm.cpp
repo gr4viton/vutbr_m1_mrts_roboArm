@@ -58,6 +58,20 @@ void EXIT_process(DWORD error_sum){
 		logMsg.PushMessage(textMsg, LOG_SEVERITY_EXITING_PROCESS);
 	ExitProcess(error_sum);
 }
+/**
+ * @name 	LogMessage
+ * @brief	function logs a message into the application log stream in the format: DD.MM.YYYY HH:MM:SS:MSS Message
+ * @param [in]	iSeverity - an importance of the message in the range <SEVERITY_MIN, SEVERITY_MAX>. Messages lower than SEVERITY_LEVEL are not being logged
+ * @param [in]	cMessage - a message to be logged
+ * @param [in]	bBlocking - if, 0 the function is blocking (synchronous write operation), otherwise function is non-blocking (asynchronous write operation with buffering)
+ * @retval	0 - function succeeded
+ * @retval	otherwise - an error occurred
+*/
+int LogMessage(int iSeverity, char *cMessage, int bBlocking)
+{
+	DWORD error_sum = logMsg.PushMessage(cMessage, iSeverity, bBlocking);
+	return(error_sum);
+}
 
 
 /****************************************************************************
@@ -134,6 +148,7 @@ void _cdecl main(int  argc, char **argv)
 	printf("> Try to fill phases with testing positions\n");
 	ROB.DEBUG_fillPhases();
 
+	
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// thread creation
 
@@ -152,7 +167,8 @@ void _cdecl main(int  argc, char **argv)
 		(LPTHREAD_START_ROUTINE)LogMessageThread, NULL);
 	//printf thread ?? thread id?
 	if(error_sum != FLAWLESS_EXECUTION) EXIT_process(error_sum);
-		logMsg.PushMessage("Logging started.\n", LOG_SEVERITY_VALUE_HIGHEST);
+		logMsg.PushMessage("Logging started.\n", LOG_SEVERITY_LOGGING_STARTED);
+		printf("Logging into [%s], SEVERITY_LEVEL = %i\n", LOG_FILE_PATH, SEVERITY_LEVEL);
 	
 	iTh++;
 	error_sum = CREATE_thread(iTh, 
@@ -171,7 +187,7 @@ void _cdecl main(int  argc, char **argv)
 	//____________________________________________________
 	// waiting for the termination of all threads but the Logging one [TH_LOG_I = 0]
 	iTh = TH_LOG_I + 1;
-	printf("main() - Waiting for all but the Logging thread to terminate.\n");
+	logMsg.PushMessage("main() - Waiting for all but the Logging thread to terminate.\n", LOG_SEVERITY_MAIN_FUNCTION);
 	do{ 
 		still_active_threads = 0;
 		iTh = iTh;
@@ -180,7 +196,7 @@ void _cdecl main(int  argc, char **argv)
 		{ // the function failed 
 			error_sum = GetLastError();
 			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Function GetExitCodeThread called with thread[%i] failed, returned FALSE with error %lu\n", iTh, error_sum);
-			logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
+				logMsg.PushMessage(textMsg, LOG_SEVERITY_MAIN_FUNCTION);
 			break;
 		}
 		// is this thread still active?
@@ -198,7 +214,7 @@ void _cdecl main(int  argc, char **argv)
 	
 	for(iTh = 1; iTh<iTh_max; iTh++){
 		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Thread[%i] terminated with exit code %lu\n", iTh, thExitCode[iTh]);
-		logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);		
+		logMsg.PushMessage(textMsg, LOG_SEVERITY_MAIN_FUNCTION);		
 	}			
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -210,7 +226,7 @@ void _cdecl main(int  argc, char **argv)
 	do{
 		if(GetExitCodeThread( hTh[TH_LOG_I], &(thExitCode[TH_LOG_I]) ) == FALSE){
 			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Function of thread[%i] failed, returned FALSE with exit-code %lu\n", TH_LOG_I, thExitCode[TH_LOG_I]);
-			logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
+			logMsg.PushMessage(textMsg, LOG_SEVERITY_MAIN_FUNCTION);
 			break;
 		}
 		if( thExitCode[TH_LOG_I] != STILL_ACTIVE ) 	break;
@@ -279,11 +295,12 @@ void _cdecl main(int  argc, char **argv)
 #endif
 	//____________________________________________________
 	// everything should be unallocated and closed
-	printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> roboArm ended <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
+	logMsg.PushMessage(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> roboArm ended <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n", 
+		LOG_SEVERITY_MAIN_FUNCTION);
 	//____________________________________________________
 	// write all messages 
 	while( ERROR_BUFFER_IS_EMPTY != logMsg.WriteBuffToFile());
-	printf("Exiting process.\n");
+	logMsg.PushMessage("Exiting process.\n", LOG_SEVERITY_MAIN_FUNCTION);
     EXIT_process(FLAWLESS_EXECUTION);
 }
 
