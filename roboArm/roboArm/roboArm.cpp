@@ -88,91 +88,96 @@ void _cdecl main(int  argc, char **argv)
 {
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// program parameters aquisition
-	//printf("_________________________(: Clean start :)___________________________\n");
-	//logMsg.PushMessage("cokoliv",10);
-	printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>> roboArm started <<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
-	printf("function main()\n");
+	char textMsg[MAX_MESSAGE_LENGTH];	// char array for log messages
+	logMsg.PushMessage(">>>>>>>>>>>>>>>>>>>>>>>>>>>>> roboArm started <<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n", LOG_SEVERITY_MAIN_FUNCTION);
+	logMsg.PushMessage("function main()\n", LOG_SEVERITY_MAIN_FUNCTION);
 #ifdef RUNNING_ON_1CPU
-	printf("SET preemptive_interval\n");
+	logMsg.PushMessage("SET preemptive_interval\n", LOG_SEVERITY_MAIN_FUNCTION);
 	preemptive_interval.QuadPart = DEFAULT_PREEMPTIVE_INTERVAL;	
 #endif
 	DWORD error_sum = 0;
-	/*
 	if ( argc != 2 )	 
 	{// argc should be 2 for correct execution
-		printf("You must specify the control txt file! Run:\n");
-		printf("$ %s <control_file_path>\n", argv[0]);
+		logMsg.PushMessage("You must specify the control txt file! Run:\n", LOG_SEVERITY_MAIN_FUNCTION);
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "$ %s <control_file_path>\n", argv[0]);
+			logMsg.PushMessage(textMsg, LOG_SEVERITY_MAIN_FUNCTION);
 		EXIT_process(ERROR_CONTROLFILE_PATH_NOT_SPECIFIED);
 	}
-	// We assume argv[1] is a filename to open - try lenght of string file_path 
+	// Assume argv[1] is a filename to open - try lenght of string file_path 
 	if( GET_stringLength(argv[1], MAX_PATH, &error_sum) == 0)
 	{
 		if( error_sum == ERROR_STRING_LENGHT_LARGER_THAN_TRESHOLD )
-		{
-			printf("ERROR - control file path is too long (max=%u) = program parameter [%s]\n", MAX_PATH, argv[1]);
+		{		
+			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, 
+				"ERROR - control file path is too long (max=%u) = program parameter [%s]\n", 
+				MAX_PATH, argv[1]
+			);
+				logMsg.PushMessage(textMsg, LOG_SEVERITY_MAIN_FUNCTION);
 			EXIT_process(ERROR_FILE_PATH_STRING_TOO_LONG);
 		}
 	}
-	// the filename lenght is short enaght
-	printf("Control-file: %s\n", argv[1]);
-		*/
-	
+	// the filename lenght is short enaugh
+	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Control-file: %s\n", argv[1]);
+		logMsg.PushMessage(textMsg, LOG_SEVERITY_MAIN_FUNCTION);
+
+
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// INITIALIZATIONS
-	printf("Starting initialization process.\n");
-	//____________________________________________________
-	char textMsg[MAX_MESSAGE_LENGTH];	// char array for log messages
+	logMsg.PushMessage("Starting initialization process.\n", LOG_SEVERITY_MAIN_FUNCTION);
 	// ____________________________________________________
 	// init HW
-	printf("> Try to initialize hardware\n");
+	logMsg.PushMessage("> Try to initialize hardware\n", LOG_SEVERITY_MAIN_FUNCTION);
 	error_sum = INIT_HW();
 	if(error_sum != FLAWLESS_EXECUTION){
-		printf("Initialization process failed with error_sum %lu\n", error_sum);
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, 
+			"Initialization process failed with error_sum %lu\n", error_sum);
+			logMsg.PushMessage(textMsg, LOG_SEVERITY_MAIN_FUNCTION);
 		EXIT_process(error_sum);
 	}	
 	//____________________________________________________
 	// init classes for the manipulator
-	printf("> Try to initialize robotic manipulator\n");
+	logMsg.PushMessage("> Try to initialize robotic manipulator\n", LOG_SEVERITY_MAIN_FUNCTION);
 	C_roboticManipulator ROB(error_sum);
 	if(error_sum != FLAWLESS_EXECUTION)
 	{
-		printf("Initialization of robotic manipulator failed with error_sum %lu\n", error_sum);
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, 
+			"Initialization of robotic manipulator failed with error_sum %lu\n", error_sum);
+			logMsg.PushMessage(textMsg, LOG_SEVERITY_MAIN_FUNCTION);
 		EXIT_process(error_sum);
 	}
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// read phases from file
-	
-	//printf("> Try to read phases from Configuration file\n");
-	// READ_spatialConfigurationFromFile(&ROB, argv[1]);
-	printf("> Try to fill phases with testing positions\n");
+#ifdef READ_SPATIAL_CONFIGURATION
+	READ_spatialConfigurationFromFile(&ROB, argv[1]);
+#endif
+	logMsg.PushMessage("> Insert testing phases\n", LOG_SEVERITY_MAIN_FUNCTION);
 	ROB.DEBUG_fillPhases();
 
 	
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// thread creation
-
-
+	
 	HANDLE hTh[NUM_OF_THREADS];			// array of handles to the threads
 
 	int iTh = 0;							// thread handler index
 	const int iTh_max = NUM_OF_THREADS; 
-	DWORD thID[NUM_OF_THREADS];		// thread id input param
-	//hTh[0] = (HANDLE)123456789;
-	//printf("&(hTh[0]) = %i; &(hTh) = %i; hTh[0] = %i; hTh = %i;\n",  &(hTh[0]), &(hTh), hTh[0], hTh);
+	DWORD thID[NUM_OF_THREADS];			// thread id input param
 
+	//____________________________________________________
+	// CREATE logging thread
 	logMsg.LoggingStart(); // Before log thread started, LoggingStart() must be called
-	error_sum = CREATE_thread(iTh, 
-		hTh[iTh], &(thID[iTh]), TH_LOG_PRIORITY, 
+	error_sum = CREATE_thread(iTh, hTh[iTh], &(thID[iTh]), TH_LOG_PRIORITY, 
 		(LPTHREAD_START_ROUTINE)LogMessageThread, NULL);
-	//printf thread ?? thread id?
-	if(error_sum != FLAWLESS_EXECUTION) EXIT_process(error_sum);
-		logMsg.PushMessage("Logging started.\n", LOG_SEVERITY_LOGGING_STARTED);
-		printf("Logging into [%s], SEVERITY_LEVEL = %i\n", LOG_FILE_PATH, SEVERITY_LEVEL);
 	
+	if(error_sum != FLAWLESS_EXECUTION) EXIT_process(error_sum);
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Logging started! writing into [%s], SEVERITY_LEVEL = %i\n", LOG_FILE_PATH, SEVERITY_LEVEL);
+			logMsg.PushMessage(textMsg, LOG_SEVERITY_LOGGING_STARTED);	
+	
+	//____________________________________________________
+	// CREATE PWM thread
 	iTh++;
-	error_sum = CREATE_thread(iTh, 
-		hTh[iTh], &(thID[iTh]), TH_PWM_PRIORITY, 
+	error_sum = CREATE_thread(iTh, hTh[iTh], &(thID[iTh]), TH_PWM_PRIORITY, 
 		(LPTHREAD_START_ROUTINE)PWMthread, &ROB);
 	if(error_sum != FLAWLESS_EXECUTION) EXIT_process(error_sum);
 	//CREATE_threads(&ROB, hTh, thID);
@@ -219,14 +224,15 @@ void _cdecl main(int  argc, char **argv)
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// End of logging -> ends thread hTh[TH_LOG_I],  TH_LOG_I = 0
-	printf("main() - Try to stop Loggign function.\n");
+	logMsg.PushMessage("main() - Try to stop Loggign function.\n", LOG_SEVERITY_MAIN_FUNCTION);
+				
 	logMsg.LoggingStop();
-	printf("main() - Waiting for the Logging thread to terminate.\n");
+	logMsg.PushMessage("main() - Waiting for the Logging thread to terminate.\n", LOG_SEVERITY_MAIN_FUNCTION);
 	// Wait to end of thread hTh[TH_LOG_I]
 	do{
 		if(GetExitCodeThread( hTh[TH_LOG_I], &(thExitCode[TH_LOG_I]) ) == FALSE){
 			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Function of thread[%i] failed, returned FALSE with exit-code %lu\n", TH_LOG_I, thExitCode[TH_LOG_I]);
-			logMsg.PushMessage(textMsg, LOG_SEVERITY_MAIN_FUNCTION);
+				logMsg.PushMessage(textMsg, LOG_SEVERITY_MAIN_FUNCTION);
 			break;
 		}
 		if( thExitCode[TH_LOG_I] != STILL_ACTIVE ) 	break;
@@ -243,54 +249,19 @@ void _cdecl main(int  argc, char **argv)
 	// for debugging purposes only
 	
 
-#ifndef HIDE_TEST_CODES
-	
-	int num = 5; // number_of_mean_values
+#ifndef DEBUG_PRINT_FDBACK_ADC_DATA_AFTER_PHASES_END
+	int num = 100; // number_of_mean_values
 	// Reading Data 
-	while(num)
+	while(num--)
 	{
-		RtPrintf("ADC_feedBack[1,2,3] = %5u;\t\t%5u;\t\t%5u;\n",
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, 
+			"ADC_feedBack[1,2,3] = %5u;\t\t%5u;\t\t%5u;\n",
 			MEAN_adc(0,0,num),
 			MEAN_adc(1,0,num),
 			MEAN_adc(2,0,num)
 			);
+			logMsg.PushMessage(textMsg, LOG_SEVERITY_MAIN_FUNCTION);
 		RtSleep(100);
-	}
-
-	LARGE_INTEGER interval_one; 
-	LARGE_INTEGER intervalZero; 
-	LARGE_INTEGER interval_wait; 
-	
-	interval_one.QuadPart = 10000; // 1000us
-	intervalZero.QuadPart = 200000 - 10000; // 0.02s = 50Hz
-	interval_wait.QuadPart = 10000000; // 1s
-	
-	int i = 0;
-//	int j = 0;
-//	int max_j = 8;
-
-	E_servos testedServo = S5;
-	int period = 200;	//Hz
-	interval_one.QuadPart = NS100_1US * 500;	// 500 us
-	intervalZero.QuadPart = NS100_1MS * 1000/period - interval_one.QuadPart; // 0.01s = 100Hz
-	interval_wait.QuadPart = NS100_1MS * 300; // 0.1s
-	for( i = 0 ; i < 200 ; i++)
-	{
-		RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 1<<testedServo);
-		RtSleepFt(&interval_one);
-		RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 0x00);
-		RtSleepFt(&intervalZero);
-	}
-
-	interval_one.QuadPart = NS100_1US * 2500;	// 2500 us
-	intervalZero.QuadPart = NS100_1MS * 1000/period - interval_one.QuadPart; // 0.01s = 100Hz
-	interval_wait.QuadPart = NS100_1MS * 300; // 0.1s
-	for( i = 0 ; i < 200 ; i++)
-	{
-		RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 1<<testedServo);
-		RtSleepFt(&interval_one);
-		RtWritePortUchar((PUCHAR)(baseAddress+DO_High_Byte), 0x00);
-		RtSleepFt(&intervalZero);
 	}
 #endif
 	//____________________________________________________
@@ -343,7 +314,6 @@ DWORD GET_ADC(UCHAR channel, UCHAR gain)
 	}
 
 	if ( c > 10 ) {
-		//RtPrintf("GetADC: Reading timeout\n");
 		logMsg.PushMessage("GetADC: Reading timeout\n", LOG_SEVERITY_NORMAL);
 		return 0;		
 	}

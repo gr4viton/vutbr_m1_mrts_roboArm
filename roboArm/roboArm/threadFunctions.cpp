@@ -61,7 +61,7 @@ DWORD CREATE_thread(int iTh, HANDLE& a_threadHandle, DWORD* a_threadID,
 		return(ERROR_COULD_NOT_RESUME_THREAD);
 	}
 
-	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Succesfully resumed thread[%i].\n", iTh);
+	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Thread [%i] id=[%lu] resumed and running!\n", iTh, *a_threadID);
 		logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
 
 	return(FLAWLESS_EXECUTION);
