@@ -284,14 +284,7 @@ void _cdecl main(int  argc, char **argv)
 			logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
 			break;
 		}
-		if( thExitCode[TH_LOG_I] == STILL_ACTIVE ) 
-		{
-			still_active_threads = 1;
-		}
-		else
-		{
-			still_active_threads = 0;
-		}
+		if( thExitCode[TH_LOG_I] != STILL_ACTIVE ) 	break;
 #ifdef RUNNING_ON_1CPU
 		RtSleepFt(&preemptive_interval);  // preemption
 #endif
