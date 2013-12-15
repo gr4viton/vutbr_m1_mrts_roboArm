@@ -1,11 +1,15 @@
 /***************
 @project  roboArm_starter
 @filename roboArm
-@author   
-@date     
-@brief    
+@author   xdavid10, xslizj00 @ FEEC-VUTBR 
+@date     2013_12_02
+@brief    win32api console project for starting an RTX .rtss executable program file
 ***************/
 
+// defines
+#define FLAWLESS_EXECUTION	0
+
+// includes
 #include <SDKDDKVer.h>
 #include <stdio.h>
 #include <tchar.h>
@@ -14,43 +18,56 @@
 
 #include <rtapi.h>
 
+
+/****************************************************************************
+@function   main
+@brief      it starts the RTX roboArm process and waits for the end of it
+			then closes
+@param[in]  int argc | number of input parameters
+			_TCHAR*argv[] | array of input parameter strings
+@return     
+************/
 int main (int argc, _TCHAR*argv[])
 {
-	STARTUPINFO si;
-	PROCESS_INFORMATION pi;
-	int result = 0;
+	STARTUPINFO startUpInfo;
+	PROCESS_INFORMATION processInfo;
 	DWORD ExitCode;
+	int ret_val = 0;
+	bool waiting = false;
+	LARGE_INTEGER waitInterval; waitInterval.QuadPart = 1000;
 
-	result = RtCreateProcess(TEXT("C:\\mrts\\robo_hand.rtss"), TEXT("C:\\mrts\\robo_hand.rtss C:\\mrts\\data\\data.txt"), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
-	if (result == 0)
+	ret_val = RtCreateProcess(
+		TEXT("C:\\mrts\\roboArm.rtss"), 
+		TEXT("C:\\mrts\\roboArm.rtss C:\\mrts\\control.txt"), 
+		NULL, NULL, FALSE, 0, NULL, NULL, &startUpInfo, &processInfo);
+	if (ret_val == 0)
 	{
-		printf("Can't create process. Last error is: %d\n", GetLastError());
+		RtPrintf("Create process failed with : %04x\n", GetLastError());
 	}
 	else
 	{
-		printf("Process created and running!\n");
-		printf("Waiting. Process id: %d\n", pi.dwProcessId);
+		RtPrintf("Successfully created process!\n");
+		RtPrintf("Waiting. Process id: %d\n", processInfo.dwProcessId);
 	}
-	Sleep(1000);
-	while(1)
+	RtSleepFt(&waitInterval);
+	while(!waiting)
 	{
-		
-		//printf("Waiting. Process id: %d\n", pi.dwProcessId);
-		result = RtGetExitCodeProcess(pi.hProcess, &ExitCode);
+		ret_val = RtGetExitCodeProcess(processInfo.hProcess, &ExitCode);
 		if (ExitCode == STILL_ACTIVE)
-			printf("Still running!\n");
+		{
+			RtPrintf("RTX Process roboArm is still active!\n");
+		}
 		else
 		{
-			printf("Process is ko! Exit code is %d\n", ExitCode);
+			RtPrintf("RTX Process roboArm ended with exit code %d\n", ExitCode);
 			break;
 		}
-		Sleep(1000);
-
+		RtSleepFt(&waitInterval);
 	}
 	//WaitForSingleObject(pi.hProcess, INFINITE);
 
-	CloseHandle(pi.hProcess);
-	CloseHandle(pi.hThread);
-	printf("Process ended!\n");
-	return (0);
+	CloseHandle(processInfo.hProcess);
+	CloseHandle(processInfo.hThread);
+	RtPrintf("Exiting roboArm_starter.\n");
+	return (FLAWLESS_EXECUTION);
 }
