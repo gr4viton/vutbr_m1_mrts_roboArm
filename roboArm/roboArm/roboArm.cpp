@@ -77,12 +77,11 @@ void _cdecl main(int  argc, char **argv)
 	//printf("_________________________(: Clean start :)___________________________\n");
 	//logMsg.PushMessage("cokoliv",10);
 	printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>> roboArm started <<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
-	
+	printf("function main()\n");
 #ifdef RUNNING_ON_1CPU
 	printf("SET preemptive_interval\n");
 	preemptive_interval.QuadPart = DEFAULT_PREEMPTIVE_INTERVAL;	
 #endif
-	printf("function main()\n");
 	DWORD error_sum = 0;
 	/*
 	if ( argc != 2 )	 
@@ -148,98 +147,6 @@ void _cdecl main(int  argc, char **argv)
 	//printf("&(hTh[0]) = %i; &(hTh) = %i; hTh[0] = %i; hTh = %i;\n",  &(hTh[0]), &(hTh), hTh[0], hTh);
 
 	//CREATE_threads(ROB, hTh, thread_id);
-	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	// thread creation
-	//int iTh = 0;							// handler iterator
-	//const int iTh_max = NUM_OF_THREADS; 
-	//HANDLE hTh = *a_hTh;
-	
-	//printf("&(a_hTh[0]) = %i; &(a_hTh) = %i; a_hTh[0] = %i; a_hTh = %i; \n", &(a_hTh[0]), &(a_hTh), a_hTh[0], a_hTh );
-
-	//____________________________________________________
-	// priorities - changed in switch case
-	int wanted_priority = RT_PRIORITY_MIN;
-	int thread_priority = RT_PRIORITY_MIN;
-	
-	//____________________________________________________
-	//char textMsg[MAX_MESSAGE_LENGTH];	// char array for log messages
-
-	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	// will be in separate function CREATE THREAD?
-	// create & priority & unsuspend all needed threads
-	for(iTh = 0; iTh<iTh_max; iTh++)
-	{
-		//____________________________________________________
-		// RtCreateThread - handle creation 
-		RtPrintf("> Try to create thread[%i].\n", iTh);
-		switch(iTh){
-			//____________________________________________________
-			case(TH_LOG_I): // Logging thread				
-				logMsg.LoggingStart();	// Before log thread started, LoggingStart() must be called
-				wanted_priority = TH_LOG_PRIORITY;
-				// create thread
-				hTh[iTh] = RtCreateThread(NULL, 0, 
-					(LPTHREAD_START_ROUTINE) LogMessageThread, 
-					NULL, CREATE_SUSPENDED, &(thread_id[0]));
-				break;
-			//____________________________________________________
-			case(TH_PWM_I): // PWM controllign thread
-				wanted_priority = TH_PWM_PRIORITY;
-				// create thread
-				hTh[iTh] = RtCreateThread(NULL, 0, 
-					(LPTHREAD_START_ROUTINE) PWMthread, 
-					(VOID*)&ROB, CREATE_SUSPENDED, &(thread_id[1]));
-				break;
-
-		}
-
-		//____________________________________________________
-		// the other rutines are same for all types of threads 
-		if(hTh[iTh] == NULL){
-			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "ERROR:\tCannot create thread[%i].\n",iTh);
-			logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
-			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_CREATE_THREAD);
-		}
-		RtPrintf("Thread[%i] created and suspended with priority %i.\n", iTh, RtGetThreadPriority(hTh[iTh]) );
-
-		// ____________________________________________________
-		// RtSetThreadPriority - set thread priority to wanted_priority
-		if( RtSetThreadPriority( hTh[iTh], wanted_priority) ){
-			thread_priority = RtGetThreadPriority(hTh[iTh]);
-			if( thread_priority == wanted_priority ){
-				sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Priority of thread[%i] sucessfully set to %i\n", iTh, wanted_priority );
-				logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
-			}
-			else{
-				sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "ERROR:\tCannot set thread[%i] priority to %i! It currently has priority %i.\n", 
-					iTh, wanted_priority , thread_priority);
-				logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
-				TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_CHANGE_PRIORITY);
-			}
-		}
-		else{
-			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "ERROR:\tCannot set thread[%i] priority to %i! It currently has priority %i.\n", 
-				iTh, wanted_priority , GetThreadPriority(hTh[iTh]) );
-			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_CHANGE_PRIORITY);
-		}
-
-		//____________________________________________________
-		// RtResumeThread - unsuspend 
-		if( RtResumeThread(hTh[iTh]) != 0xFFFFFFFF ){
-			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Succesfully resumed thread[%i].\n", iTh);
-			logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
-			if(iTh == 0)
-			{
-				logMsg.PushMessage("Logging started.\n", SEVERITY_MAX - 5);
-			}
-		}
-		else{
-			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Could not resume thread[%i].\n", iTh);
-			logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
-			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_RESUME_THREAD);
-		}
-	}
-
 	
 
 	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
