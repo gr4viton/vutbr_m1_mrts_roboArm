@@ -46,6 +46,7 @@ public:
 	LARGE_INTEGER	tim_startPWMperiod; 
 	LARGE_INTEGER	tim_endPWMperiod; 
 
+	char*			controlFilePath;
 
 	std::list<C_spatialConfiguration> phases;
 

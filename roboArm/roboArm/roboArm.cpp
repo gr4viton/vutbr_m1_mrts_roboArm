@@ -131,17 +131,8 @@ void _cdecl main(int  argc, char **argv)
 		EXIT_process(error_sum);
 	}
 
-	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	// read phases from file or Insert test phases
-	logMsg.PushMessage("> Read spatial configuraitions = phases from control file\n", LOG_SEVERITY_MAIN_FUNCTION);
-	READ_spatialConfigurationFromFile(&ROB, argv[1]);
-#ifdef PUSHBACK_TESTING_PHASES
-	logMsg.PushMessage("> Insert testing phases\n", LOG_SEVERITY_MAIN_FUNCTION);
-	ROB.INSERT_testPhases();
-#endif
-
+	ROB.controlFilePath = argv[1];
 	
-
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// CREATE PWM thread
 	iTh++;

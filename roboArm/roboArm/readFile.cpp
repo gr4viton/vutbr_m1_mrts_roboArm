@@ -49,14 +49,14 @@ DWORD GET_stringLength(char *a_string, DWORD a_max_lenght, DWORD* a_error_sum)
 			on Success	= FLAWLESS_EXECUTION
 			on Error		= error_sum of ERRORS defined in returnCodeDefines.h
 ************/
-DWORD READ_spatialConfigurationFromFile(C_roboticManipulator* a_ROB, char* a_filePath)
+DWORD READ_spatialConfigurationFromFile(C_roboticManipulator* a_ROB)
 {
 	// char array for printing messages
 	char textMsg[MAX_MESSAGE_LENGTH];
 	DWORD error_sum = 0;
 	//____________________________________________________
 	// read control file into string
-	error_sum = READ_file(a_filePath);
+	error_sum = READ_file(a_ROB->controlFilePath);
 	if(error_sum != FLAWLESS_EXECUTION)
 	{
 		delete[] G_controlString;

@@ -110,6 +110,16 @@ void RTFCNDCL PWMthread(void *a_ROB)
 	// robotic manipulator pointer
 	C_roboticManipulator* ROB = (C_roboticManipulator*)a_ROB;
 
+	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	// read phases from file or Insert test phases
+	logMsg.PushMessage("> Read spatial configuraitions = phases from control file\n", LOG_SEVERITY_MAIN_FUNCTION);
+	READ_spatialConfigurationFromFile(ROB);
+#ifdef PUSHBACK_TESTING_PHASES
+	logMsg.PushMessage("> Insert testing phases\n", LOG_SEVERITY_MAIN_FUNCTION);
+	ROB->INSERT_testPhases();
+#endif
+	
+	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// smallest tic interval
 	sprintf_s(textMsg,MAX_MESSAGE_LENGTH, "RtGetClockTimerPeriod = %I64d [100ns]\n", ROB->PWMtic_interval);
 		logMsg.PushMessage(textMsg, LOG_SEVERITY_PWM_PHASE);
