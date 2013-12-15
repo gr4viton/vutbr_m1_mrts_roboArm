@@ -23,13 +23,14 @@
 // ____________________________________________________
 // error_sum
 #define FLAWLESS_EXECUTION						0
-#define DESTRUCT_EVERYTHING						1
-#define ERR_SERVO_INDEX_OUT_OF_BOUNDS			2
-#define ERR_C_SERVOMOTOR_SETTIMERREL_ERROR		3
-#define ERR_C_SERVOMOTOR_TIMER_INVALID_HANDLE	4
-#define ERR_INIT_CANNOT_LOAD_LIBRARY				5
-#define ERR_CONSTRUCOR_ERROR_OFFSET				127
-// free positions offset + max_servo_i
+#define DESTRUCT_EVERYTHING						96001
+#define ERR_SERVO_INDEX_OUT_OF_BOUNDS			96002
+#define ERR_C_SERVOMOTOR_SETTIMERREL_ERROR		96003
+#define ERR_C_SERVOMOTOR_TIMER_INVALID_HANDLE	96004
+#define ERR_INIT_CANNOT_LOAD_LIBRARY				96005
+#define ERR_CONSTRUCOR_ERROR_OFFSET				96006
+#define ERROR_CANNOT_SET_NEXTPHASE				96007
+#define EXITCODE_TERMINATED_BY_MAIN				96008
 
 //____________________________________________________
 // ExitProcess return value constants - ERRORS & etc
@@ -46,7 +47,6 @@
 #define ERROR_COULD_NOT_RESUME_THREAD				256
 #define ERROR_COULD_NOT_CHANGE_PRIORITY				512
 #define ERROR_COULD_NOT_CREATE_THREAD				1024
-
 //____________________________________________________
 // INIT
 #define ERROR_COULD_NOT_LOAD_DAC_DLL_RTDLL_LIBRARY  97000
@@ -72,12 +72,6 @@
 #define ERROR_BAD_DYNAMIC_ALLOCATION					99258
 #define ERROR_IS_NOT_NUMBER							99259
 #define ERROR_INCONSISTENT_FILE_LINE					99260
-
-//____________________________________________________
-#define EXITCODE_SUCCESSFUL_END					0
-#define EXITCODE_TERMINATED_BY_MAIN				1
-
-
 
 
 #endif

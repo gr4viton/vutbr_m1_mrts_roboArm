@@ -179,7 +179,7 @@ void _cdecl main(int  argc, char **argv)
 				wanted_priority = TH_PWM_PRIORITY;
 				// create thread
 				hTh[iTh] = RtCreateThread(NULL, 0, 
-					(LPTHREAD_START_ROUTINE) TIM_PWMfunction, 
+					(LPTHREAD_START_ROUTINE) PWMthread, 
 					(VOID*)&ROB, CREATE_SUSPENDED, &thread_id);
 				break;
 

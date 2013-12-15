@@ -251,9 +251,10 @@ HANDLE* CREATE_threads(void);
 void		CLOSE_handleAndExitThread(HANDLE handle, DWORD error_sum);
 void		TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, DWORD error_sum);
 
-// thread functions
+// logmsg
 void		RTFCNDCL LogMessageThread(void *a_struct);
-void		RTFCNDCL TIM_PWMfunction(void *a_manip);
+// TIM_PWM
+void		RTFCNDCL PWMthread(void *a_manip);
 
 #endif
 

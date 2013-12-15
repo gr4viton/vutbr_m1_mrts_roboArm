@@ -31,6 +31,8 @@ private:
 	DWORD angle_max; 
 public:
 	LARGE_INTEGER PWMperiod_interval;
+	LONGLONG PWMperiod_sum;			// counter of periods for act phase
+	LONGLONG PWMperiod_sum_max;		// how many PWM periods are in act phase interval
 	std::list<C_spatialConfiguration> phases;
 
 	std::list<C_spatialConfiguration>::iterator phase_act; 
@@ -41,19 +43,25 @@ public:
 public:		DWORD IS_in_bounds(int servo_i);	
 public:		C_roboticManipulator(DWORD &error_sum);
 //public:		int SET_dutyCycleIntervals(int servo_i, LARGE_INTEGER a_interval_one, LARGE_INTEGER a_intervalZero);
-public:		DWORD C_roboticManipulator::PUSHFRONT_InitialPhases(void);
+public:		DWORD PUSHFRONT_InitialPhases(void);
 //public:		std::list<C_spatialConfiguration> GET_InitialPhases(void);
 
 public:		DWORD GET_servoMotor(int a_servo_i, C_servoMotor** servoMotor);
 //public:		DWORD GET_servoMotor(int a_servo_i, C_servoMotor* servoMotor);
 			
+// DO port writing
 public:		void WRITE_portUchar(PUCHAR a_port_address, UCHAR a_port_data);
 public:		void WRITE_DOport_thisPeriodNewValue();
 public:		void SET_DOportBitUchar(UCHAR a_port_bit);
 
 public:		void RESET_DOport();
 
+// phasing
+public:		void LOAD_actualPhase(void);
+public:		DWORD SET_NextPhase();
+
 public:		int CONVERT_angle2intervalOne(int a_angle, int a_i_serv, LARGE_INTEGER* a_intervalZero);
+
 public:		void DEBUG_fillPhases(void);
 };
 

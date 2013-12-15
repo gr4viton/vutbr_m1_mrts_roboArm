@@ -20,7 +20,6 @@
 ************/
 void C_roboticManipulator::DEBUG_fillPhases(void){
 	LARGE_INTEGER intervalOne;
-	intervalOne.QuadPart = 500 * NS100_1US;
 	int i_serv = 0;
 	
 	phases.push_back(C_spatialConfiguration());
@@ -36,6 +35,9 @@ void C_roboticManipulator::DEBUG_fillPhases(void){
 	int i_phase_max = 21;
 	int i_serv_min = 5;
 	
+	intervalOne.QuadPart = 500 * NS100_1US; // [us]
+	LONGLONG phaseInterval = 100 * NS100_1MS; // [ms]
+	
 	for(int i_phase = 0; i_phase < i_phase_max ; i_phase++)
 	{ // phases
 		for(i_serv = i_serv_min; i_serv<SUM_SERVOMOTORS; i_serv++)
@@ -43,7 +45,7 @@ void C_roboticManipulator::DEBUG_fillPhases(void){
 			phase_act->SET_serv_intervalOne(i_serv, &intervalOne);
 		}
 		intervalOne.QuadPart += addVal * NS100_1US;
-		phase_act->phaseInterval.QuadPart = 800*NS100_1MS;
+		phase_act->phaseInterval.QuadPart = phaseInterval;
 		// push back next
 		if( i_phase < i_phase_max )
 		{
@@ -51,7 +53,7 @@ void C_roboticManipulator::DEBUG_fillPhases(void){
 			phase_act++;
 		}
 	}
-
+	/*
 	//intervalOne.QuadPart = 2500 * NS100_1US;
 	addVal = -addVal; 
 	for(int i_phase = 0; i_phase < i_phase_max ; i_phase++)
@@ -69,7 +71,9 @@ void C_roboticManipulator::DEBUG_fillPhases(void){
 			phase_act++;
 		}
 	}
+	*/
 	/*
+	// to know individual max and min
 	i_serv = 5;
 	LONGLONG milliS = 4000;
 
@@ -85,6 +89,62 @@ void C_roboticManipulator::DEBUG_fillPhases(void){
 	i_serv++;
 	*/
 	
+}
+/****************************************************************************
+@function   SET_NextPhase
+@class		C_roboticManipulator
+@brief      
+@param[in]  
+@param[out] 
+@return     
+************/
+DWORD C_roboticManipulator::SET_NextPhase()
+{
+	char textMsg[MAX_MESSAGE_LENGTH];
+	phase_act++;
+	if(phase_act == phases.end())
+	{
+		return(ERROR_CANNOT_SET_NEXTPHASE);
+	}
+	else
+	{
+		PWMperiod_sum = 0;
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Continuing with next phase[%i/%i].\n", phase_act->i_phase, phase_act->i_phase_max);
+		logMsg.PushMessage(textMsg, LOG_SEVERITY_PWM_PHASE);
+	}
+	return(FLAWLESS_EXECUTION);
+}
+
+
+/****************************************************************************
+@function   LOAD_actualPhase
+@class		C_roboticManipulator
+@brief      copies the needed data from phase_act into individual C_servoMotor instances 
+@param[in]  
+@param[out] 
+@return     
+************/
+void C_roboticManipulator::LOAD_actualPhase(void)
+{	
+	char textMsg[MAX_MESSAGE_LENGTH]; // char array for printing messages
+	
+	LARGE_INTEGER intervalZero;		// tics for holding one on defined pin
+	intervalZero.QuadPart = 0;
+	for(int i_serv=0 ; i_serv < SUM_SERVOMOTORS ; i_serv++)
+	{
+		// count the [zero interval] from [pwm period - one interval]
+		intervalZero.QuadPart = PWMperiod_interval.QuadPart - phase_act->serv_intervalOne[i_serv].QuadPart;
+		// DEBUG
+		//intervalZero.QuadPart = PWMperiod_interval->QuadPart - 1750 * NS100_1US;
+		// write it to actual
+		serv[i_serv].SET_intervalZero( intervalZero );
+		serv[i_serv].fixedPositioning = phase_act->serv_fixedPositioning[i_serv];
+	}
+
+	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Actual phase[%i/%i] interval = %I64d[ms]\n", 
+		phase_act->i_phase, phase_act->i_phase_max, 
+		phase_act->phaseInterval.QuadPart / NS100_1MS );
+	logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
 }
 
 /****************************************************************************
@@ -157,6 +217,10 @@ DWORD C_roboticManipulator::PUSHFRONT_InitialPhases(void)
 ************/
 C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 {
+	// zeros
+	PWMperiod_sum = 0;
+	PWMperiod_sum_max = 0;
+
 	// init phases - set the default one on the beginning
 	PUSHFRONT_InitialPhases();
 	
