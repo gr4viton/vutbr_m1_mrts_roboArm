@@ -13,163 +13,73 @@
 /****************************************************************************
 @function   DEBUG_fillPhases
 @class		C_roboticManipulator
-@brief      
-@param[in]  
-@param[out] 
-@return     
+@brief      add some debug phases for testing the servos 
+@return     DWORD error_sum
 ************/
-void C_roboticManipulator::DEBUG_fillPhases(void){
-	LARGE_INTEGER intervalOne;
-	int i_serv = 0;
-	
-	phases.push_back(C_spatialConfiguration());
-	// actPhase should point to the last phase (not end - uninitialized space after last)
-	phase_act = phases.end();
-	phase_act--;
-	// as there is only one phase - prevPhase is the same -> is changed in PWM thread
-	phase_prev = phase_act;
-
-	LONGLONG addVal = 100;
-	// add 5 phases to the back
-
-	int i_phase_max = 21;
+DWORD C_roboticManipulator::DEBUG_fillPhases(void)
+{
+	// add some phases
+	LONGLONG addVal = 0;
+	LONGLONG phaseInterval = 1000 * NS100_1MS;
+	int i_phase_max = 11;
 	int i_serv_min = 5;
+	C_spatialConfiguration new_phase;
+
+	new_phase.phaseInterval.QuadPart = phaseInterval;	
+	// set initial phase servos position
 	
-	intervalOne.QuadPart = 500 * NS100_1US; // [us]
-	LONGLONG phaseInterval = 100 * NS100_1MS; // [ms]
-	
+	//____________________________________________________
+	// go 0-180°
 	for(int i_phase = 0; i_phase < i_phase_max ; i_phase++)
 	{ // phases
-		for(i_serv = i_serv_min; i_serv<SUM_SERVOMOTORS; i_serv++)
+		for(int i_serv=i_serv_min; i_serv<SUM_SERVOMOTORS; i_serv++)
 		{
-			phase_act->SET_serv_intervalOne(i_serv, &intervalOne);
+			new_phase.serv_fixedPositioning[i_serv] = false;
+			addVal = serv[i_serv].intervalOne_max.QuadPart 
+				- serv[i_serv].intervalOne_min.QuadPart;
+			addVal = LONGLONG( double(addVal) / double(i_phase_max) );
+			new_phase.serv_intervalOne[i_serv].QuadPart = 
+				serv[i_serv].intervalOne_min.QuadPart 
+				+ LONGLONG(i_phase) * addVal;
 		}
-		intervalOne.QuadPart += addVal * NS100_1US;
-		phase_act->phaseInterval.QuadPart = phaseInterval;
-		// push back next
-		if( i_phase < i_phase_max )
-		{
-			phases.push_back(C_spatialConfiguration());
-			phase_act++;
-		}
+		PUSHBACK_newPhase(&new_phase); 
 	}
-	/*
-	//intervalOne.QuadPart = 2500 * NS100_1US;
-	addVal = -addVal; 
+	//____________________________________________________
+	// and back	(180-0°)
 	for(int i_phase = 0; i_phase < i_phase_max ; i_phase++)
 	{ // phases
-		for(i_serv = i_serv_min; i_serv<SUM_SERVOMOTORS; i_serv++)
+		for(int i_serv=i_serv_min; i_serv<SUM_SERVOMOTORS; i_serv++)
 		{
-			phase_act->SET_serv_intervalOne(i_serv, &intervalOne);
+			new_phase.serv_fixedPositioning[i_serv] = false;
+			addVal = serv[i_serv].intervalOne_max.QuadPart 
+				- serv[i_serv].intervalOne_min.QuadPart;
+			addVal = LONGLONG( double(addVal) / double(i_phase_max) );
+			new_phase.serv_intervalOne[i_serv].QuadPart = 
+				serv[i_serv].intervalOne_max.QuadPart 
+				- LONGLONG(i_phase) * addVal;
 		}
-		intervalOne.QuadPart += addVal * NS100_1US;
-		phase_act->phaseInterval.QuadPart = 800*NS100_1MS;
-		// push back next
-		if( i_phase < i_phase_max )
-		{
-			phases.push_back(C_spatialConfiguration());
-			phase_act++;
-		}
+		PUSHBACK_newPhase(&new_phase); 
 	}
-	*/
-	/*
-	// to know individual max and min
-	i_serv = 5;
-	LONGLONG milliS = 4000;
-
-	intervalOne.QuadPart = 500;
-	actPhase->SET_serv_intervalOne(i_serv, &intervalOne);
-	actPhase->phaseInterval.QuadPart = milliS*NS100_1MS;
-		phases.push_back(C_spatialConfiguration());
-
-	intervalOne.QuadPart = 2500;
-	actPhase->SET_serv_intervalOne(i_serv, &intervalOne);
-	actPhase->phaseInterval.QuadPart = milliS*NS100_1MS;
-		phases.push_back(C_spatialConfiguration());
-	i_serv++;
-	*/
-	
+	return(FLAWLESS_EXECUTION);
 }
 
 /****************************************************************************
 @function   CALC_DOport_thisPeriodNewValue
 @class		C_roboticManipulator
 @brief      calculate new value of DO port for this period
-@param[in]  
-@param[out] 
-@return     
 ************/
 void C_roboticManipulator::CALC_DOport_thisPeriodNewValue()
 {
 	// ask each servo if this PWMtic the interval zero has passed = time [to write 1]
 	for(int i_serv=0; i_serv<SUM_SERVOMOTORS; i_serv++)
 	{ // iterate through all servos
-		if( IS_timeToWriteOne(i_serv) )
+		if( IS_timeToWriteOne(i_serv) == true)
 		{ // time for writing 1 has come
-
-			if(phase_act->serv_fixedPositioning)
-			//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-			{ // not ramp - square position change
+			if( IS_reallyTimeToWriteOne(i_serv) == true)
+			{
+				// write one to serv[i_serv] bit in thisPeriodNewValue
 				SET_DOport_thisPeriodNewValue(serv[i_serv].servoMotorDigit);
 			}
-			else
-			//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-			{ // ramp - linear position change
-				LARGE_INTEGER intervalOneDif;
-				// Get last and actual interval one (angle) differention
-				if(serv[i_serv].ADC_feedBack == false)
-				{ // we do not have a feedback
-					if(phase_act != phases.begin())
-					{ // this is not a first phase - we have previous phase
-						if( phase_act->serv_intervalOne[i_serv].QuadPart 
-							<= phase_prev->serv_intervalOne[i_serv].QuadPart)
-						{ // intOne counting up
-						// seky
-							//functional
-							intervalOneDif.QuadPart = 
-								phase_act->serv_intervalOne[i_serv].QuadPart 
-								- phase_prev->serv_intervalOne[i_serv].QuadPart;
-						}
-						else
-						{ // intOne counting down
-							intervalOneDif.QuadPart = 
-								phase_prev->serv_intervalOne[i_serv].QuadPart 
-								- phase_act->serv_intervalOne[i_serv].QuadPart;
-						}
-					} // end - this is not a first phase - we have previous phase
-				} // end - we do not have a feedback
-				else
-				{ // we have a feedback
-
-				} // end - we have a feedback
-
-				LARGE_INTEGER actIntervalOne;
-				// evaluate new value of angle
-				if( phase_act->serv_intervalOne[i_serv].QuadPart 
-					<= phase_prev->serv_intervalOne[i_serv].QuadPart)
-				{ // intOne counting up
-						//functional
-					actIntervalOne.QuadPart = phase_prev->serv_intervalOne[i_serv].QuadPart 
-						+ LONGLONG((   ((double)PWMperiod_sum) * ((double)intervalOneDif.QuadPart)  ) / ( (double)PWMperiod_sum_max) );
-				}
-				else
-				{ // intOne counting down
-					// seky
-					actIntervalOne.QuadPart = phase_prev->serv_intervalOne[i_serv].QuadPart 
-						- LONGLONG((   ((double)PWMperiod_sum) * ((double)intervalOneDif.QuadPart)  ) / ( (double)PWMperiod_sum_max) );
-				}
-				
-				//____________________________________________________
-				// the time for writing 1 has really come - with linear positioning
-				if(PWMtic_sum >= (PWMperiod_interval.QuadPart - actIntervalOne.QuadPart))
-				{
-					// write one to this servo bit
-					SET_DOport_thisPeriodNewValue(serv[i_serv].servoMotorDigit);
-				}
-#ifdef DEBUG // debuging breakpoint 
-				if( PWMperiod_sum != PWMperiod_sum_last){PWMperiod_sum_last = PWMperiod_sum;}
-#endif
-			} // ramp - linear position change
 		} // end - time for writing 1 has come
 	} // end - iterate through all servos
 
@@ -178,9 +88,8 @@ void C_roboticManipulator::CALC_DOport_thisPeriodNewValue()
 @function   FINISH_period
 @class		C_roboticManipulator
 @brief      is called on end of each period in PWM thread
-@param[in]  
-@param[out] 
-@return     
+			increments period counter, resets tic counter, resets DOport
+			finishes period time measurements and logs it
 ************/
 void C_roboticManipulator::FINISH_period()
 {
@@ -204,10 +113,9 @@ void C_roboticManipulator::FINISH_period()
 /****************************************************************************
 @function   SET_NextPhase
 @class		C_roboticManipulator
-@brief      
-@param[in]  
-@param[out] 
-@return     
+@brief      increments phase_act and phase_prev
+			set PWMperiod_sum to zero
+@return     DWORD error_sum
 ************/
 DWORD C_roboticManipulator::SET_NextPhase()
 {
@@ -278,9 +186,7 @@ DWORD C_roboticManipulator::LOAD_actualPhase(void)
 /****************************************************************************
 @function   IS_endOfPhase
 @class		C_roboticManipulator
-@return     bool
-			| [true] if the phaseTic_sum is greater than this phase interval
-			| [false] else
+@return     bool | [true] if the phaseTic_sum is greater than this phase interval
 ************/
 bool C_roboticManipulator::IS_endOfPhase() 
 {
@@ -289,10 +195,7 @@ bool C_roboticManipulator::IS_endOfPhase()
 /****************************************************************************
 @function   IS_endOfPeriod
 @class		C_roboticManipulator
-@brief      
-@return     bool 
-			| [true] if the PWMtic_sum is greater than period interval
-			| [false] else
+@return     bool | [true] if the PWMtic_sum is greater than period interval
 ************/
 bool C_roboticManipulator::IS_endOfPeriod() 		
 {
@@ -301,14 +204,79 @@ bool C_roboticManipulator::IS_endOfPeriod()
 
 /****************************************************************************
 @function   IS_timeToWriteOne
-@brief      
-@return     bool
-			| [true] if the PWMtic_sum is greater this servo intervalZero
-			| [false] else
+@class		C_roboticManipulator
+@param[in]	int a_i_serv | on which servo from the array serv we count
+@return     bool | [true] if the PWMtic_sum is greater this servo intervalZero
 ************/
 bool C_roboticManipulator::IS_timeToWriteOne(int a_i_serv)
 {
 	return(PWMtic_sum >= serv[a_i_serv].intervalZero.QuadPart);
+}
+
+/****************************************************************************
+@function   IS_reallyTimeToWriteOne
+@class		C_roboticManipulator
+@brief      
+@param[in]	int a_i_serv | on which servo from the array serv we count
+@return     bool 
+			| if fixedPositioning - always [true]
+			| if not fixedPositioning = ramp
+				| if the number of tics is greater 
+				than counted tic treshold [true]
+			| else [false]
+
+************/
+bool C_roboticManipulator::IS_reallyTimeToWriteOne(int i_serv)
+{
+	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	// not ramp - square position change
+	if(phase_act->serv_fixedPositioning)
+	{ 
+		return(true);
+	}
+	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	// ramp - linear position change
+	else
+	{ 
+		// the previous phase has different intervalOne value
+		if( serv[i_serv].intervalOne_difference.QuadPart != 0)
+		{
+			//____________________________________________________
+			// evaluate new value of intOne
+			LONGLONG intervalOne_thisPeriodDiff = LONGLONG(
+					(double)PWMperiod_sum 
+					* (double)(serv[i_serv].intervalOne_difference.QuadPart)  
+					/ (double)PWMperiod_sum_max
+					);
+			// (add || subtract) thisPeriodDiff to the previous period intOne
+			serv[i_serv].intervalOne_actual.QuadPart = phase_prev->serv_intervalOne[i_serv].QuadPart;
+
+			// intOne is growing -> intOne = previous + thisPeriodDiff
+			if( serv[i_serv].intervalOne_growing )
+			{						
+				serv[i_serv].intervalOne_actual.QuadPart += intervalOne_thisPeriodDiff;
+			}
+			// intOne is not growing -> intOne = previous - thisPeriodDiff
+			else
+			{
+				serv[i_serv].intervalOne_actual.QuadPart -= intervalOne_thisPeriodDiff;
+			}
+				
+			//____________________________________________________
+			// the time for writing 1 has really come - with linear positioning
+			if(PWMtic_sum >= (PWMperiod_interval.QuadPart - serv[i_serv].intervalOne_actual.QuadPart))
+			{
+				// write one to this servo bit
+				return(true);
+			}
+#ifdef DEBUG // debuging breakpoint 
+			if( PWMperiod_sum != PWMperiod_sum_last)
+			{PWMperiod_sum_last = PWMperiod_sum;}
+#endif
+		}// end - for all the servos
+	} // ramp - linear position change
+	// it is not the time
+	return(false);
 }
 
 /****************************************************************************
@@ -341,8 +309,9 @@ int C_roboticManipulator::CONVERT_angle2intervalOne(int a_angle, int a_i_serv, L
 		return(ERROR_ANGLE_OUT_OF_BOUNDS);
 #endif
 	}
-	a_intervalOne->QuadPart = (DWORD)( 
-		serv[a_i_serv].ADC_min + relative * (serv[a_i_serv].ADC_max - serv[a_i_serv].ADC_min)
+	a_intervalOne->QuadPart = (LONGLONG)( 
+		serv[a_i_serv].intervalOne_min.QuadPart + relative 
+		* (serv[a_i_serv].intervalOne_max.QuadPart - serv[a_i_serv].intervalOne_min.QuadPart)
 		);
 	return(FLAWLESS_EXECUTION);
 }
@@ -352,26 +321,105 @@ int C_roboticManipulator::CONVERT_angle2intervalOne(int a_angle, int a_i_serv, L
 @function   PUSHFRONT_InitialPhases
 @class		C_roboticManipulator
 @brief      appends initial phases to the begining of list
-@param[in]  
-@param[out] 
-@return     
+@return     DWORD error_sum
 ************/
 DWORD C_roboticManipulator::PUSHFRONT_InitialPhases(void)
 {
-	phases.push_front(C_spatialConfiguration()); 
+	C_spatialConfiguration new_phase;
 
 	// initial phase interval
-	phases.begin()->phaseInterval.QuadPart = DEFAULT_INITIAL_PHASE_INTERVAL;
+	new_phase.phaseInterval.QuadPart = DEFAULT_INITIAL_PHASE_INTERVAL;
 	
 	// set initial phase servos position
 	for(int i_serv=0; i_serv<SUM_SERVOMOTORS; i_serv++)
 	{
-		phases.begin()->serv_intervalOne[i_serv].QuadPart = 
-			serv[i_serv].ADC_min
-			- phases.begin()->serv_intervalOne[i_serv].QuadPart;
+		new_phase.serv_fixedPositioning[i_serv] = false;
+		new_phase.serv_intervalOne[i_serv].QuadPart = serv[i_serv].ADC_min;
 	}
+	
+	PUSHBACK_newPhase(&new_phase); 
 	return(FLAWLESS_EXECUTION);
  }
+
+/****************************************************************************
+@function   PUSHBACK_newPhase
+@class      C_roboticManipulator
+@brief      copy-constructor alike, 
+			if [a_phase.intervalOne_change[x]==false] make sure 
+				that the intervalOne value is copied from previous phase
+			also count differences of intervalOne between a_phase and previous phase
+@param[in]  
+@param[out] 
+@return     
+************/
+void C_roboticManipulator::PUSHBACK_newPhase(C_spatialConfiguration* a_phase){
+	phases.push_back(C_spatialConfiguration());
+	
+	
+	//get pointers to last and previous-to-last phases in list phases
+	phase_act = phases.end(); phase_act--;
+	phase_act->i_phase = ++(phase_act->i_phase_max);
+	if(phase_act->i_phase_max > 1)
+	{// not the first phase 
+		phase_prev = phase_act; phase_prev--;
+	}
+
+	// copy phase interval
+	phase_act->phaseInterval.QuadPart = a_phase->phaseInterval.QuadPart;
+
+	// servos variables
+	for(int i_serv=0; i_serv<SUM_SERVOMOTORS; i_serv++)
+	{
+		phase_act->serv_fixedPositioning[i_serv] = a_phase->serv_fixedPositioning[i_serv];
+
+		//phases.back().serv_intervalOne_changed =;
+		if(a_phase->serv_intervalOne_changed[i_serv] == true)
+		{ // intervalOne changed after calling constructor --> a_phase has a new value
+			phase_act->serv_intervalOne[i_serv].QuadPart = a_phase->serv_intervalOne[i_serv].QuadPart;
+			
+			// this is first phase || interval was not defined after constructor [intervalOne_change==false]
+			phase_act->serv_intervalOne_difference[i_serv].QuadPart = 0;
+
+			// ramp - linear positioning
+			if(a_phase->serv_fixedPositioning[i_serv] == false)
+			{ 
+				// not the first phase 
+				if(phase_act->i_phase_max > 1)
+				{
+					// count the difference of intervalOne between last and previous-to-last phases
+					// growing
+					if( phase_act->serv_intervalOne[i_serv].QuadPart 
+						> phase_prev->serv_intervalOne[i_serv].QuadPart
+						)
+					{ 
+						phase_act->serv_intervalOne_growing[i_serv] = true;
+						phase_act->serv_intervalOne_difference[i_serv].QuadPart 
+							= phase_act->serv_intervalOne[i_serv].QuadPart 
+							- phase_prev->serv_intervalOne[i_serv].QuadPart;
+					}
+					// not - growing	
+					else
+					{ 
+						phase_act->serv_intervalOne_growing[i_serv] = false;
+						phase_act->serv_intervalOne_difference[i_serv].QuadPart 
+							= phase_prev->serv_intervalOne[i_serv].QuadPart 
+							- phase_act->serv_intervalOne[i_serv].QuadPart;
+					}
+				} // end - not the first phase
+			} // end - ramp - linear positioning
+		}
+		else
+		{ // intervalOne was not defined after constructor --> copy a previous phase value
+			// not the first phase 
+			if(phase_act->i_phase_max > 1)
+			{
+				// copy not changed intervalOnes of a_phase from previous phase to actual phase
+				phase_act->serv_intervalOne[i_serv] = phase_prev->serv_intervalOne[i_serv];
+			} // end - not the first phase
+		}
+	}
+	
+}
 
 /****************************************************************************
 @function   C_roboticManipulator
@@ -398,7 +446,8 @@ C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 	RtGetClockTimerPeriod(CLOCK_TIC_INTERVAL, &PWMtic_interval);	// time to wait between individual PWMtics
 
 	// init phases - set the default one on the beginning
-	PUSHFRONT_InitialPhases();
+	error_sum = PUSHFRONT_InitialPhases();
+	if(error_sum != FLAWLESS_EXECUTION) return;
 	phase_act = phases.begin();
 	
 	// init addresses 
@@ -407,7 +456,6 @@ C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 	// write zeros to register
 	DOport_lastPeriodValue = 1; // to work-around WRITE_portUchar not writing the addres if it is the same
 	WRITE_portUchar(DOport_ByteAddress, 0);
-	DOport_lastPeriodValue = 0; 
 	
 	// the min, max of angle from control-file 
 	angle_min = 0;
@@ -427,22 +475,22 @@ C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 	// SET constants of servos
 	int i=0;		// servo[0]
 	ret_i = serv[i].SET_constants( i, S1, min_intervalZero, max_intervalZero, true, ADC_min, ADC_max,5 );
-	if(ret_i != i){ 	error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;	} 	
+	if(ret_i != i){ 	error_sum = ERROR_SERVO_SET_CONSTANTS_FAIL; 	return;	} 	
 	i++;			// servo[1]
 	ret_i = serv[i].SET_constants( i, S2, min_intervalZero, max_intervalZero, true, ADC_min, ADC_max,5 );
-	if(ret_i != i){ 	error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return; } 
+	if(ret_i != i){ 	error_sum = ERROR_SERVO_SET_CONSTANTS_FAIL; 	return; } 
 	i++; 		// servo[2]
 	ret_i = serv[i].SET_constants( i, S3, min_intervalZero, max_intervalZero, true, ADC_min, ADC_max,5 );
-	if(ret_i != i){ 	error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;	} 
+	if(ret_i != i){ 	error_sum = ERROR_SERVO_SET_CONSTANTS_FAIL; 	return;	} 
 	i++;			// servo[3]
 	ret_i = serv[i].SET_constants( i, S4, min_intervalZero, max_intervalZero );
-	if(ret_i != i){ 	error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;	} 
+	if(ret_i != i){ 	error_sum = ERROR_SERVO_SET_CONSTANTS_FAIL; 	return;	} 
 	i++;			// servo[4]
 	ret_i = serv[i].SET_constants( i, S5, min_intervalZero, max_intervalZero );
-	if(ret_i != i){ 	error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;	} 
+	if(ret_i != i){ 	error_sum = ERROR_SERVO_SET_CONSTANTS_FAIL; 	return;	} 
 	i++;			// servo[5]
 	ret_i = serv[i].SET_constants( i, S6, min_intervalZero, max_intervalZero );
-	if(ret_i != i){ 	error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;	} 
+	if(ret_i != i){ 	error_sum = ERROR_SERVO_SET_CONSTANTS_FAIL; 	return;	} 
 	//____________________________________________________
 	// end
 	error_sum = FLAWLESS_EXECUTION;

@@ -34,20 +34,18 @@ int C_servoMotor::SET_constants(
 	DWORD a_ADC_min, DWORD a_ADC_max, DWORD a_ADC_meanCount
 	)
 {
-	
-	intervalZero.QuadPart = 0;
+	servo_index = a_servo_index;
+	servoMotorDigit = a_servoMotorDigit;
+
 	intervalOne_min.QuadPart = a_intervalOne_min;
 	intervalOne_max.QuadPart = a_intervalOne_max;
+	intervalZero.QuadPart = 0;
+	ADC_actual = 0;
 
 	ADC_feedBack = a_ADC_feedBack;	
-	ADC_actual = 0;
 	ADC_min = a_ADC_min;
 	ADC_max = a_ADC_max;
 	ADC_meanCount = a_ADC_meanCount;
-	
-
-	servo_index = a_servo_index;
-	servoMotorDigit = a_servoMotorDigit;
 	return(servo_index);
 }
 
@@ -65,8 +63,6 @@ void C_servoMotor::SET_intervalZero(LARGE_INTEGER a_intervalZero)
 	return;
 }
 
-
-	
 /****************************************************************************
 @function	~C_servoMotor
 @class		C_servoMotor

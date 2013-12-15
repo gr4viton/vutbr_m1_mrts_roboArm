@@ -40,6 +40,7 @@ public:
 public:	C_spatialConfiguration(void);
 public:	C_spatialConfiguration(LARGE_INTEGER* a_phaseInterval, LARGE_INTEGER* a_serv_intervalOne, bool a_serv_fixedPositioning=false);
 public: ~C_spatialConfiguration(void);
+
 public: void SET_serv_intervalOne(int a_i_serv, LARGE_INTEGER *a_serv_intervalOne);
 };
 

@@ -63,16 +63,16 @@ public:		DWORD PUSHFRONT_InitialPhases(void);
 public:		DWORD GET_servoMotor(int a_servo_i, C_servoMotor** servoMotor);
 //public:		DWORD GET_servoMotor(int a_servo_i, C_servoMotor* servoMotor);
 			
-
-
 // phasing
 public:		DWORD LOAD_actualPhase(void);
 public:		DWORD SET_NextPhase();
+public:		void PUSHBACK_newPhase(C_spatialConfiguration* a_phase); 
 			
 public:		void FINISH_period();
 public:		bool	 IS_endOfPhase();
 public:		bool IS_endOfPeriod();
 public:		bool IS_timeToWriteOne(int a_i_serv);
+public:		bool IS_reallyTimeToWriteOne(int a_i_serv);
 			
 public:		void CALC_DOport_thisPeriodNewValue();
 public:		void SET_DOport_thisPeriodNewValue(UCHAR a_port_bit);
@@ -84,7 +84,7 @@ public:		void WRITE_portUchar(PUCHAR a_port_address, UCHAR a_port_data);
 
 public:		int CONVERT_angle2intervalOne(int a_angle, int a_i_serv, LARGE_INTEGER* a_intervalZero);
 
-public:		void DEBUG_fillPhases(void);
+public:		DWORD DEBUG_fillPhases(void);
 };
 
 #endif
