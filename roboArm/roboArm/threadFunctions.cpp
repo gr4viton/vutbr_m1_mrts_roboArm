@@ -14,7 +14,7 @@ DWORD CREATE_threads(C_roboticManipulator ROB, HANDLE **a_hTh, DWORD thread_id)
 	// thread creation
 	int iTh = 0;							// handler iterator
 	const int iTh_max = NUM_OF_THREADS; 
-	HANDLE *hTh = *a_hTh;
+	//HANDLE hTh = *a_hTh;
 
 	//____________________________________________________
 	// priorities - changed in switch case
@@ -38,7 +38,7 @@ DWORD CREATE_threads(C_roboticManipulator ROB, HANDLE **a_hTh, DWORD thread_id)
 				logMsg.LoggingStart();	// Before log thread started, LoggingStart() must be called
 				wanted_priority = TH_LOG_PRIORITY;
 				// create thread
-				hTh[iTh] = RtCreateThread(NULL, 0, 
+				(*a_hTh)[iTh] = RtCreateThread(NULL, 0, 
 					(LPTHREAD_START_ROUTINE) LogMessageThread, 
 					NULL, CREATE_SUSPENDED, &thread_id);
 				break;
@@ -46,7 +46,7 @@ DWORD CREATE_threads(C_roboticManipulator ROB, HANDLE **a_hTh, DWORD thread_id)
 			case(TH_PWM_I): // PWM controllign thread
 				wanted_priority = TH_PWM_PRIORITY;
 				// create thread
-				hTh[iTh] = RtCreateThread(NULL, 0, 
+				(*a_hTh)[iTh] = RtCreateThread(NULL, 0, 
 					(LPTHREAD_START_ROUTINE) PWMthread, 
 					(VOID*)&ROB, CREATE_SUSPENDED, &thread_id);
 				break;
@@ -55,7 +55,7 @@ DWORD CREATE_threads(C_roboticManipulator ROB, HANDLE **a_hTh, DWORD thread_id)
 
 		//____________________________________________________
 		// the other rutines are same for all types of threads 
-		if(hTh[iTh] == NULL){
+		if((*a_hTh)[iTh] == NULL){
 			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "ERROR:\tCannot create thread[%i].\n",iTh);
 			logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
 			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_CREATE_THREAD);

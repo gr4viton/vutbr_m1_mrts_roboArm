@@ -143,8 +143,10 @@ void _cdecl main(int  argc, char **argv)
 
 	int iTh = 0;							// handler iterator
 	DWORD thread_id = 0;					// thread id input param
+	printf("&(hTh[0]) = %i; &(hTh) = %i; p(hTh[0]) = %p; p(hTh) = %i;", hTh[0], hTh, hTh[0], hTh);
 
 	CREATE_threads(ROB, hTh, thread_id);
+	
 
 	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// main thread-controlling super-loop
