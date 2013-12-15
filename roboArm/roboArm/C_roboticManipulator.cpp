@@ -108,7 +108,7 @@ void C_roboticManipulator::FINISH_period()
 	char textMsg[MAX_MESSAGE_LENGTH]; // char array for printing messages
 	//LARGE_INTEGER LI_PWMperiod_sum; LI_PWMperiod_sum.QuadPart = PWMperiod_sum;
 	//LARGE_INTEGER LI_PWMperiod_sum_max; LI_PWMperiod_sum_max.QuadPart = PWMperiod_sum_max;
-	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "period ended - phase[%i/%i] - PWMsum[%I64d/%I64d] - PWMperiod_interval[%I64d] [100ns] = %I64d [1ms]\n", 
+	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "period ended - phase[%i/%i] - PWMsum[%I64d/%I64d] - PWMperiod_measured= %I64d [100ns] = %I64d [1ms]\n", 
 		phase_act->i_phase, phase_act->i_phase_max,
 		PWMperiod_sum, PWMperiod_sum_max,
 		tim_endPWMperiod.QuadPart, tim_endPWMperiod.QuadPart / NS100_1MS
@@ -133,6 +133,9 @@ DWORD C_roboticManipulator::SET_NextPhase()
 	else
 	{
 		PWMperiod_sum = 0;
+#ifdef DEBUG
+		PWMperiod_sum_last = 0;
+#endif
 		if(phase_act != phases.begin())
 		{
 			phase_prev = phase_act;
