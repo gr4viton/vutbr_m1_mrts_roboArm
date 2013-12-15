@@ -61,21 +61,22 @@ DWORD READ_spatialConfigurationFromFile(C_roboticManipulator* a_ROB, char* a_fil
 	{
 		delete[] G_controlString;
 		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "READ_file failed with error_sum %lu\n", error_sum);
-		logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
+		logMsg.PushMessage(textMsg, LOG_SEVERITY_ERROR);
 		return(error_sum);
 	}
-	logMsg.PushMessage("READ_file completed", LOG_SEVERITY_NORMAL);
+	logMsg.PushMessage("READ_file completed", LOG_SEVERITY_READING_FILE);
 	//____________________________________________________
 	// parse control string into individual phases
+	logMsg.PushMessage("Try to parse control-file", LOG_SEVERITY_READING_FILE);
 	error_sum = PARSE_controlString(&(*a_ROB));
 	if(error_sum != FLAWLESS_EXECUTION)
 	{
 		delete[] G_controlString;
 		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "PARSE_controlString failed with error_sum %lu\n", error_sum);
-		logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
+		logMsg.PushMessage(textMsg, LOG_SEVERITY_ERROR);
 		return(error_sum);
 	}
-	logMsg.PushMessage("PARSE_controlString completed", LOG_SEVERITY_NORMAL);
+	logMsg.PushMessage("PARSE_controlString completed", LOG_SEVERITY_READING_FILE);
 	delete[] G_controlString;
 	//return(a_ROB->CONVERT_angle2intervalOne(i);*/
 	return(FLAWLESS_EXECUTION);
@@ -134,6 +135,7 @@ DWORD PARSE_controlString(C_roboticManipulator* a_manip)
 				newPhase = C_spatialConfiguration();
 				break;
 		}
+		i++;
 	}
 	return(FLAWLESS_EXECUTION);
 }
