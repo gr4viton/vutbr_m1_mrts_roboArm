@@ -2,17 +2,86 @@
 
 
 /****************************************************************************
+@function   
+@brief      
+@param[in]  
+@param[out] 
+@return     
+************/
+DWORD CREATE_thread(int iTh, HANDLE& a_threadHandle, DWORD* a_threadID, 
+	int wanted_priority, LPTHREAD_START_ROUTINE a_threadRoutine, void* a_threadParam)
+{
+	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	// thread creation
+	
+	//____________________________________________________
+	// priorities - changed in switch case
+	int thread_priority = RT_PRIORITY_MIN;
+	
+	//____________________________________________________
+	char textMsg[MAX_MESSAGE_LENGTH];	// char array for log messages
+
+	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	// create & priority & unsuspend 
+	//____________________________________________________
+	// thread handle creation 
+	a_threadHandle = RtCreateThread(NULL, 0, 
+		(LPTHREAD_START_ROUTINE) a_threadRoutine, 
+		(VOID*)a_threadParam, CREATE_SUSPENDED, a_threadID);
+	
+	if(a_threadHandle == NULL){
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "ERROR:\tCannot create thread[%i].\n",iTh);
+			logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
+		return(ERROR_COULD_NOT_CREATE_THREAD);
+	}
+
+	RtPrintf("Thread[%i] created and suspended with priority %i.\n", iTh, RtGetThreadPriority(a_threadHandle) );
+
+	// ____________________________________________________
+	// set thread priority to wanted_priority
+	bool ret_val = RtSetThreadPriority(a_threadHandle, wanted_priority);
+	thread_priority = RtGetThreadPriority(a_threadHandle);
+
+	if( !ret_val || (thread_priority != wanted_priority) )
+	{	
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, 
+			"ERROR:\tCannot set thread[%i] priority to %i! It currently has priority %i.\n", 
+			iTh, wanted_priority , thread_priority);
+			logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
+		return(ERROR_COULD_NOT_CHANGE_PRIORITY);
+	}
+
+	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Priority of thread[%i] sucessfully set to %i\n", iTh, wanted_priority );
+		logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
+
+	//____________________________________________________
+	// RtResumeThread - un-suspend 
+	if( RtResumeThread(a_threadHandle) == 0xFFFFFFFF ){
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Could not resume thread[%i].\n", iTh);
+		logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
+		return(ERROR_COULD_NOT_RESUME_THREAD);
+	}
+
+	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Succesfully resumed thread[%i].\n", iTh);
+		logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
+
+	return(FLAWLESS_EXECUTION);
+}
+
+
+/****************************************************************************
 @function	CREATE_threads
 @brief		Create all needed threads and returns a handle to an array of them
 @param[in]	ROB robot definitions, 
 @param[out] hTh thread handlers array, thExitCode exit code array, thread_id ids
 @return
 ***************/
-DWORD CREATE_threads(C_roboticManipulator* a_ROB, HANDLE *a_hTh, DWORD* a_thread_id)
+DWORD CREATE_threads(C_roboticManipulator* a_ROB, HANDLE *a_hTh, DWORD* a_threadID)
 {
+	/*
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// thread creation
-	int iTh = 0;							// handler iterator
+	int iTh = 0;							// thread handler index
 	const int iTh_max = NUM_OF_THREADS; 
 	//HANDLE hTh = *a_hTh;
 	
@@ -42,7 +111,7 @@ DWORD CREATE_threads(C_roboticManipulator* a_ROB, HANDLE *a_hTh, DWORD* a_thread
 				// create thread
 				a_hTh[iTh] = RtCreateThread(NULL, 0, 
 					(LPTHREAD_START_ROUTINE) LogMessageThread, 
-					NULL, CREATE_SUSPENDED, &(a_thread_id[0]));
+					NULL, CREATE_SUSPENDED, &(a_threadID[0]));
 				break;
 			//____________________________________________________
 			case(TH_PWM_I): // PWM controllign thread
@@ -50,7 +119,7 @@ DWORD CREATE_threads(C_roboticManipulator* a_ROB, HANDLE *a_hTh, DWORD* a_thread
 				// create thread
 				a_hTh[iTh] = RtCreateThread(NULL, 0, 
 					(LPTHREAD_START_ROUTINE) PWMthread, 
-					(VOID*)a_ROB, CREATE_SUSPENDED, &(a_thread_id[1]));
+					(VOID*)a_ROB, CREATE_SUSPENDED, &(a_threadID[1]));
 				break;
 
 		}
@@ -101,6 +170,7 @@ DWORD CREATE_threads(C_roboticManipulator* a_ROB, HANDLE *a_hTh, DWORD* a_thread
 			TERMINATE_allThreadsAndExitProcess(a_hTh, iTh_max, ERROR_COULD_NOT_RESUME_THREAD);
 		}
 	}
+	*/
 	return(FLAWLESS_EXECUTION);
 }
 

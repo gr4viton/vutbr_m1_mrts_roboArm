@@ -140,13 +140,22 @@ void _cdecl main(int  argc, char **argv)
 
 	HANDLE hTh[NUM_OF_THREADS];			// array of handles to the threads
 
-	int iTh = 0;							// handler iterator
+	int iTh = 0;							// thread handler index
 	const int iTh_max = NUM_OF_THREADS; 
-	DWORD thread_id[NUM_OF_THREADS];		// thread id input param
+	DWORD thID[NUM_OF_THREADS];		// thread id input param
 	//hTh[0] = (HANDLE)123456789;
 	//printf("&(hTh[0]) = %i; &(hTh) = %i; hTh[0] = %i; hTh = %i;\n",  &(hTh[0]), &(hTh), hTh[0], hTh);
 
-	CREATE_threads(&ROB, hTh, thread_id);
+	logMsg.LoggingStart(); // Before log thread started, LoggingStart() must be called
+	error_sum = CREATE_thread(iTh, &(hTh[iTh]), &(thID[iTh]), TH_LOG_PRIORITY, &LogMessageThread, &ROB);
+	//printf thread ?? thread id?
+	if(error_sum != FLAWLESS_EXECUTION) EXIT_process(error_sum);
+		logMsg.PushMessage("Logging started.\n", LOG_SEVERITY_VALUE_HIGHEST);
+	
+	iTh++;
+	error_sum = CREATE_thread(iTh, &(hTh[iTh]), &(thID[iTh]), TH_PWM_PRIORITY, &PWMthread ,&ROB);
+	if(error_sum != FLAWLESS_EXECUTION) EXIT_process(error_sum);
+	//CREATE_threads(&ROB, hTh, thID);
 	
 
 	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
