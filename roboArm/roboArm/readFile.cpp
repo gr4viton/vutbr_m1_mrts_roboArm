@@ -37,6 +37,7 @@ DWORD GET_stringLength(char *a_string, DWORD a_max_lenght, DWORD* a_error_sum)
 	return(inStrLen);
 }
 
+#ifdef RUNNING_ON_RTX64
 /****************************************************************************
 @function   READ_patialConfigurationFromFile
 @brief      	parsing out the parameters for individual phases from the string [str]
@@ -48,10 +49,6 @@ DWORD GET_stringLength(char *a_string, DWORD a_max_lenght, DWORD* a_error_sum)
 ************/
 DWORD READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_filePath)
 {
-#ifndef RUNNING_ON_RTX64 // if NOT defined
-	// program never goes to this section as the calling of this function is 
-	if(a_manip && a_filePath) return(FLAWLESS_EXECUTION);
-#else
 	// char array for printing messages
 	char textMsg[MAX_MESSAGE_LENGTH];
 	DWORD error_sum = 0;
@@ -78,7 +75,6 @@ DWORD READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_f
 	
 	delete[] G_controlString;
 	//return(a_ROB->CONVERT_angle2intervalOne(i);*/
-#endif // RUNNING_ON_RTX64
 	return(FLAWLESS_EXECUTION);
 }
 
@@ -97,8 +93,6 @@ DWORD READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_f
 // only MAX_WAIT_TIME_CMD_NUM_OF_DIGITS shoudl be readed
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!!!<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 DWORD PARSE_controlString(C_roboticManipulator* a_manip){
-	if(a_manip->IS_in_bounds(1)) return(100000);
-#ifdef RUNNING_ON_RTX64
 	// char array for printing messages
 	char textMsg[MAX_MESSAGE_LENGTH];
 
@@ -236,10 +230,10 @@ DWORD PARSE_controlString(C_roboticManipulator* a_manip){
 
 	ROB->RESET_DOport();
 	ROB = NULL;
-#endif RUNNING_ON_RTX64
 	return(FLAWLESS_EXECUTION);
 }
 
+#endif // RUNNING_ON_RTX64
 
 /****************************************************************************
 @function   
