@@ -400,6 +400,7 @@ C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 
 	// init phases - set the default one on the beginning
 	PUSHFRONT_InitialPhases();
+	phase_act = phases.begin();
 	
 	// init addresses 
 	DOport_ByteAddress = (PUCHAR)(baseAddress + DO_High_Byte);

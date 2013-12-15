@@ -62,10 +62,12 @@ void RTFCNDCL PWMthread(void *a_ROB)
 	bool allPhasesEnded = false;
 
 	ROB->RESET_DOport();
-
-	ROB->PWMperiod_sum_max = 0;
-	ROB->PWMperiod_sum = 0; 
 	
+	ROB->PWMperiod_sum = 0; 
+	ROB->PWMperiod_sum_max = 0;
+	
+	ROB->phase_act = ROB->phases.begin();
+	ROB->PWMperiod_interval.QuadPart = DEFAULT_PWM_PERIOD;
 	//____________________________________________________
 	// time measurement
 	RtGetClockTime(CLOCK_MEASUREMENT, &(ROB->tim_startPWMperiod));
