@@ -30,9 +30,18 @@ private:
 	DWORD angle_min;
 	DWORD angle_max; 
 public:
-	LARGE_INTEGER PWMperiod_interval;
-	LONGLONG PWMperiod_sum;			// counter of periods for act phase
-	LONGLONG PWMperiod_sum_max;		// how many PWM periods are in act phase interval
+	LARGE_INTEGER PWMtic_interval;		// how long does one PWMtic take
+	LARGE_INTEGER PWMperiod_interval;	// how long does one period of PWM take - how often to rewrite DO port
+
+	LONGLONG PWMperiod_sum;				// counter of periods for act phase
+	LONGLONG PWMperiod_sum_max;			// how many PWM periods are in act phase interval
+#ifdef DEBUG
+	LONGLONG PWMperiod_sum_last;		// only for DEBUG breakpointing after every new period
+#endif
+
+	LONGLONG PWMtic_sum;		// iterating variable
+	LONGLONG phaseTic_sum;	// counting phase time
+	
 	std::list<C_spatialConfiguration> phases;
 
 	std::list<C_spatialConfiguration>::iterator phase_act; 
@@ -49,16 +58,21 @@ public:		DWORD PUSHFRONT_InitialPhases(void);
 public:		DWORD GET_servoMotor(int a_servo_i, C_servoMotor** servoMotor);
 //public:		DWORD GET_servoMotor(int a_servo_i, C_servoMotor* servoMotor);
 			
-// DO port writing
-public:		void WRITE_portUchar(PUCHAR a_port_address, UCHAR a_port_data);
-public:		void WRITE_DOport_thisPeriodNewValue();
-public:		void SET_DOportBitUchar(UCHAR a_port_bit);
 
-public:		void RESET_DOport();
 
 // phasing
-public:		void LOAD_actualPhase(void);
+public:		DWORD LOAD_actualPhase(void);
 public:		DWORD SET_NextPhase();
+			
+public:		void FINISH_period();
+			
+public:		void CALC_DOport_thisPeriodNewValue();
+public:		void SET_DOport_thisPeriodNewValue(UCHAR a_port_bit);
+// DO port writing
+public:		void RESET_DOport();
+public:		void WRITE_DOport_thisPeriodNewValue();
+public:		void WRITE_portUchar(PUCHAR a_port_address, UCHAR a_port_data);
+
 
 public:		int CONVERT_angle2intervalOne(int a_angle, int a_i_serv, LARGE_INTEGER* a_intervalZero);
 

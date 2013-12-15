@@ -81,9 +81,9 @@ void RTFCNDCL PWMthread(void *a_ROB)
 	// here there will be some mutexed variable for control of this thread termination ??
 	bool generateTics = true;
 	bool allPhasesEnded = false;
-//	DWORD error_sum = 0;
+	DWORD error_sum = 0;
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	// main thread loop
+	// main PWMthread loop
 	ROB->RESET_DOport();
 
 	ROB->PWMperiod_sum_max = 0;
@@ -98,102 +98,16 @@ void RTFCNDCL PWMthread(void *a_ROB)
 	{
 		//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		// LOAD this phase
-		if(ROB->phase_act != ROB->phases.end())
-		{ //	 if iterator is not past-the-end element in the list container
-			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Load phase[%i/%i] values\n", ROB->phase_act->i_phase, ROB->phase_act->i_phase_max);
-			logMsg.PushMessage(textMsg, LOG_SEVERITY_PWM_PHASE);
-			// load
-			ROB->LOAD_actualPhase();
-		}
-		
-		if(ROB->phase_act != ROB->phases.begin())
-		{
-			ROB->phase_prev = ROB->phase_act;
-			ROB->phase_prev--;
-		}
-
-		ROB->PWMperiod_sum_max = ROB->phase_act->phaseInterval.QuadPart / ROB->PWMperiod_interval.QuadPart ;
+		error_sum = ROB->LOAD_actualPhase();
+		if(error_sum != FLAWLESS_EXECUTION) EXIT_thread(error_sum,ROB);
 
 		//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		// tics loop 
 		while(generateTics)	
 		{
 			//____________________________________________________
-			// ask each servo if this PWMtic the interval zero has passed = time [to write 1]
-			for(i_serv=0; i_serv<SUM_SERVOMOTORS; i_serv++)
-			{ // iterate through all servos
-
-				// get the pointer of ROB->serv[i_serv] into serv
-				ROB->GET_servoMotor(i_serv, &serv);
-
-				if(PWMtic_sum.QuadPart >= serv->intervalZero.QuadPart)
-				{ // time for writing 1 has come
-					
-					// serv, ROB, 
-					if(ROB->phase_act->serv_fixedPositioning)
-					{ // not ramp - square position change
-						// write one to this servo bit
-						ROB->SET_DOportBitUchar(serv->servoMotorDigit);
-					}
-					else
-					{ // ramp - linear position change
-						LARGE_INTEGER intervalOneDif;
-						// Get last and actual interval one (angle) differention
-						if(serv->ADC_feedBack == false)
-						{ // we do not have a feedback
-							if(ROB->phase_act != ROB->phases.begin())
-							{ // this is not a first phase - we have previous phase
-								if( ROB->phase_act->serv_intervalOne[i_serv].QuadPart 
-									<= ROB->phase_prev->serv_intervalOne[i_serv].QuadPart)
-								{ // intOne counting up
-								// seky
-									//functional
-									intervalOneDif.QuadPart = 
-										ROB->phase_act->serv_intervalOne[i_serv].QuadPart 
-										- ROB->phase_prev->serv_intervalOne[i_serv].QuadPart;
-								}
-								else
-								{ // intOne counting down
-									intervalOneDif.QuadPart = 
-										ROB->phase_prev->serv_intervalOne[i_serv].QuadPart 
-										- ROB->phase_act->serv_intervalOne[i_serv].QuadPart;
-								}
-							} // end - this is not a first phase - we have previous phase
-						} // end - we do not have a feedback
-						else
-						{ // we have a feedback
-
-						} // end - we have a feedback
-
-						LARGE_INTEGER actIntervalOne;
-						// evaluate new value of angle
-						if( ROB->phase_act->serv_intervalOne[i_serv].QuadPart 
-							<= ROB->phase_prev->serv_intervalOne[i_serv].QuadPart)
-						{ // intOne counting up
-								//functional
-							actIntervalOne.QuadPart = ROB->phase_prev->serv_intervalOne[i_serv].QuadPart 
-								+ LONGLONG((   ((double)ROB->PWMperiod_sum) * ((double)intervalOneDif.QuadPart)  ) / ( (double)ROB->PWMperiod_sum_max) );
-						}
-						else
-						{ // intOne counting down
-							// seky
-							actIntervalOne.QuadPart = ROB->phase_prev->serv_intervalOne[i_serv].QuadPart 
-								- LONGLONG((   ((double)ROB->PWMperiod_sum) * ((double)intervalOneDif.QuadPart)  ) / ( (double)ROB->PWMperiod_sum_max) );
-						}
-				
-						//____________________________________________________
-						// the time for writing 1 has really come - with linear positioning
-						if(PWMtic_sum.QuadPart >= (ROB->PWMperiod_interval.QuadPart - actIntervalOne.QuadPart))
-						{
-							// write one to this servo bit
-							ROB->SET_DOportBitUchar(serv->servoMotorDigit);
-						}
-#ifdef DEBUG // debuging breakpoint 
-						if( ROB->PWMperiod_sum != PWMperiod_sum_last){PWMperiod_sum_last = ROB->PWMperiod_sum;}
-#endif
-					} // ramp - linear position change
-				} // end - time for writing 1 has come
-			} // end - iterate through all servos
+			// calculate newDO port...
+			ROB->CALC_DOport_thisPeriodNewValue();
 			//____________________________________________________
 			// write new DO port value from this period
 			ROB->WRITE_DOport_thisPeriodNewValue();
@@ -254,9 +168,23 @@ void RTFCNDCL PWMthread(void *a_ROB)
 		} 
 	} // end - allPhasesEnded - phase loop END
 
-	ROB = NULL;	
+	ExitThread(EXIT_threadPWM(FLAWLESS_EXECUTION, &ROB));
+}
+
+/****************************************************************************
+@function   EXIT_threadPWM
+@brief      unitializises threadPWM variables
+@param[in]  
+@param[out] 
+@return     error_sum
+************/
+DWORD EXIT_threadPWM(DWORD error_sum, C_roboticManipulator** a_ROB)
+{
+	
 	logMsg.PushMessage("Exitting thread PWM\n", LOG_SEVERITY_EXITING_THREAD);
-	ExitThread(FLAWLESS_EXECUTION);
+	(*a_ROB) = NULL;	
+	logMsg.PushMessage("Exitting thread PWM\n", LOG_SEVERITY_EXITING_THREAD);
+	return(error_sum);
 }
 
 //

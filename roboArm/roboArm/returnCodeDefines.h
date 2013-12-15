@@ -30,7 +30,9 @@
 #define ERR_INIT_CANNOT_LOAD_LIBRARY				96005
 #define ERR_CONSTRUCOR_ERROR_OFFSET				96006
 #define ERROR_CANNOT_SET_NEXTPHASE				96007
-#define EXITCODE_TERMINATED_BY_MAIN				96008
+#define ERROR_CANNOT_LOAD_THIS_PHASE				96008
+
+#define EXITCODE_TERMINATED_BY_MAIN				96999
 
 //____________________________________________________
 // ExitProcess return value constants - ERRORS & etc

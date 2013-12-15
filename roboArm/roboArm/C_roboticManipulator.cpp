@@ -90,6 +90,105 @@ void C_roboticManipulator::DEBUG_fillPhases(void){
 	*/
 	
 }
+
+/****************************************************************************
+@function   CALC_DOport_thisPeriodNewValue
+@class		C_roboticManipulator
+@brief      calculate new value of DO port for this period
+@param[in]  
+@param[out] 
+@return     
+************/
+void C_roboticManipulator::CALC_DOport_thisPeriodNewValue()
+{
+	// ask each servo if this PWMtic the interval zero has passed = time [to write 1]
+	for(int i_serv=0; i_serv<SUM_SERVOMOTORS; i_serv++)
+	{ // iterate through all servos
+		if(PWMtic_sum >= serv[i_serv].intervalZero.QuadPart)
+		{ // time for writing 1 has come
+					
+			// serv[i_serv], ROB, 
+			if(phase_act->serv_fixedPositioning)
+			{ // not ramp - square position change
+				// write one to this servo bit
+				SET_DOport_thisPeriodNewValue(serv[i_serv].servoMotorDigit);
+			}
+			else
+			{ // ramp - linear position change
+				LARGE_INTEGER intervalOneDif;
+				// Get last and actual interval one (angle) differention
+				if(serv[i_serv].ADC_feedBack == false)
+				{ // we do not have a feedback
+					if(phase_act != phases.begin())
+					{ // this is not a first phase - we have previous phase
+						if( phase_act->serv_intervalOne[i_serv].QuadPart 
+							<= phase_prev->serv_intervalOne[i_serv].QuadPart)
+						{ // intOne counting up
+						// seky
+							//functional
+							intervalOneDif.QuadPart = 
+								phase_act->serv_intervalOne[i_serv].QuadPart 
+								- phase_prev->serv_intervalOne[i_serv].QuadPart;
+						}
+						else
+						{ // intOne counting down
+							intervalOneDif.QuadPart = 
+								phase_prev->serv_intervalOne[i_serv].QuadPart 
+								- phase_act->serv_intervalOne[i_serv].QuadPart;
+						}
+					} // end - this is not a first phase - we have previous phase
+				} // end - we do not have a feedback
+				else
+				{ // we have a feedback
+
+				} // end - we have a feedback
+
+				LARGE_INTEGER actIntervalOne;
+				// evaluate new value of angle
+				if( phase_act->serv_intervalOne[i_serv].QuadPart 
+					<= phase_prev->serv_intervalOne[i_serv].QuadPart)
+				{ // intOne counting up
+						//functional
+					actIntervalOne.QuadPart = phase_prev->serv_intervalOne[i_serv].QuadPart 
+						+ LONGLONG((   ((double)PWMperiod_sum) * ((double)intervalOneDif.QuadPart)  ) / ( (double)PWMperiod_sum_max) );
+				}
+				else
+				{ // intOne counting down
+					// seky
+					actIntervalOne.QuadPart = phase_prev->serv_intervalOne[i_serv].QuadPart 
+						- LONGLONG((   ((double)PWMperiod_sum) * ((double)intervalOneDif.QuadPart)  ) / ( (double)PWMperiod_sum_max) );
+				}
+				
+				//____________________________________________________
+				// the time for writing 1 has really come - with linear positioning
+				if(PWMtic_sum >= (PWMperiod_interval.QuadPart - actIntervalOne.QuadPart))
+				{
+					// write one to this servo bit
+					SET_DOport_thisPeriodNewValue(serv[i_serv].servoMotorDigit);
+				}
+#ifdef DEBUG // debuging breakpoint 
+				if( PWMperiod_sum != PWMperiod_sum_last){PWMperiod_sum_last = PWMperiod_sum;}
+#endif
+			} // ramp - linear position change
+		} // end - time for writing 1 has come
+	} // end - iterate through all servos
+
+}
+/****************************************************************************
+@function   FINISH_period
+@class		C_roboticManipulator
+@brief      is called on end of each period in PWM thread
+@param[in]  
+@param[out] 
+@return     
+************/
+void C_roboticManipulator::FINISH_period()
+{
+	PWMperiod_sum++;				
+	RESET_DOport();
+	PWMtic_sum = 0;
+}
+
 /****************************************************************************
 @function   SET_NextPhase
 @class		C_roboticManipulator
@@ -109,8 +208,11 @@ DWORD C_roboticManipulator::SET_NextPhase()
 	else
 	{
 		PWMperiod_sum = 0;
-		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Continuing with next phase[%i/%i].\n", phase_act->i_phase, phase_act->i_phase_max);
-		logMsg.PushMessage(textMsg, LOG_SEVERITY_PWM_PHASE);
+		if(phase_act != phases.begin())
+		{
+			phase_prev = phase_act;
+			phase_prev--;
+		}
 	}
 	return(FLAWLESS_EXECUTION);
 }
@@ -122,24 +224,33 @@ DWORD C_roboticManipulator::SET_NextPhase()
 @brief      copies the needed data from phase_act into individual C_servoMotor instances 
 @param[in]  
 @param[out] 
-@return     
+@return     error_sum
 ************/
-void C_roboticManipulator::LOAD_actualPhase(void)
+DWORD C_roboticManipulator::LOAD_actualPhase(void)
 {	
+	if(phase_act == phases.end())
+	{ 
+		return(ERROR_CANNOT_LOAD_THIS_PHASE);
+	}
+	// the iterator is not past-the-end element in the list container
 	char textMsg[MAX_MESSAGE_LENGTH]; // char array for printing messages
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Load phase[%i/%i] values\n", ROB->phase_act->i_phase, ROB->phase_act->i_phase_max);
+		logMsg.PushMessage(textMsg, LOG_SEVERITY_PWM_PHASE);
 	
 	LARGE_INTEGER intervalZero;		// tics for holding one on defined pin
 	intervalZero.QuadPart = 0;
 	for(int i_serv=0 ; i_serv < SUM_SERVOMOTORS ; i_serv++)
 	{
 		// count the [zero interval] from [pwm period - one interval]
-		intervalZero.QuadPart = PWMperiod_interval.QuadPart - phase_act->serv_intervalOne[i_serv].QuadPart;
-		// DEBUG
 		//intervalZero.QuadPart = PWMperiod_interval->QuadPart - 1750 * NS100_1US;
+		intervalZero.QuadPart = PWMperiod_interval.QuadPart - phase_act->serv_intervalOne[i_serv].QuadPart;
 		// write it to actual
 		serv[i_serv].SET_intervalZero( intervalZero );
 		serv[i_serv].fixedPositioning = phase_act->serv_fixedPositioning[i_serv];
 	}
+	//____________________________________________________
+	// get sum of periods in this phase
+	ROB->PWMperiod_sum_max = ROB->phase_act->phaseInterval.QuadPart / ROB->PWMperiod_interval.QuadPart ;
 
 	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Actual phase[%i/%i] interval = %I64d[ms]\n", 
 		phase_act->i_phase, phase_act->i_phase_max, 
@@ -207,6 +318,7 @@ DWORD C_roboticManipulator::PUSHFRONT_InitialPhases(void)
 	// set initial position
 	return(FLAWLESS_EXECUTION);
  }
+
 /****************************************************************************
 @function   C_roboticManipulator
 @class		C_roboticManipulator
@@ -218,8 +330,17 @@ DWORD C_roboticManipulator::PUSHFRONT_InitialPhases(void)
 C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 {
 	// zeros
+	phaseTic_sum = 0;
+	PWMtic_sum = 0;
 	PWMperiod_sum = 0;
 	PWMperiod_sum_max = 0;
+#ifdef DEBUG
+	PWMperiod_sum_last = 0;		// only for DEBUG breakpointing after every new period
+#endif
+
+	// tic time interval - should be the smallest possible - HAL timer length
+	PWMtic_interval.QuadPart = 0;
+	RtGetClockTimerPeriod(CLOCK_X, &PWMtic_interval);	// time to wait between individual PWMtics
 
 	// init phases - set the default one on the beginning
 	PUSHFRONT_InitialPhases();
@@ -369,7 +490,7 @@ void C_roboticManipulator::RESET_DOport()
 @param[out]	
 @return		
 ***************/
-void C_roboticManipulator::SET_DOportBitUchar(UCHAR a_port_bit)
+void C_roboticManipulator::SET_DOport_thisPeriodNewValue(UCHAR a_port_bit)
 {	
 	if(DOport_thisPeriodNewValue & 1<<a_port_bit)
 	{ // the port bit is already SET - no change
