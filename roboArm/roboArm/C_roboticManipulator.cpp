@@ -11,12 +11,12 @@
 //#include "C_roboticManipulator.h"
 
 /****************************************************************************
-@function   DEBUG_fillPhases
+@function   INSERT_testPhases
 @class		C_roboticManipulator
-@brief      add some debug phases for testing the servos 
+@brief      add some phases for testing the servos 
 @return     DWORD error_sum
 ************/
-DWORD C_roboticManipulator::DEBUG_fillPhases(void)
+DWORD C_roboticManipulator::INSERT_testPhases(void)
 {
 	// add some phases
 	LONGLONG addVal = 0;

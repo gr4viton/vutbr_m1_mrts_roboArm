@@ -86,16 +86,30 @@ int LogMessage(int iSeverity, char *cMessage, int bBlocking)
 //void _cdecl main(int  argc, char **argv, char **envp)
 void _cdecl main(int  argc, char **argv)
 {
-	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	// program parameters aquisition
-	char textMsg[MAX_MESSAGE_LENGTH];	// char array for log messages
+	DWORD error_sum = 0;
 	logMsg.PushMessage(">>>>>>>>>>>>>>>>>>>>>>>>>>>>> roboArm started <<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n", LOG_SEVERITY_MAIN_FUNCTION);
 	logMsg.PushMessage("function main()\n", LOG_SEVERITY_MAIN_FUNCTION);
-#ifdef RUNNING_ON_1CPU
-	logMsg.PushMessage("SET preemptive_interval\n", LOG_SEVERITY_MAIN_FUNCTION);
-	preemptive_interval.QuadPart = DEFAULT_PREEMPTIVE_INTERVAL;	
-#endif
-	DWORD error_sum = 0;
+
+	//____________________________________________________
+	char textMsg[MAX_MESSAGE_LENGTH];	// char array for log messages
+	
+	HANDLE hTh[NUM_OF_THREADS];			// array of handles to the threads
+	int iTh = 0;							// thread handler index
+	DWORD thID[NUM_OF_THREADS];			// thread id input param
+	const int iTh_max = NUM_OF_THREADS; 
+
+	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	// CREATE logging thread
+	logMsg.LoggingStart(); // Before log thread started, LoggingStart() must be called
+	error_sum = CREATE_thread(iTh, hTh[iTh], &(thID[iTh]), TH_LOG_PRIORITY, 
+		(LPTHREAD_START_ROUTINE)LogMessageThread, NULL);
+	
+	if(error_sum != FLAWLESS_EXECUTION) EXIT_process(error_sum);
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Logging started! writing into [%s], SEVERITY_LEVEL = %i\n", LOG_FILE_PATH, SEVERITY_LEVEL);
+			logMsg.PushMessage(textMsg, LOG_SEVERITY_LOGGING_STARTED);	
+
+	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	// program parameters aquisition
 	if ( argc != 2 )	 
 	{// argc should be 2 for correct execution
 		logMsg.PushMessage("You must specify the control txt file! Run:\n", LOG_SEVERITY_MAIN_FUNCTION);
@@ -103,7 +117,7 @@ void _cdecl main(int  argc, char **argv)
 			logMsg.PushMessage(textMsg, LOG_SEVERITY_MAIN_FUNCTION);
 		EXIT_process(ERROR_CONTROLFILE_PATH_NOT_SPECIFIED);
 	}
-	// Assume argv[1] is a filename to open - try lenght of string file_path 
+	// Assume argv[1] is a control-filename to open - try lenght of string file_path 
 	if( GET_stringLength(argv[1], MAX_PATH, &error_sum) == 0)
 	{
 		if( error_sum == ERROR_STRING_LENGHT_LARGER_THAN_TRESHOLD )
@@ -111,7 +125,7 @@ void _cdecl main(int  argc, char **argv)
 			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, 
 				"ERROR - control file path is too long (max=%u) = program parameter [%s]\n", 
 				MAX_PATH, argv[1]
-			);
+				);
 				logMsg.PushMessage(textMsg, LOG_SEVERITY_MAIN_FUNCTION);
 			EXIT_process(ERROR_FILE_PATH_STRING_TOO_LONG);
 		}
@@ -124,6 +138,7 @@ void _cdecl main(int  argc, char **argv)
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// INITIALIZATIONS
 	logMsg.PushMessage("Starting initialization process.\n", LOG_SEVERITY_MAIN_FUNCTION);
+
 	// ____________________________________________________
 	// init HW
 	logMsg.PushMessage("> Try to initialize hardware\n", LOG_SEVERITY_MAIN_FUNCTION);
@@ -134,6 +149,7 @@ void _cdecl main(int  argc, char **argv)
 			logMsg.PushMessage(textMsg, LOG_SEVERITY_MAIN_FUNCTION);
 		EXIT_process(error_sum);
 	}	
+
 	//____________________________________________________
 	// init classes for the manipulator
 	logMsg.PushMessage("> Try to initialize robotic manipulator\n", LOG_SEVERITY_MAIN_FUNCTION);
@@ -147,47 +163,32 @@ void _cdecl main(int  argc, char **argv)
 	}
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	// read phases from file
+	// read phases from file or Insert test phases
 #ifdef READ_SPATIAL_CONFIGURATION
 	READ_spatialConfigurationFromFile(&ROB, argv[1]);
 #endif
 	logMsg.PushMessage("> Insert testing phases\n", LOG_SEVERITY_MAIN_FUNCTION);
-	ROB.DEBUG_fillPhases();
+	ROB.INSERT_testPhases();
 
 	
+
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	// thread creation
-	
-	HANDLE hTh[NUM_OF_THREADS];			// array of handles to the threads
-
-	int iTh = 0;							// thread handler index
-	const int iTh_max = NUM_OF_THREADS; 
-	DWORD thID[NUM_OF_THREADS];			// thread id input param
-
-	//____________________________________________________
-	// CREATE logging thread
-	logMsg.LoggingStart(); // Before log thread started, LoggingStart() must be called
-	error_sum = CREATE_thread(iTh, hTh[iTh], &(thID[iTh]), TH_LOG_PRIORITY, 
-		(LPTHREAD_START_ROUTINE)LogMessageThread, NULL);
-	
-	if(error_sum != FLAWLESS_EXECUTION) EXIT_process(error_sum);
-		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Logging started! writing into [%s], SEVERITY_LEVEL = %i\n", LOG_FILE_PATH, SEVERITY_LEVEL);
-			logMsg.PushMessage(textMsg, LOG_SEVERITY_LOGGING_STARTED);	
-	
-	//____________________________________________________
 	// CREATE PWM thread
 	iTh++;
 	error_sum = CREATE_thread(iTh, hTh[iTh], &(thID[iTh]), TH_PWM_PRIORITY, 
 		(LPTHREAD_START_ROUTINE)PWMthread, &ROB);
 	if(error_sum != FLAWLESS_EXECUTION) EXIT_process(error_sum);
-	//CREATE_threads(&ROB, hTh, thID);
-	
 
 	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// main thread-controlling super-loop
 
 	int still_active_threads;
-	DWORD thExitCode[NUM_OF_THREADS];		// exit code from thread
+	DWORD thExitCode[NUM_OF_THREADS];	// exit code from thread
+	
+#ifdef RUNNING_ON_1CPU
+	logMsg.PushMessage("SET preemptive_interval\n", LOG_SEVERITY_MAIN_FUNCTION);
+	preemptive_interval.QuadPart = DEFAULT_PREEMPTIVE_INTERVAL;	
+#endif
 
 	//____________________________________________________
 	// waiting for the termination of all threads but the Logging one [TH_LOG_I = 0]
