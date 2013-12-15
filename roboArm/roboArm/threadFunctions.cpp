@@ -205,24 +205,6 @@ DWORD EXIT_threadPWM(DWORD error_sum, C_roboticManipulator** a_ROB)
 	return(error_sum);
 }
 
-//
-//// convert a_serv
-//UCHAR GET_channel(C_servoMotor* a_serv){
-//
-//}
-/*
-LONGLONG CONVERT_ADCRead(C_servoMotor* a_serv){
-	LARGE_INTEGER intervalOne;
-	intervalOne.QuadPart = 0;
-	int value = GET_ADC(GET_channel(i_serv),DEFAULT_ADC_GAIN);
-	//serv[i_serv]
-	// min = 500
-	intervalOne = 500 + ((DWORD)-min_ADC + intervalOne.QuadPart)
-		
-	return((LONGLONG)intervalOne);
-}
-*/
-
 /****************************************************************************
 @function	CLOSE_handleAndExitThread
 @brief		

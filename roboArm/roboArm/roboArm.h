@@ -164,7 +164,7 @@ void		RTFCNDCL PWMthread(void *a_manip);
 
 
 
-//____________________________________________________
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // tables of indexation
 /*
 Control pin of servo S[1-6] is on address bit DO_High_Byte 1 << x
@@ -186,4 +186,15 @@ channel |	servo		|	ADC_feedBack[b]	|	AI[b]
 	0	|	3(maly)		|	3			|	0
 	1	|	1(velky)		|	1			|	1
 	2	|	2(stred)		|	2			|	2
+*/
+//____________________________________________________
+// set gain and mux
+/*
+	 x|x|MUX3|MUX2|MUX1|MUX0|GAIN1|GAIN0
+	 MUX[3-0] = binary number selecting from 0to15 shifted left 2 
+		0b0000 0000<<2 = 0x00<<2 = 0x00 = 0<<2 = AI0
+		0b0000 0001<<2 = 0x01<<2 = 0x04 = 1<<2 = AI1
+		0b0000 0010<<2 = 0x02<<2 = 0x08 = 2<<2 = AI2
+		0b0000 0100<<2 = 0x03<<2 = 0x0C = 3<<2 = AI3
+	 etc
 */

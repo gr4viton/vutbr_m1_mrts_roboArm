@@ -57,7 +57,7 @@ public:
 public:		DWORD IS_in_bounds(int servo_i);	
 public:		C_roboticManipulator(DWORD &error_sum);
 //public:		int SET_dutyCycleIntervals(int servo_i, LARGE_INTEGER a_interval_one, LARGE_INTEGER a_intervalZero);
-public:		DWORD PUSHFRONT_InitialPhases(void);
+public:		DWORD PUSH_InitialPhases(void);
 //public:		std::list<C_spatialConfiguration> GET_InitialPhases(void);
 
 public:		DWORD GET_servoMotor(int a_servo_i, C_servoMotor** servoMotor);

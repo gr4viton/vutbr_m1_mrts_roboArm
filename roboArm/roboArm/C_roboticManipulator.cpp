@@ -318,12 +318,12 @@ int C_roboticManipulator::CONVERT_angle2intervalOne(int a_angle, int a_i_serv, L
 
 
 /****************************************************************************
-@function   PUSHFRONT_InitialPhases
+@function   PUSH_InitialPhases
 @class		C_roboticManipulator
 @brief      appends initial phases to the begining of list
 @return     DWORD error_sum
 ************/
-DWORD C_roboticManipulator::PUSHFRONT_InitialPhases(void)
+DWORD C_roboticManipulator::PUSH_InitialPhases(void)
 {
 	C_spatialConfiguration new_phase;
 
@@ -446,7 +446,7 @@ C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 	RtGetClockTimerPeriod(CLOCK_TIC_INTERVAL, &PWMtic_interval);	// time to wait between individual PWMtics
 
 	// init phases - set the default one on the beginning
-	error_sum = PUSHFRONT_InitialPhases();
+	error_sum = PUSH_InitialPhases();
 	if(error_sum != FLAWLESS_EXECUTION) return;
 	phase_act = phases.begin();
 	

@@ -98,7 +98,7 @@ void _cdecl main(int  argc, char **argv)
 		}
 	}
 	// the filename lenght is short enaugh
-	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Control-file: %s\n", argv[1]);
+	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Control-file [%s]\n", argv[1]);
 		logMsg.PushMessage(textMsg, LOG_SEVERITY_MAIN_FUNCTION);
 
 
@@ -149,17 +149,16 @@ void _cdecl main(int  argc, char **argv)
 	if(error_sum != FLAWLESS_EXECUTION) EXIT_process(error_sum);
 
 	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	// main thread-controlling super-loop
 
 	int still_active_threads;
-	DWORD thExitCode[NUM_OF_THREADS];	// exit code from thread
+	DWORD thExitCode[NUM_OF_THREADS];	// exit codes from threads
 	
 #ifdef RUNNING_ON_1CPU
 	logMsg.PushMessage("SET preemptive_interval\n", LOG_SEVERITY_MAIN_FUNCTION);
 	preemptive_interval.QuadPart = DEFAULT_PREEMPTIVE_INTERVAL;	
 #endif
 
-	//____________________________________________________
+	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// waiting for the termination of all threads but the Logging one [TH_LOG_I = 0]
 	iTh = TH_LOG_I + 1;
 	logMsg.PushMessage("main() - Waiting for all but the Logging thread to terminate.\n", LOG_SEVERITY_MAIN_FUNCTION);
@@ -174,9 +173,8 @@ void _cdecl main(int  argc, char **argv)
 				logMsg.PushMessage(textMsg, LOG_SEVERITY_MAIN_FUNCTION);
 			break;
 		}
-		// is this thread still active?
 		if( thExitCode[iTh] == STILL_ACTIVE )
-		{ // this thread is still active
+		{ 
 			still_active_threads++;
 		}
 		// try next thread
@@ -211,7 +209,7 @@ void _cdecl main(int  argc, char **argv)
 #endif
 	}while(still_active_threads);
 
-	
+	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #ifndef DEBUG_PRINT_FDBACK_ADC_DATA_AFTER_PHASES_END
 	int num = 100; // number_of_mean_values
 	// Reading Data 
@@ -247,9 +245,7 @@ void _cdecl main(int  argc, char **argv)
 /****************************************************************************
 @function	EXIT_process
 @brief		exit process and log it
-@param[in]
-@param[out]
-@return
+@param[in]	DWORD error_sum
 ***************/
 void EXIT_process(DWORD error_sum){
 	char textMsg[MAX_MESSAGE_LENGTH];
@@ -279,9 +275,10 @@ DWORD MEAN_adc(UCHAR channel, UCHAR gain, int c)
 	return(sum/c);
 }
 
+
 /****************************************************************************
 @function	GET_ADC
-@brief
+@brief		not used in the end as feedback loop thread is not created
 @param[in]
 @param[out]
 @return
@@ -295,14 +292,6 @@ DWORD GET_ADC(UCHAR channel, UCHAR gain)
 	DWORD val;									
 	unsigned short c;
 
-	// set gain and mux
-	// x|x|MUX3|MUX2|MUX1|MUX0|GAIN1|GAIN0
-	// MUX[3-0] = binary number selecting from 0to15 shifted left 2 
-	//	0b0000 0000<<2 = 0x00<<2 = 0x00 = 0<<2 = AI0
-	//	0b0000 0001<<2 = 0x01<<2 = 0x04 = 1<<2 = AI1
-	//	0b0000 0010<<2 = 0x02<<2 = 0x08 = 2<<2 = AI2
-	//	0b0000 0100<<2 = 0x03<<2 = 0x0C = 3<<2 = AI3
-	// etc
 	gain = 0;
 	mp = channel<<2 | gain;
 
@@ -333,3 +322,20 @@ DWORD GET_ADC(UCHAR channel, UCHAR gain)
 	*/	
 	return val;
 }
+
+
+
+//// convert a_serv
+//UCHAR GET_channel(C_servoMotor* a_serv){
+/*
+LONGLONG CONVERT_ADCRead(C_servoMotor* a_serv){
+	LARGE_INTEGER intervalOne;
+	intervalOne.QuadPart = 0;
+	int value = GET_ADC(GET_channel(i_serv),DEFAULT_ADC_GAIN);
+	//serv[i_serv]
+	// min = 500
+	intervalOne = intervalOne_min + ((DWORD)-min_ADC + intervalOne.QuadPart)
+		
+	return((LONGLONG)intervalOne);
+}
+*/
