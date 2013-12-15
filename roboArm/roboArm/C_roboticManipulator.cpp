@@ -13,9 +13,7 @@
 /****************************************************************************
 @function   DEBUG_fillPhases
 @class		C_roboticManipulator
-@brief      
-@param[in]  
-@param[out] 
+@brief      add some debug phases for testing the servos 
 @return     DWORD error_sum
 ************/
 DWORD C_roboticManipulator::DEBUG_fillPhases(void)
@@ -69,65 +67,19 @@ DWORD C_roboticManipulator::DEBUG_fillPhases(void)
 @function   CALC_DOport_thisPeriodNewValue
 @class		C_roboticManipulator
 @brief      calculate new value of DO port for this period
-@param[in]  
-@param[out] 
-@return     
 ************/
 void C_roboticManipulator::CALC_DOport_thisPeriodNewValue()
 {
 	// ask each servo if this PWMtic the interval zero has passed = time [to write 1]
 	for(int i_serv=0; i_serv<SUM_SERVOMOTORS; i_serv++)
 	{ // iterate through all servos
-		if( IS_timeToWriteOne(i_serv) )
+		if( IS_timeToWriteOne(i_serv) == true)
 		{ // time for writing 1 has come
-			
-			//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-			// not ramp - square position change
-			if(phase_act->serv_fixedPositioning)
-			{ 
+			if( IS_reallyTimeToWriteOne(i_serv) == true)
+			{
+				// write one to serv[i_serv] bit in thisPeriodNewValue
 				SET_DOport_thisPeriodNewValue(serv[i_serv].servoMotorDigit);
 			}
-			//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-			// ramp - linear position change
-			else
-			{ 
-				// the previous phase has different intervalOne value
-				if( serv[i_serv].intervalOne_difference.QuadPart != 0)
-				{
-					//____________________________________________________
-					// evaluate new value of angle
-
-					LONGLONG intervalOne_thisPeriodDiff = LONGLONG(
-							(double)PWMperiod_sum 
-							* (double)(serv[i_serv].intervalOne_difference.QuadPart)  
-							/ (double)PWMperiod_sum_max
-							);
-					// (add || subtract) thisPeriodDiff to the previous period intOne
-					serv[i_serv].intervalOne_actual.QuadPart = phase_prev->serv_intervalOne[i_serv].QuadPart;
-
-					// intOne is growing -> intOne = previous + thisPeriodDiff
-					if( serv[i_serv].intervalOne_growing )
-					{						
-						serv[i_serv].intervalOne_actual.QuadPart += intervalOne_thisPeriodDiff;
-					}
-					// intOne is not growing -> intOne = previous - thisPeriodDiff
-					else
-					{
-						serv[i_serv].intervalOne_actual.QuadPart -= intervalOne_thisPeriodDiff;
-					}
-				
-					//____________________________________________________
-					// the time for writing 1 has really come - with linear positioning
-					if(PWMtic_sum >= (PWMperiod_interval.QuadPart - serv[i_serv].intervalOne_actual.QuadPart))
-					{
-						// write one to this servo bit
-						SET_DOport_thisPeriodNewValue(serv[i_serv].servoMotorDigit);
-					}
-#ifdef DEBUG // debuging breakpoint 
-					if( PWMperiod_sum != PWMperiod_sum_last){PWMperiod_sum_last = PWMperiod_sum;}
-#endif
-				}// end - for all the servos
-			} // ramp - linear position change
 		} // end - time for writing 1 has come
 	} // end - iterate through all servos
 
@@ -136,9 +88,8 @@ void C_roboticManipulator::CALC_DOport_thisPeriodNewValue()
 @function   FINISH_period
 @class		C_roboticManipulator
 @brief      is called on end of each period in PWM thread
-@param[in]  
-@param[out] 
-@return     
+			increments period counter, resets tic counter, resets DOport
+			finishes period time measurements and logs it
 ************/
 void C_roboticManipulator::FINISH_period()
 {
@@ -162,10 +113,9 @@ void C_roboticManipulator::FINISH_period()
 /****************************************************************************
 @function   SET_NextPhase
 @class		C_roboticManipulator
-@brief      
-@param[in]  
-@param[out] 
-@return     
+@brief      increments phase_act and phase_prev
+			set PWMperiod_sum to zero
+@return     DWORD error_sum
 ************/
 DWORD C_roboticManipulator::SET_NextPhase()
 {
@@ -236,9 +186,7 @@ DWORD C_roboticManipulator::LOAD_actualPhase(void)
 /****************************************************************************
 @function   IS_endOfPhase
 @class		C_roboticManipulator
-@return     bool
-			| [true] if the phaseTic_sum is greater than this phase interval
-			| [false] else
+@return     bool | [true] if the phaseTic_sum is greater than this phase interval
 ************/
 bool C_roboticManipulator::IS_endOfPhase() 
 {
@@ -247,9 +195,7 @@ bool C_roboticManipulator::IS_endOfPhase()
 /****************************************************************************
 @function   IS_endOfPeriod
 @class		C_roboticManipulator
-@return     bool 
-			| [true] if the PWMtic_sum is greater than period interval
-			| [false] else
+@return     bool | [true] if the PWMtic_sum is greater than period interval
 ************/
 bool C_roboticManipulator::IS_endOfPeriod() 		
 {
@@ -258,13 +204,71 @@ bool C_roboticManipulator::IS_endOfPeriod()
 
 /****************************************************************************
 @function   IS_timeToWriteOne
-@return     bool
-			| [true] if the PWMtic_sum is greater this servo intervalZero
-			| [false] else
+@class		C_roboticManipulator
+@return     bool | [true] if the PWMtic_sum is greater this servo intervalZero
 ************/
 bool C_roboticManipulator::IS_timeToWriteOne(int a_i_serv)
 {
 	return(PWMtic_sum >= serv[a_i_serv].intervalZero.QuadPart);
+}
+/****************************************************************************
+@function   IS_reallyTimeToWriteOne
+@class		C_roboticManipulator
+@brief      
+@param[in]  
+@param[out] 
+@return     
+************/
+bool C_roboticManipulator::IS_reallyTimeToWriteOne(int a_i_serv)
+{
+	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	// not ramp - square position change
+	if(phase_act->serv_fixedPositioning)
+	{ 
+		return(true);
+	}
+	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	// ramp - linear position change
+	else
+	{ 
+		// the previous phase has different intervalOne value
+		if( serv[i_serv].intervalOne_difference.QuadPart != 0)
+		{
+			//____________________________________________________
+			// evaluate new value of intOne
+			LONGLONG intervalOne_thisPeriodDiff = LONGLONG(
+					(double)PWMperiod_sum 
+					* (double)(serv[i_serv].intervalOne_difference.QuadPart)  
+					/ (double)PWMperiod_sum_max
+					);
+			// (add || subtract) thisPeriodDiff to the previous period intOne
+			serv[i_serv].intervalOne_actual.QuadPart = phase_prev->serv_intervalOne[i_serv].QuadPart;
+
+			// intOne is growing -> intOne = previous + thisPeriodDiff
+			if( serv[i_serv].intervalOne_growing )
+			{						
+				serv[i_serv].intervalOne_actual.QuadPart += intervalOne_thisPeriodDiff;
+			}
+			// intOne is not growing -> intOne = previous - thisPeriodDiff
+			else
+			{
+				serv[i_serv].intervalOne_actual.QuadPart -= intervalOne_thisPeriodDiff;
+			}
+				
+			//____________________________________________________
+			// the time for writing 1 has really come - with linear positioning
+			if(PWMtic_sum >= (PWMperiod_interval.QuadPart - serv[i_serv].intervalOne_actual.QuadPart))
+			{
+				// write one to this servo bit
+				return(true);
+			}
+#ifdef DEBUG // debuging breakpoint 
+			if( PWMperiod_sum != PWMperiod_sum_last){PWMperiod_sum_last = PWMperiod_sum;}
+#endif
+		}// end - for all the servos
+	} // ramp - linear position change
+	// it is not the time
+	return(false);
 }
 
 /****************************************************************************
@@ -297,8 +301,9 @@ int C_roboticManipulator::CONVERT_angle2intervalOne(int a_angle, int a_i_serv, L
 		return(ERROR_ANGLE_OUT_OF_BOUNDS);
 #endif
 	}
-	a_intervalOne->QuadPart = (DWORD)( 
-		serv[a_i_serv].ADC_min + relative * (serv[a_i_serv].ADC_max - serv[a_i_serv].ADC_min)
+	a_intervalOne->QuadPart = (LONGLONG)( 
+		serv[a_i_serv].intervalOne_min.QuadPart + relative 
+		* (serv[a_i_serv].intervalOne_max.QuadPart - serv[a_i_serv].intervalOne_min.QuadPart)
 		);
 	return(FLAWLESS_EXECUTION);
 }
