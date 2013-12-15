@@ -432,29 +432,23 @@ ____________________________________________________
 @param[out] (DWORD*) a_file_current_byte | viz [a_get_file_current_byte]
 @return     (DWORD) returns error_sum / FLAWLESS_EXECUTION
 ************/
-DWORD MOVE_pointer(HANDLE a_hFile, LONG a_distance2move, DWORD* a_file_current_byte, 
-	DWORD a_moveMethod, bool a_get_file_current_byte, bool a_logError)
+DWORD MOVE_pointer(HANDLE a_hFile, LONG a_distance2move, DWORD* a_file_current_byte, DWORD a_moveMethod )
 {
 	char textMsg[MAX_MESSAGE_LENGTH]; // char array for printing messages
-	if(a_logError)
-		logMsg.PushMessage("Try to SetFilePointer.\n", SEVERITY_MAX - 4);
+	logMsg.PushMessage("Try to SetFilePointer.\n", SEVERITY_MAX - 4);
 	DWORD file_current_byte = SetFilePointer(a_hFile, a_distance2move, NULL, a_moveMethod);
-	if(a_get_file_current_byte)
-	{
-		*a_file_current_byte = file_current_byte;
-	}
+
 	if(file_current_byte == INVALID_SET_FILE_POINTER) 
 	{ // Failed to SetFilePointer
-		if(a_logError)
-		{
-			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Function SetFilePointer failed with 0x%04x\n", GetLastError());
-			logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
-		}
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Function SetFilePointer failed with 0x%04x\n", GetLastError());
+		logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
 		return(CLOSE_handleAndReturn(a_hFile, ERROR_SETFILEPOINTER_FAIL));
 	}
-#ifdef DEBUG_PRINT_READ_FUNCTIONS
-	logMsg.PushMessage("file_current_byte = %lu\n",*file_current_byte);
-#endif
+
+	*a_file_current_byte = file_current_byte;
+
+	sprintf_s(textMsg,"file_current_byte = %lu\n", file_current_byte);
+	logMsg.PushMessage(textMsg,LOG_SEVERITY_READING_FILE);
 	return(FLAWLESS_EXECUTION);
 }
 

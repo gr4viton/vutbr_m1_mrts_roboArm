@@ -20,10 +20,11 @@ unsigned int baseAddress = 0;
 HMODULE hLibModule = NULL;
 char* G_controlString = NULL;
 //char str[FILE_MAX_CHARS+CZERO] = ""; 
-// Pointer of C_LogMessageA, used for all logging
-C_LogMessageA logMsg;
-LARGE_INTEGER preemptive_interval; 
-	
+C_LogMessageA logMsg; 
+
+#ifdef RUNNING_ON_1CPU
+	LARGE_INTEGER preemptive_interval; 
+#endif
 
 /****************************************************************************
 @function		MEAN_adc
@@ -53,7 +54,9 @@ DWORD MEAN_adc(UCHAR channel, UCHAR gain, int c)
 @return
 ***************/
 void EXIT_process(DWORD error_sum){
-	printf("Exiting process with error_sum %lu\n",error_sum);
+	char textMsg[MAX_MESSAGE_LENGTH];
+	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Exiting process with error_sum %lu\n", error_sum);
+	logMsg.PushMessage(textMsg, LOG_SEVERITY_EXITING_PROCESS);
 	ExitProcess(error_sum);
 }
 
@@ -76,8 +79,11 @@ void _cdecl main(int  argc, char **argv)
 	//printf("_________________________(: Clean start :)___________________________\n");
 	//logMsg.PushMessage("cokoliv",10);
 	printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>> roboArm started <<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
+	
+#ifdef RUNNING_ON_1CPU
 	printf("SET preemptive_interval\n");
-	preemptive_interval.QuadPart = 100;	
+	preemptive_interval.QuadPart = DEFAULT_PREEMPTIVE_INTERVAL;	
+#endif
 	printf("function main()\n");
 	DWORD error_sum = 0;
 	/*
@@ -103,10 +109,7 @@ void _cdecl main(int  argc, char **argv)
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// INITIALIZATIONS
 	printf("Starting initialization process.\n");
-	// ____________________________________________________
-	// init logMsg = global initialized before main
-	// printf("> Try to logging class\n");
-	//logMsg = new C_LogMessageA();
+
 	// ____________________________________________________
 	// init HW
 	printf("> Try to initialize hardware\n");

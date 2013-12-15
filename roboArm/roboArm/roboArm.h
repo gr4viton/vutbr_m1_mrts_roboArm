@@ -53,6 +53,10 @@
 #define CLOCK_LOG_ACTUAL		CLOCK_2
 #define CLOCK_MEASUREMENT	CLOCK_1
 #define RUNNING_ON_1CPU
+
+#ifdef RUNNING_ON_1CPU
+#define DEFAULT_PREEMPTIVE_INTERVAL		100
+#endif
 //____________________________________________________
 // debug
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!!!<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -65,12 +69,6 @@
 
 #define SHOW_LOG_ON_SCREEN
 
-//____________________________________________________
-// optional walk-arounds for little file inconsistency
-#define IGNORE_NOT_NUMBER_ANGLE_IN_CONTROL_FILE
-#define IGNORE_INCONSISTENT_FILE_LINE
-// if angle in file is out of bounds do not exit but convert it to limit instead and continue
-#define CUT_OFF_OUT_OF_BOUNDS_ANGLE_IN_CONTROL_FILE 
 
 //____________________________________________________
 // severities
@@ -88,11 +86,13 @@
 // Severe errors logs with this value - (overwriting local severity)
 #define LOG_SEVERITY_ERROR					LOG_SEVERITY_VALUE_HIGHEST
 
-#define LOG_SEVERITY_EXITING_THREAD			LOG_SEVERITY_VALUE_MEDIUM
+#define LOG_SEVERITY_EXITING_PROCESS			LOG_SEVERITY_VALUE_HIGHER
+#define LOG_SEVERITY_EXITING_THREAD			LOG_SEVERITY_VALUE_HIGH
 // thread PWM severities
-#define LOG_SEVERITY_PWM_TIC				LOG_SEVERITY_VALUE_LOWEST
+#define LOG_SEVERITY_PWM_TIC					LOG_SEVERITY_VALUE_LOWEST
 #define LOG_SEVERITY_PWM_PERIOD				LOG_SEVERITY_VALUE_LOWER
 #define LOG_SEVERITY_PWM_PHASE				LOG_SEVERITY_VALUE_MEDIUM
+#define LOG_SEVERITY_READING_FILE			LOG_SEVERITY_VALUE_MEDIUM
 
 // other - normal log messages
 #define LOG_SEVERITY_NORMAL					LOG_SEVERITY_VALUE_MEDIUM		
@@ -111,9 +111,10 @@
 
 //____________________________________________________
 // thread counts
-#define NUM_OF_THREADS				(PWM_CONTROLLING_THREAD + LOGMSG_THREAD)
 #define LOGMSG_THREAD				1
 #define PWM_CONTROLLING_THREAD		1
+#define NUM_OF_THREADS				(PWM_CONTROLLING_THREAD + LOGMSG_THREAD)
+
 // thread indexes
 #define TH_LOG_I						0
 #define TH_PWM_I						1
@@ -128,6 +129,15 @@
 //#define DEFAULT_PWM_PERIOD				NS100_1S / 1
 #define DEFAULT_PWM_PERIOD				NS100_1S / 100
 #define DEFAULT_INITIAL_PHASE_INTERVAL	(1*NS100_1S)
+
+
+//____________________________________________________
+// optional walk-arounds for little file inconsistency
+#define IGNORE_NOT_NUMBER_ANGLE_IN_CONTROL_FILE
+#define IGNORE_INCONSISTENT_FILE_LINE
+// if angle in file is out of bounds do not exit but convert it to limit instead and continue
+#define CUT_OFF_OUT_OF_BOUNDS_ANGLE_IN_CONTROL_FILE 
+
 //____________________________________________________
 // reading constants
 // end character lenght (\0)
@@ -208,17 +218,20 @@ class C_LogMessageA;
 // external variables & classes
 
 //roboArm.cpp
-extern unsigned int		baseAddress;		
-extern HMODULE			hLibModule;	
-extern char*				G_controlString;			
-extern C_LogMessageA		logMsg;
-extern LARGE_INTEGER		preemptive_interval; 
+extern unsigned int		baseAddress;			// base address of register 
+extern HMODULE			hLibModule;			// handler to module library
+extern char*				G_controlString;		// char array for reading file
+extern C_LogMessageA		logMsg;				// Pointer of C_LogMessageA, used for all logging
+
+#ifdef RUNNING_ON_1CPU
+	extern LARGE_INTEGER		preemptive_interval; 
+#endif
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // function declarations of roboArm.cpp
 void _cdecl	main(int  argc, char **argv);
-DWORD		GET_ADC(UCHAR channel, UCHAR gain);
-void			EXIT_process(DWORD error_sum);
+DWORD	GET_ADC(UCHAR channel, UCHAR gain);
+void		EXIT_process(DWORD error_sum);
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // function declarations of non-headered .cpp files
@@ -235,9 +248,9 @@ DWORD	READ_spatialConfigurationFromFile(C_roboticManipulator* a_ROB, char* a_fil
 
 // read file
 DWORD	READ_file(char* a_filePath);
-//DWORD	MOVE_pointer(HANDLE hFile, LONG distance2move, DWORD* file_current_byte, DWORD MoveMethod, bool get_file_current_byte);
-DWORD	MOVE_pointer(HANDLE a_hFile, LONG a_distance2move, DWORD* a_file_current_byte, 
-			DWORD MoveMethod = FILE_CURRENT, bool a_get_file_current_byte = true, bool a_logError = true);
+DWORD	MOVE_pointer(HANDLE a_hFile, LONG a_distance2move, DWORD* a_file_current_byte, DWORD a_moveMethod = FILE_CURRENT);
+//DWORD	MOVE_pointer(HANDLE a_hFile, LONG a_distance2move, DWORD* a_file_current_byte, 
+//			DWORD MoveMethod = FILE_CURRENT, bool a_get_file_current_byte = true, bool a_logError = true);
 DWORD	CLOSE_handleAndReturn(HANDLE a_handle, DWORD error_sum, bool a_logError = true);
 
 // parse text

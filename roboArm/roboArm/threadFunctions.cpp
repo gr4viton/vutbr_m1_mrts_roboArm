@@ -49,14 +49,14 @@ void RTFCNDCL LogMessageThread(void *)
 void RTFCNDCL PWMthread(void *a_ROB)
 {
 	char textMsg[MAX_MESSAGE_LENGTH]; // char array for printing messages
-	// robotic manipulator and servo pointers
+	// robotic manipulator pointer
 	C_roboticManipulator* ROB = (C_roboticManipulator*)a_ROB;
 
-
+	// smallest tic interval
 	printf("RtGetClockTimerPeriod = %I64d [100ns]\n", ROB->PWMtic_interval);
 	
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	// main PWMthread loop
+	// main PWMthread loop init
 	DWORD error_sum = 0;
 	bool generateTics = true;
 	bool allPhasesEnded = false;
@@ -72,6 +72,8 @@ void RTFCNDCL PWMthread(void *a_ROB)
 	// time measurement
 	RtGetClockTime(CLOCK_MEASUREMENT, &(ROB->tim_startPWMperiod));
 		
+	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	// main PWMthread loop start
 	while(!allPhasesEnded)
 	{
 		//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

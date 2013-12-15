@@ -310,6 +310,7 @@ unsigned int C_LogMessageA::WriteBuffToFile()
 		return( CLOSE_handleAndReturn(Hfile,ERROR_SETFILEPOINTER_FAIL) );
 	}
 	
+	//____________________________________________________
 	// WriteFile
 	DWORD BytesWritten;	
 	// secure strlen
