@@ -26,8 +26,10 @@ C_spatialConfiguration::C_spatialConfiguration(void)
 	for(int i=0; i<SUM_SERVOMOTORS; i++)
 	{
 		serv_fixedPositioning[i] = false;
-		serv_intervalOne_changed[i] = false;
 		serv_intervalOne[i].QuadPart = 0;
+		serv_intervalOne_difference[i].QuadPart = 0;
+		serv_intervalOne_growing[i] = false;
+		serv_intervalOne_changed[i] = false;
 	}
 }
 

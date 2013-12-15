@@ -33,8 +33,8 @@
 #define SHOW_LOG_ON_SCREEN
 //____________________________________________________
 // WHICH SEVERITIES TO PRINT
-#define SEVERITY_LEVEL						LOG_SEVERITY_PWM_PHASE
-//#define SEVERITY_LEVEL						LOG_SEVERITY_PWM_PERIOD
+//#define SEVERITY_LEVEL						LOG_SEVERITY_PWM_PHASE
+#define SEVERITY_LEVEL						LOG_SEVERITY_PWM_PERIOD
 //#define SEVERITY_LEVEL						LOG_SEVERITY_PWM_TIC
 
 //____________________________________________________

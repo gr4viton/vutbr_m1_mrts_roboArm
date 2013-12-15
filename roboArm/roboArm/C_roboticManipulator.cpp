@@ -106,9 +106,10 @@ void C_roboticManipulator::FINISH_period()
 	RtGetClockTime(CLOCK_MEASUREMENT, &tim_startPWMperiod);
 	// log
 	char textMsg[MAX_MESSAGE_LENGTH]; // char array for printing messages
-	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "period ended - phase[%i/%i] - PWMperiod_interval = %I64d [100ns] = %I64d [1s]\n", 
+	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "period ended - phase[%i/%i] - PWMsum[%I64d/%I64d] - PWMperiod_interval[%I64d] [100ns] = %I64d [1ms]\n", 
+		PWMperiod_sum, PWMperiod_sum_max,
 		phase_act->i_phase, phase_act->i_phase_max,
-		tim_endPWMperiod.QuadPart, tim_endPWMperiod.QuadPart / NS100_1S
+		tim_endPWMperiod.QuadPart, tim_endPWMperiod.QuadPart / NS100_1MS
 		);
 		logMsg.PushMessage(textMsg, LOG_SEVERITY_PWM_PERIOD);
 }
@@ -172,7 +173,10 @@ DWORD C_roboticManipulator::LOAD_actualPhase(void)
 			intervalZero.QuadPart = PWMperiod_interval.QuadPart - phase_act->serv_intervalOne[i_serv].QuadPart;
 			// write it to actual
 			serv[i_serv].SET_intervalZero( intervalZero );
+
 			serv[i_serv].fixedPositioning = phase_act->serv_fixedPositioning[i_serv];
+			serv[i_serv].intervalOne_difference.QuadPart = phase_act->serv_intervalOne_difference[i_serv].QuadPart;
+			serv[i_serv].intervalOne_growing = phase_act->serv_intervalOne_growing[i_serv];
 		}
 		//____________________________________________________
 		// get sum of periods in this phase
@@ -241,12 +245,14 @@ bool C_roboticManipulator::IS_reallyTimeToWriteOne(int i_serv)
 	// ramp - linear position change
 	else
 	{ 
+		
+		LONGLONG intervalOne_thisPeriodDiff = 0;
 		// the previous phase has different intervalOne value
 		if( serv[i_serv].intervalOne_difference.QuadPart != 0)
 		{
 			//____________________________________________________
 			// evaluate new value of intOne
-			LONGLONG intervalOne_thisPeriodDiff = LONGLONG(
+			intervalOne_thisPeriodDiff = LONGLONG(
 					(double)PWMperiod_sum 
 					* (double)(serv[i_serv].intervalOne_difference.QuadPart)  
 					/ (double)PWMperiod_sum_max
