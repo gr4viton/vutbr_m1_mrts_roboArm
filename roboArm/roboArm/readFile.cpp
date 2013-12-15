@@ -118,10 +118,10 @@ DWORD PARSE_controlString(C_roboticManipulator* a_manip)
 					newPhase.serv_fixedPositioning[i_serv] = true;
 				}
 				alreadyChanged = false;
-				angle = char2num(pStr[i+1])*1000 
-					+ char2num(pStr[i+2])*100 
-					+ char2num(pStr[i+3])*10 
-					+ char2num(pStr[i+4]); 
+				angle = char2num(pStr[i+1])*1000;
+				angle += char2num(pStr[i+2])*100;
+				angle += char2num(pStr[i+3])*10; 
+				angle += char2num(pStr[i+4]); 
 				ROB->CONVERT_angle2intervalOne(angle, i_serv, &largeInteger);
 				newPhase.serv_intervalOne[i_serv].QuadPart = largeInteger.QuadPart;
 				newPhase.serv_intervalOne_changed[i_serv] = true;
@@ -129,7 +129,7 @@ DWORD PARSE_controlString(C_roboticManipulator* a_manip)
 				break;
 			case('W'):
 				largeInteger.QuadPart = char2num(pStr[++i]);
-				int j = 1;
+				DWORD j = 1;
 				for(; (char2num(pStr[i+j]) != ERROR_IS_NOT_NUMBER); j++)
 				{
 					largeInteger.QuadPart *= 10;
@@ -493,9 +493,9 @@ DWORD MOVE_pointer(HANDLE a_hFile, LONG a_distance2move, DWORD* a_file_current_b
 			|if the char is not a digit -> return ERROR_IS_NOT_NUMBER
 			|else return the integer represetation 
 ************/
-int char2num(const char ch){
+int char2num(char ch){
 	int digit = (int)ch - (int)('0');	
-	if(digit<0 || digit>9)
+	if(digit<0 || digit>=10)
 		return(ERROR_IS_NOT_NUMBER);
 	else
 		return(digit);
