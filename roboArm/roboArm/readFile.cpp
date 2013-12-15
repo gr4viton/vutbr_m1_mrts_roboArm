@@ -106,6 +106,7 @@ DWORD PARSE_controlString(C_roboticManipulator* a_manip)
 		switch(pStr[i])
 		{
 			case('<'):
+			case('>'):
 				i_serv = char2num(pStr[i-1]);
 				newPhase.serv_fixedPositioning[i_serv] = false;
 			case('='):

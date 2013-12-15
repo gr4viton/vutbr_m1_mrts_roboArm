@@ -30,6 +30,8 @@
 #define DEBUG
 #define DEBUG_PRINT_FDBACK_ADC_DATA_AFTER_PHASES_END
 
+#define 	PUSHBACK_TESTING_PHASES
+
 #define SHOW_LOG_ON_SCREEN
 //____________________________________________________
 // WHICH SEVERITIES TO PRINT
