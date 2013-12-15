@@ -128,7 +128,7 @@ DWORD PARSE_controlString(C_roboticManipulator* a_manip)
 					largeInteger.QuadPart += char2num(pStr[i+j]);
 				}	
 				i += j+1;
-				newPhase.phaseInterval.QuadPart = largeInteger.QuadPart;
+				newPhase.phaseInterval.QuadPart = largeInteger.QuadPart * NS100_1MS;
 				ROB->PUSHBACK_newPhase(&newPhase);
 				newPhase = C_spatialConfiguration();
 				break;
