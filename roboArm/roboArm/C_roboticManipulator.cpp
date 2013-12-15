@@ -270,7 +270,8 @@ bool C_roboticManipulator::IS_reallyTimeToWriteOne(int i_serv)
 				return(true);
 			}
 #ifdef DEBUG // debuging breakpoint 
-			if( PWMperiod_sum != PWMperiod_sum_last){PWMperiod_sum_last = PWMperiod_sum;}
+			if( PWMperiod_sum != PWMperiod_sum_last)
+			{PWMperiod_sum_last = PWMperiod_sum;}
 #endif
 		}// end - for all the servos
 	} // ramp - linear position change
@@ -354,8 +355,10 @@ DWORD C_roboticManipulator::PUSHFRONT_InitialPhases(void)
 void C_roboticManipulator::PUSHBACK_newPhase(C_spatialConfiguration* a_phase){
 	phases.push_back(C_spatialConfiguration());
 	
+	
 	//get pointers to last and previous-to-last phases in list phases
 	phase_act = phases.end(); phase_act--;
+	phase_act->i_phase = ++(phase_act->i_phase_max);
 	if(phase_act->i_phase_max > 1)
 	{// not the first phase 
 		phase_prev = phase_act; phase_prev--;

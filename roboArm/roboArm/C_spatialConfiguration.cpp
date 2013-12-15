@@ -29,11 +29,6 @@ C_spatialConfiguration::C_spatialConfiguration(void)
 		serv_intervalOne_changed[i] = false;
 		serv_intervalOne[i].QuadPart = 0;
 	}
-	//i_phase = i_phase_max + 1;
-	//i_phase_max++;
-	
-	//i_phase = 0;
-	i_phase = ++i_phase_max;
 }
 
 /****************************************************************************

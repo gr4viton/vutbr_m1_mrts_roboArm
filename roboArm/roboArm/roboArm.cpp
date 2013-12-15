@@ -79,6 +79,8 @@ void _cdecl main(int  argc, char **argv)
 	//printf("_________________________(: Clean start :)___________________________\n");
 	//logMsg.PushMessage("cokoliv",10);
 	printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>> roboArm started <<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
+	printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>> roboArm started <<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
+	printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>> roboArm started <<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
 	
 #ifdef RUNNING_ON_1CPU
 	printf("SET preemptive_interval\n");

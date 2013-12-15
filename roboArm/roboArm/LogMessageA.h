@@ -33,7 +33,7 @@
 
 #define LOG_SCREEN		// comment for hide logs on screen
 
-#define LOG_FILE			"C:\\mrts\\LogMessage.txt"
+#define LOG_FILE			"D:\\LogMessage.txt"
 //#define LOG_FILE				"D:\\LogMessage.txt"
 #define LOGMSG_LINE_END		"\n"
 
