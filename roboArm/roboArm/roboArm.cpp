@@ -24,40 +24,7 @@ C_LogMessageA logMsg;
 #ifdef RUNNING_ON_1CPU
 	LARGE_INTEGER preemptive_interval; 
 #endif
-
-/****************************************************************************
-@function		MEAN_adc
-@brief			mean of c measured values
-@param[in]		
-***************/
-DWORD MEAN_adc(UCHAR channel, UCHAR gain, int c)
-{
-	if(c==0) return(0);
-	DWORD sum=0;
-	//DWORD *vals;
-	//vals = (DWORD*)malloc(sizeof(DWORD));
-	int i = c;
-	for(i;i>=0;i--){
-		//vals[c-1] = GET_ADC(channel);
-		sum += GET_ADC(channel, gain);
-	}
-	//free(vals);
-	return(sum/c);
-}
-
-/****************************************************************************
-@function	EXIT_process
-@brief		exit process and log it
-@param[in]
-@param[out]
-@return
-***************/
-void EXIT_process(DWORD error_sum){
-	char textMsg[MAX_MESSAGE_LENGTH];
-	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Exiting process with error_sum %lu\n", error_sum);
-		logMsg.PushMessage(textMsg, LOG_SEVERITY_EXITING_PROCESS);
-	ExitProcess(error_sum);
-}
+	
 /**
  * @name 	LogMessage
  * @brief	function logs a message into the application log stream in the format: DD.MM.YYYY HH:MM:SS:MSS Message
@@ -138,7 +105,8 @@ void _cdecl main(int  argc, char **argv)
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// INITIALIZATIONS
 	logMsg.PushMessage("Starting initialization process.\n", LOG_SEVERITY_MAIN_FUNCTION);
-
+	
+#ifndef DEBUGGING_WITHOUT_HW //if NOT defined
 	// ____________________________________________________
 	// init HW
 	logMsg.PushMessage("> Try to initialize hardware\n", LOG_SEVERITY_MAIN_FUNCTION);
@@ -149,6 +117,7 @@ void _cdecl main(int  argc, char **argv)
 			logMsg.PushMessage(textMsg, LOG_SEVERITY_MAIN_FUNCTION);
 		EXIT_process(error_sum);
 	}	
+#endif
 
 	//____________________________________________________
 	// init classes for the manipulator
@@ -243,13 +212,6 @@ void _cdecl main(int  argc, char **argv)
 	}while(still_active_threads);
 
 	
-
-	//    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	//  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	// for debugging purposes only
-	
-
 #ifndef DEBUG_PRINT_FDBACK_ADC_DATA_AFTER_PHASES_END
 	int num = 100; // number_of_mean_values
 	// Reading Data 
@@ -265,8 +227,10 @@ void _cdecl main(int  argc, char **argv)
 		RtSleep(100);
 	}
 #endif
+
 	//____________________________________________________
 	// everything should be unallocated and closed
+	TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, FLAWLESS_EXECUTION);
 	logMsg.PushMessage(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> roboArm ended <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n", 
 		LOG_SEVERITY_MAIN_FUNCTION);
 	//____________________________________________________
@@ -274,6 +238,45 @@ void _cdecl main(int  argc, char **argv)
 	while( ERROR_BUFFER_IS_EMPTY != logMsg.WriteBuffToFile());
 	logMsg.PushMessage("Exiting process.\n", LOG_SEVERITY_MAIN_FUNCTION);
     EXIT_process(FLAWLESS_EXECUTION);
+}
+
+
+
+
+
+/****************************************************************************
+@function	EXIT_process
+@brief		exit process and log it
+@param[in]
+@param[out]
+@return
+***************/
+void EXIT_process(DWORD error_sum){
+	char textMsg[MAX_MESSAGE_LENGTH];
+	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Exiting process with error_sum %lu\n", error_sum);
+		logMsg.PushMessage(textMsg, LOG_SEVERITY_EXITING_PROCESS);
+	ExitProcess(error_sum);
+}
+
+
+/****************************************************************************
+@function		MEAN_adc
+@brief			mean of c measured values
+@param[in]		
+***************/
+DWORD MEAN_adc(UCHAR channel, UCHAR gain, int c)
+{
+	if(c==0) return(0);
+	DWORD sum=0;
+	//DWORD *vals;
+	//vals = (DWORD*)malloc(sizeof(DWORD));
+	int i = c;
+	for(i;i>=0;i--){
+		//vals[c-1] = GET_ADC(channel);
+		sum += GET_ADC(channel, gain);
+	}
+	//free(vals);
+	return(sum/c);
 }
 
 /****************************************************************************
@@ -330,45 +333,3 @@ DWORD GET_ADC(UCHAR channel, UCHAR gain)
 	*/	
 	return val;
 }
-
-
-
-
-
-
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-// do not delete until last release
-
-	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	// TODO
-	//____________________________________________________
-	// 0) find out initial configurations for each servo in C_roboticManipulator constructor!
-	// # done
-	// 1) thread creation for each servo (?in C_roboticManipulator constructor?)
-	// --> REWRITE it as I thought it will be handled with timers, but
-	// thread handling will be better
-	
-	// writing to a critical section should be treated wisely ! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-	// is the register critical section? I think yess
-	// a) mutex for individual bytes / bites of shadow-register
-	//		and one core thread reading shadow-register and writing it to the true byteAdress 
-	// b) in each instance of class C_servoMotor there will be mutex for writing the intervals
-	//		this mutex will be set/unset with the individual servoMotors threads
-	//		and it will be read by the main thread every min_period of setting the register
-	//		-> if it is closed the thread waits to write into it until main thread opens it agein
-	// c) in each thread will add event when it wants to set/unset the byte
-	//		main thread will treat this events and write to the critical-section = register
-	// --- possibly event driven ---
-	//
-
-	// 2) member function PWM_dutyCycle -> periodically executed in each thread
-	// 3) find out if writing to register is criticall section
-
-	
-	/*
-	// is this secure? 
-	// or I should be working only in C_roboticManipulator class to avoid encapsulation problems??
-	C_servoMotor* pServo = NULL;
-	ROB.GET_servoMotor(1, pServo);
-	pServo->PWM_dutyCycle();
-	*/

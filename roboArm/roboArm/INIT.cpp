@@ -8,6 +8,7 @@
 
 #include "roboArm.h"
 
+#ifndef DEBUGGING_WITHOUT_HW //if NOT defined
 /****************************************************************************
 @function		INIT_HW
 @brief			
@@ -20,20 +21,21 @@ int INIT_HW(){
 	// Load library
 	printf("> Try to initialize Library\n");
 	error_sum = INIT_Library();
-	if(error_sum){
+	if(error_sum)
+	{
 		logMsg.PushMessage("Cannot init library\n", LOG_SEVERITY_INIT);
-#ifndef DEBUGGING_WITHOUT_HW //if NOT defined
 		return(ERR_INIT_CANNOT_LOAD_LIBRARY);	
-#endif
 		logMsg.PushMessage(">> Continuing as DEBUGGING_WITHOUT_HW was defined!\n", LOG_SEVERITY_INIT);
 	}
 	else 
+	{
 		logMsg.PushMessage(">> Library was opened successfully!\n", LOG_SEVERITY_INIT);
+	}
 	
 	//____________________________________________________
 	// Initialize ADC
 	
-		logMsg.PushMessage("> Try to initialize ADC\n", LOG_SEVERITY_INIT);
+	logMsg.PushMessage("> Try to initialize ADC\n", LOG_SEVERITY_INIT);
 	INIT_ADC();
 	return(FLAWLESS_EXECUTION);
 }
@@ -113,3 +115,5 @@ int INIT_Library()
 	FreeLibrary(hLibModule);
 	return(FLAWLESS_EXECUTION);
 }
+
+#endif // DEBUGGING_WITHOUT_HW - NOT defined
