@@ -146,7 +146,7 @@ void _cdecl main(int  argc, char **argv)
 	//hTh[0] = (HANDLE)123456789;
 	//printf("&(hTh[0]) = %i; &(hTh) = %i; hTh[0] = %i; hTh = %i;\n",  &(hTh[0]), &(hTh), hTh[0], hTh);
 
-	//CREATE_threads(ROB, hTh, thread_id);
+	CREATE_threads(&ROB, hTh, thread_id);
 	
 
 	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

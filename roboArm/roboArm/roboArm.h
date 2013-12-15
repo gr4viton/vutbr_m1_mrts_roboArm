@@ -257,7 +257,7 @@ int		char2num(char ch);
 		
 //____________________________________________________
 // threadFunctions.cpp
-DWORD CREATE_threads(C_roboticManipulator ROB, HANDLE *hTh, DWORD* thread_id);
+DWORD CREATE_threads(C_roboticManipulator* ROB, HANDLE *hTh, DWORD* thread_id);
 
 // exiting functions
 void		CLOSE_handleAndExitThread(HANDLE handle, DWORD error_sum);
