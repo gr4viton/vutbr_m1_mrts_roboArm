@@ -260,6 +260,7 @@ DWORD CREATE_file(HANDLE* a_hFile, LPCSTR a_filePath)
 		logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
 		return(ERROR_CREATEFILE_FAIL);
 	}
+	return(FLAWLESS_EXECUTION);
 }
 
 

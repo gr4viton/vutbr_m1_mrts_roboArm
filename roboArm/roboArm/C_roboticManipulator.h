@@ -26,12 +26,15 @@ private:
 	PUCHAR DOport_ByteAddress; // address of DO port in register to whom are servoMotors connected to
 	UCHAR DOport_lastPeriodValue; // value of DOport from last period
 	UCHAR DOport_thisPeriodNewValue; // new DOport value before writing it to register -> more servos at the same angle
-	LARGE_INTEGER PWM_period;
 	
 	DWORD angle_min;
 	DWORD angle_max; 
 public:
+	LARGE_INTEGER PWMperiod_interval;
 	std::list<C_spatialConfiguration> phases;
+
+	std::list<C_spatialConfiguration>::iterator phase_act; 
+	std::list<C_spatialConfiguration>::iterator phase_prev;
 
 //____________________________________________________
 // declaration of external defined member functions 

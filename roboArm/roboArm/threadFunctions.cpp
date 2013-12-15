@@ -40,7 +40,7 @@ void RTFCNDCL LogMessageThread(void *)
 @param[out] 
 @return     
 ************/
-void LOAD_actualPhase(C_roboticManipulator* a_ROB, LARGE_INTEGER* PWM_period, 
+void LOAD_actualPhase(C_roboticManipulator* a_ROB, 
 	std::list<C_spatialConfiguration>::iterator * a_actualPhase)
 {	
 	char textMsg[MAX_MESSAGE_LENGTH]; // char array for printing messages
@@ -61,9 +61,9 @@ void LOAD_actualPhase(C_roboticManipulator* a_ROB, LARGE_INTEGER* PWM_period,
 			ExitThread(error_sum);
 		}
 		// count the [zero interval] from [pwm period - one interval]
-		intervalZero.QuadPart = PWM_period->QuadPart - (*a_actualPhase)->serv_intervalOne[i_serv].QuadPart;
+		intervalZero.QuadPart = a_ROB->PWMperiod_interval.QuadPart - (*a_actualPhase)->serv_intervalOne[i_serv].QuadPart;
 		// DEBUG
-		//intervalZero.QuadPart = PWM_period->QuadPart - 1750 * NS100_1US;
+		//intervalZero.QuadPart = PWMperiod_interval->QuadPart - 1750 * NS100_1US;
 		// write it to actual
 		serv->SET_intervalZero( intervalZero );
 	}
@@ -77,8 +77,8 @@ void LOAD_actualPhase(C_roboticManipulator* a_ROB, LARGE_INTEGER* PWM_period,
 /****************************************************************************
 @function		TIM_PWMfunction
 @brief			Function of thread writing into the DO register 
-				in the main loop there are tic waitings
-				if the number of them is same as PWM_period -> new period starts
+				in the main loop there are PWMtic waitings
+				if the number of them is same as PWMperiod_interval -> new period starts
 				-> every new period zeros are written on all ports
 				-> when the number of tics is the same as intervalZero of serv[x]
 				---> one is written to its bit in register
@@ -86,9 +86,15 @@ void LOAD_actualPhase(C_roboticManipulator* a_ROB, LARGE_INTEGER* PWM_period,
 @param[in]		void *a_struct
 				- i will not be needed
 ***************/
-void RTFCNDCL TIM_PWMfunction(void *a_manip)
+void RTFCNDCL TIM_PWMfunction(void *a_ROB)
 {
 	char textMsg[MAX_MESSAGE_LENGTH]; // char array for printing messages
+	// robotic manipulator and servo pointers
+	int i_serv = 0;
+	C_roboticManipulator* ROB = (C_roboticManipulator*)a_ROB; 
+	C_servoMotor* serv = NULL;
+
+
 	//____________________________________________________
 	// time measurement
 	LARGE_INTEGER tim1; tim1.QuadPart = 0;
@@ -97,21 +103,20 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 
 	//____________________________________________________
 	// PWM tics creation
-	LARGE_INTEGER PWM_period;	// how often to write position - restart tic
-	LARGE_INTEGER tic;			// iterating variable
-	LARGE_INTEGER tic_interval;	// how long does one tic take
-	LARGE_INTEGER tic_phase;		// counting phase time
-
-	tic.QuadPart = 0;
-	tic_phase.QuadPart = 0;
-	PWM_period.QuadPart = DEFAULT_PWM_PERIOD;
-	RtGetClockTimerPeriod(CLOCK_X, &tic_interval);	// time to wait between individual tics
+	//LARGE_INTEGER PWMperiod_interval;// one period of PWM - how often to rewrite DO port
+	LARGE_INTEGER PWMtic_sum;		// iterating variable
+	LARGE_INTEGER phaseTic_sum;		// counting phase time
 	
-	printf("RtGetClockTimerPeriod = %I64d\n", tic_interval);
+	PWMtic_sum.QuadPart = 0;
+	phaseTic_sum.QuadPart = 0;
+	//ROB->PWMperiod_interval.QuadPart = DEFAULT_PWM_PERIOD; //-- in constructor
+	
+	LARGE_INTEGER PWMtic_interval;	// how long does one PWMtic take
+	RtGetClockTimerPeriod(CLOCK_X, &PWMtic_interval);	// time to wait between individual PWMtics
 
-	int i_serv = 0;
-	C_roboticManipulator* ROB = (C_roboticManipulator*)a_manip;
-	C_servoMotor* serv = NULL;
+	
+	printf("RtGetClockTimerPeriod = %I64d\n", PWMtic_interval);
+
 
 	// here there will be some mutexed variable for control of this thread termination ??
 	bool generateTics = true;
@@ -120,49 +125,51 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// main thread loop
 	ROB->RESET_DOport();
-	std::list<C_spatialConfiguration>::iterator actPhase = ROB->phases.begin();
-	std::list<C_spatialConfiguration>::iterator actPhasePrev = ROB->phases.begin();
 
 	
+	LONGLONG PWMperiod_sum_max =0;
 	LARGE_INTEGER lastIntervalOne;
 	lastIntervalOne.QuadPart = 0;
-	DWORD nPWM = 0; // counter of periods
-	DWORD nPWM_last = 0;
+	DWORD PWMperiod_sum = 0; // counter of periods
+#ifdef DEBUG
+	DWORD PWMperiod_sum_last = 0;
+#endif
 	while(!allPhasesEnded)
 	{
 		//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		// LOAD this phase
-		if(actPhase != ROB->phases.end())
+		if(ROB->phase_act != ROB->phases.end())
 		{ //	 if iterator is not past-the-end element in the list container
-			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Load phase[%i/%i] values\n", actPhase->i_phase, actPhase->i_phase_max);
+			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Load phase[%i/%i] values\n", ROB->phase_act->i_phase, ROB->phase_act->i_phase_max);
 			logMsg.PushMessage(textMsg, LOG_SEVERITY_PWM_PHASE);
-			LOAD_actualPhase(ROB,&PWM_period, &actPhase);
+			LOAD_actualPhase(ROB, &ROB->phase_act);
+		}
+		
+		if(ROB->phase_act != ROB->phases.begin())
+		{
+			ROB->phase_prev = ROB->phase_act;
+			ROB->phase_prev--;
 		}
 
-		
-		LONGLONG nKrok = actPhase->phaseInterval.QuadPart/PWM_period.QuadPart ;
-		if(actPhase != ROB->phases.begin())
-		{
-			actPhasePrev = actPhase;
-			actPhasePrev--;
-		}
+		PWMperiod_sum_max = ROB->phase_act->phaseInterval.QuadPart / ROB->PWMperiod_interval.QuadPart ;
+
 		//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		// tics loop 
 		while(generateTics)	
 		{
 			//____________________________________________________
-			// ask each servo if this tic the interval zero has passed = time [to write 1]
+			// ask each servo if this PWMtic the interval zero has passed = time [to write 1]
 			for(i_serv=0; i_serv<SUM_SERVOMOTORS; i_serv++)
 			{ // iterate through all servos
 
 				// get the pointer of ROB->serv[i_serv] into serv
 				ROB->GET_servoMotor(i_serv, &serv);
 
-				if(tic.QuadPart >= serv->intervalZero.QuadPart)
+				if(PWMtic_sum.QuadPart >= serv->intervalZero.QuadPart)
 				{ // time for writing 1 has come
 					
 					// serv, ROB, 
-					if(actPhase->serv_fixedPositioning)
+					if(ROB->phase_act->serv_fixedPositioning)
 					{ // not ramp - square position change
 						// write one to this servo bit
 						ROB->SET_DOportBitUchar(serv->servoMotorDigit);
@@ -173,22 +180,22 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 						// Get last and actual interval one (angle) differention
 						if(serv->ADC_feedBack == false)
 						{ // we do not have a feedback
-							if(actPhase != ROB->phases.begin())
+							if(ROB->phase_act != ROB->phases.begin())
 							{ // this is not a first phase - we have previous phase
-								if( actPhase->serv_intervalOne[i_serv].QuadPart 
-									<= actPhasePrev->serv_intervalOne[i_serv].QuadPart)
+								if( ROB->phase_act->serv_intervalOne[i_serv].QuadPart 
+									<= ROB->phase_prev->serv_intervalOne[i_serv].QuadPart)
 								{ // intOne counting up
 								// seky
 									//functional
 									intervalOneDif.QuadPart = 
-										actPhase->serv_intervalOne[i_serv].QuadPart 
-										- actPhasePrev->serv_intervalOne[i_serv].QuadPart;
+										ROB->phase_act->serv_intervalOne[i_serv].QuadPart 
+										- ROB->phase_prev->serv_intervalOne[i_serv].QuadPart;
 								}
 								else
 								{ // intOne counting down
 									intervalOneDif.QuadPart = 
-										actPhasePrev->serv_intervalOne[i_serv].QuadPart 
-										- actPhase->serv_intervalOne[i_serv].QuadPart;
+										ROB->phase_prev->serv_intervalOne[i_serv].QuadPart 
+										- ROB->phase_act->serv_intervalOne[i_serv].QuadPart;
 								}
 							} // end - this is not a first phase - we have previous phase
 						} // end - we do not have a feedback
@@ -199,31 +206,30 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 
 						LARGE_INTEGER actIntervalOne;
 						// evaluate new value of angle
-						if( actPhase->serv_intervalOne[i_serv].QuadPart 
-							<= actPhasePrev->serv_intervalOne[i_serv].QuadPart)
+						if( ROB->phase_act->serv_intervalOne[i_serv].QuadPart 
+							<= ROB->phase_prev->serv_intervalOne[i_serv].QuadPart)
 						{ // intOne counting up
 								//functional
-							actIntervalOne.QuadPart = actPhasePrev->serv_intervalOne[i_serv].QuadPart 
-								+ LONGLONG((   ((double)nPWM) * ((double)intervalOneDif.QuadPart)  ) / ( (double)nKrok) );
+							actIntervalOne.QuadPart = ROB->phase_prev->serv_intervalOne[i_serv].QuadPart 
+								+ LONGLONG((   ((double)PWMperiod_sum) * ((double)intervalOneDif.QuadPart)  ) / ( (double)PWMperiod_sum_max) );
 						}
 						else
 						{ // intOne counting down
 							// seky
-							actIntervalOne.QuadPart = actPhasePrev->serv_intervalOne[i_serv].QuadPart 
-								- LONGLONG((   ((double)nPWM) * ((double)intervalOneDif.QuadPart)  ) / ( (double)nKrok) );
+							actIntervalOne.QuadPart = ROB->phase_prev->serv_intervalOne[i_serv].QuadPart 
+								- LONGLONG((   ((double)PWMperiod_sum) * ((double)intervalOneDif.QuadPart)  ) / ( (double)PWMperiod_sum_max) );
 						}
 				
 						//____________________________________________________
 						// the time for writing 1 has really come - with linear positioning
-						if(tic.QuadPart >= (PWM_period.QuadPart - actIntervalOne.QuadPart))
+						if(PWMtic_sum.QuadPart >= (ROB->PWMperiod_interval.QuadPart - actIntervalOne.QuadPart))
 						{
 							// write one to this servo bit
 							ROB->SET_DOportBitUchar(serv->servoMotorDigit);
 						}
-						if( nPWM != nPWM_last){
-							// ONLY for debugging
-							nPWM_last = nPWM;
-						}
+#ifdef DEBUG // debuging breakpoint 
+						if( PWMperiod_sum != PWMperiod_sum_last){PWMperiod_sum_last = PWMperiod_sum;}
+#endif
 					} // ramp - linear position change
 				} // end - time for writing 1 has come
 			} // end - iterate through all servos
@@ -231,34 +237,34 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 			// write new DO port value from this period
 			ROB->WRITE_DOport_thisPeriodNewValue();
 			// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-			// iteration & tic-waiting
-			RtSleepFt(&tic_interval);
+			// iteration & PWMtic-waiting
+			RtSleepFt(&PWMtic_interval);
 
-			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "tic=%I64d/%I64d\n", tic, DEFAULT_PWM_PERIOD);
+			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "PWMtic_sum=%I64d/%I64d\n", PWMtic_sum, DEFAULT_PWM_PERIOD);
 			logMsg.PushMessage(textMsg, LOG_SEVERITY_PWM_TIC);
 
-			tic.QuadPart += tic_interval.QuadPart;
-			tic_phase.QuadPart += tic_interval.QuadPart;
+			PWMtic_sum.QuadPart += PWMtic_interval.QuadPart;
+			phaseTic_sum.QuadPart += PWMtic_interval.QuadPart;
 			//____________________________________________________
 			// End of phase = EXIT PERIOD-PWM LOOP 
-			if(tic_phase.QuadPart >= actPhase->phaseInterval.QuadPart)
+			if(phaseTic_sum.QuadPart >= ROB->phase_act->phaseInterval.QuadPart)
 			{
-				tic.QuadPart = 0;
-				tic_phase.QuadPart = 0;
+				PWMtic_sum.QuadPart = 0;
+				phaseTic_sum.QuadPart = 0;
 				break;
 			}
 			// ____________________________________________________
 			// end of each period = PWM END
-			if(tic.QuadPart >= PWM_period.QuadPart)
+			if(PWMtic_sum.QuadPart >= ROB->PWMperiod_interval.QuadPart)
 			{
-				nPWM++;
-				sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "period ended - phase[%i/%i] - PWM_period = %I64d [100ns] = %I64d [1s]\n", 
-					actPhase->i_phase, actPhase->i_phase_max,
+				PWMperiod_sum++;
+				sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "period ended - phase[%i/%i] - PWMperiod_interval = %I64d [100ns] = %I64d [1s]\n", 
+					ROB->phase_act->i_phase, ROB->phase_act->i_phase_max,
 					tim2.QuadPart, tim2.QuadPart / NS100_1S);
 				logMsg.PushMessage(textMsg, LOG_SEVERITY_PWM_PERIOD);
 
 				ROB->RESET_DOport();
-				tic.QuadPart = 0;
+				PWMtic_sum.QuadPart = 0;
 
 				/*
 				// READ ADC VALUES
@@ -268,22 +274,22 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 
 				RtGetClockTime(CLOCK_X, &tim2);
 				tim2.QuadPart = tim2.QuadPart-tim1.QuadPart;
-				//printf("PWM_period = %I64d [100ns] = %I64d [1s]  \n", tim2.QuadPart, tim2.QuadPart / NS100_1S);
+				//printf("PWMperiod_interval = %I64d [100ns] = %I64d [1s]  \n", tim2.QuadPart, tim2.QuadPart / NS100_1S);
 				RtGetClockTime(CLOCK_X, &tim1);
 			}
-		} //tic loop == PHASE END
+		} //PWMtic loop == PHASE END
 
 		//____________________________________________________
 		{ // iteration to next phase
-			actPhase++;
-			nPWM = 0;
-			if(actPhase == ROB->phases.end())
+			ROB->phase_act++;
+			PWMperiod_sum = 0;
+			if(ROB->phase_act == ROB->phases.end())
 			{
 				logMsg.PushMessage("All phases are done!\n", LOG_SEVERITY_PWM_PHASE);
 				allPhasesEnded = true;
 				break;
 			}
-			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Continuing with next phase[%i/%i].\n", actPhase->i_phase, actPhase->i_phase_max);
+			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Continuing with next phase[%i/%i].\n", ROB->phase_act->i_phase, ROB->phase_act->i_phase_max);
 			logMsg.PushMessage(textMsg, LOG_SEVERITY_PWM_PHASE);
 #ifdef DEBUGGING_WITHOUT_HW
 			logMsg.PushMessage("DEBUGING_WITHOUT_HW - not writing to any register!", LOG_SEVERITY_PWM_PHASE);

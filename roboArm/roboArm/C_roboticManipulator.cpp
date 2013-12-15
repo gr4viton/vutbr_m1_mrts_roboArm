@@ -24,8 +24,12 @@ void C_roboticManipulator::DEBUG_fillPhases(void){
 	int i_serv = 0;
 	
 	phases.push_back(C_spatialConfiguration());
-	std::list<C_spatialConfiguration>::iterator actPhase = phases.end();
-	actPhase--;
+	// actPhase should point to the last phase (not end - uninitialized space after last)
+	phase_act = phases.end();
+	phase_act--;
+	// as there is only one phase - prevPhase is the same -> is changed in PWM thread
+	phase_prev = phase_act;
+
 	LONGLONG addVal = 100;
 	// add 5 phases to the back
 
@@ -36,15 +40,15 @@ void C_roboticManipulator::DEBUG_fillPhases(void){
 	{ // phases
 		for(i_serv = i_serv_min; i_serv<SUM_SERVOMOTORS; i_serv++)
 		{
-			actPhase->SET_serv_intervalOne(i_serv, &intervalOne);
+			phase_act->SET_serv_intervalOne(i_serv, &intervalOne);
 		}
 		intervalOne.QuadPart += addVal * NS100_1US;
-		actPhase->phaseInterval.QuadPart = 800*NS100_1MS;
+		phase_act->phaseInterval.QuadPart = 800*NS100_1MS;
 		// push back next
 		if( i_phase < i_phase_max )
 		{
 			phases.push_back(C_spatialConfiguration());
-			actPhase++;
+			phase_act++;
 		}
 	}
 
@@ -54,15 +58,15 @@ void C_roboticManipulator::DEBUG_fillPhases(void){
 	{ // phases
 		for(i_serv = i_serv_min; i_serv<SUM_SERVOMOTORS; i_serv++)
 		{
-			actPhase->SET_serv_intervalOne(i_serv, &intervalOne);
+			phase_act->SET_serv_intervalOne(i_serv, &intervalOne);
 		}
 		intervalOne.QuadPart += addVal * NS100_1US;
-		actPhase->phaseInterval.QuadPart = 800*NS100_1MS;
+		phase_act->phaseInterval.QuadPart = 800*NS100_1MS;
 		// push back next
 		if( i_phase < i_phase_max )
 		{
 			phases.push_back(C_spatialConfiguration());
-			actPhase++;
+			phase_act++;
 		}
 	}
 	/*
