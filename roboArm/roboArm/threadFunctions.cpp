@@ -99,7 +99,7 @@ void RTFCNDCL PWMthread(void *a_ROB)
 		//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		// LOAD this phase
 		error_sum = ROB->LOAD_actualPhase();
-		if(error_sum != FLAWLESS_EXECUTION) EXIT_thread(error_sum,ROB);
+		if(error_sum != FLAWLESS_EXECUTION) ExitThread(EXIT_threadPWM(error_sum, &ROB));
 
 		//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		// tics loop 
@@ -179,11 +179,14 @@ void RTFCNDCL PWMthread(void *a_ROB)
 @return     error_sum
 ************/
 DWORD EXIT_threadPWM(DWORD error_sum, C_roboticManipulator** a_ROB)
-{
-	
-	logMsg.PushMessage("Exitting thread PWM\n", LOG_SEVERITY_EXITING_THREAD);
+{	
+		logMsg.PushMessage("Deinitializing ROB pointer\n", LOG_SEVERITY_EXITING_THREAD);
 	(*a_ROB) = NULL;	
-	logMsg.PushMessage("Exitting thread PWM\n", LOG_SEVERITY_EXITING_THREAD);
+
+	char textMsg[MAX_MESSAGE_LENGTH];
+	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Exitting thread PWM with error_sum %lu\n", 
+		error_sum);
+		logMsg.PushMessage(textMsg, LOG_SEVERITY_EXITING_THREAD);
 	return(error_sum);
 }
 
