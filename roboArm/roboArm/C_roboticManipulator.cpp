@@ -635,22 +635,3 @@ void C_roboticManipulator::WRITE_DOport_thisPeriodNewValue()
 	}
 }
 
-
-/****************************************************************************
-@function	SET_dutyCycleIntervals
-@class		C_roboticManipulator
-@brief
-@param[in]
-@param[out]
-@return
-***************/
-/*
-int C_roboticManipulator::SET_dutyCycleIntervals(
-	int a_servo_i, 
-	LARGE_INTEGER a_interval_one, 
-	LARGE_INTEGER a_intervalZero)
-{
-	if(!IS_in_bounds(a_servo_i)) return(ERR_SERVO_INDEX_OUT_OF_BOUNDS);
-	serv[a_servo_i].SET_dutyCycleIntervals(a_interval_one,a_intervalZero);
-	return(FLAWLESS_EXECUTION);
-}*/

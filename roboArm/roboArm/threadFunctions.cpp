@@ -1,5 +1,12 @@
-#include "roboArm.h"
+/***************
+@project  roboArm
+@filename threadFunctions.cpp
+@author   xdavid10, xslizj00 @ FEEC-VUTBR 
+@date     2013_12_07
+@brief    provides all the thread routine function plus sume usefull terminating and closing functions
+***************/
 
+#include "roboArm.h"
 
 /****************************************************************************
 @function   CREATE_thread
