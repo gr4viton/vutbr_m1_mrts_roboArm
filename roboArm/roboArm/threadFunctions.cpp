@@ -16,7 +16,7 @@ DWORD CREATE_threads(C_roboticManipulator ROB, HANDLE *a_hTh, DWORD thread_id)
 	const int iTh_max = NUM_OF_THREADS; 
 	//HANDLE hTh = *a_hTh;
 	
-	printf("&(a_hTh[0]) = %i; &(a_hTh) = %i; p(a_hTh[0]) = %p; p(a_hTh) = %p;\n", &(a_hTh[0]), &(a_hTh), a_hTh[0], a_hTh );
+	printf("&(a_hTh[0]) = %i; &(a_hTh) = %i; a_hTh[0] = %i; a_hTh = %i; \n", &(a_hTh[0]), &(a_hTh), a_hTh[0], a_hTh );
 
 	//____________________________________________________
 	// priorities - changed in switch case
