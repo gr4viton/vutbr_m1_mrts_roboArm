@@ -211,7 +211,6 @@ void C_roboticManipulator::FINISH_period()
 ************/
 DWORD C_roboticManipulator::SET_NextPhase()
 {
-	char textMsg[MAX_MESSAGE_LENGTH];
 	phase_act++;
 	if(phase_act == phases.end())
 	{
@@ -378,6 +377,7 @@ DWORD C_roboticManipulator::PUSHFRONT_InitialPhases(void)
 	// set initial phase servos position
 	for(int i_serv=0; i_serv<SUM_SERVOMOTORS; i_serv++)
 	{
+		new_phase->serv_fixedPositioning[i_serv] = false;
 		new_phase->serv_intervalOne[i_serv].QuadPart = serv[i_serv].ADC_min;
 	}
 	
@@ -472,7 +472,6 @@ void C_roboticManipulator::PUSH_frontNewPhase(C_spatialConfiguration* a_phase){
 ************/
 C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 {
-	DWORD error_sum;
 	// set interval and counters to zeros
 	phaseTic_sum = 0;
 	PWMtic_sum = 0;
@@ -491,7 +490,7 @@ C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 
 	// init phases - set the default one on the beginning
 	error_sum = PUSHFRONT_InitialPhases();
-	if(error_sum != FLAWLESS_EXECUTION) return(error_sum);
+	if(error_sum != FLAWLESS_EXECUTION) return;
 	phase_act = phases.begin();
 	
 	// init addresses 
