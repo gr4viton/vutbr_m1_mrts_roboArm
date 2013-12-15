@@ -187,6 +187,11 @@ void C_roboticManipulator::FINISH_period()
 	PWMperiod_sum++;				
 	RESET_DOport();
 	PWMtic_sum = 0;
+
+	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "period ended - phase[%i/%i] - PWMperiod_interval = %I64d [100ns] = %I64d [1s]\n", 
+		ROB->phase_act->i_phase, ROB->phase_act->i_phase_max,
+		tim2.QuadPart, tim2.QuadPart / NS100_1S);
+	logMsg.PushMessage(textMsg, LOG_SEVERITY_PWM_PERIOD);
 }
 
 /****************************************************************************
@@ -234,7 +239,7 @@ DWORD C_roboticManipulator::LOAD_actualPhase(void)
 	}
 	// the iterator is not past-the-end element in the list container
 	char textMsg[MAX_MESSAGE_LENGTH]; // char array for printing messages
-		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Load phase[%i/%i] values\n", ROB->phase_act->i_phase, ROB->phase_act->i_phase_max);
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Load phase[%i/%i] values\n", phase_act->i_phase, phase_act->i_phase_max);
 		logMsg.PushMessage(textMsg, LOG_SEVERITY_PWM_PHASE);
 	
 	LARGE_INTEGER intervalZero;		// tics for holding one on defined pin
@@ -250,12 +255,30 @@ DWORD C_roboticManipulator::LOAD_actualPhase(void)
 	}
 	//____________________________________________________
 	// get sum of periods in this phase
-	ROB->PWMperiod_sum_max = ROB->phase_act->phaseInterval.QuadPart / ROB->PWMperiod_interval.QuadPart ;
+	PWMperiod_sum_max = phase_act->phaseInterval.QuadPart / PWMperiod_interval.QuadPart ;
 
 	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Actual phase[%i/%i] interval = %I64d[ms]\n", 
 		phase_act->i_phase, phase_act->i_phase_max, 
 		phase_act->phaseInterval.QuadPart / NS100_1MS );
 	logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
+	
+	return(FLAWLESS_EXECUTION);
+}
+
+/****************************************************************************
+@function   IS_endOfPhase
+@class		C_roboticManipulator
+@brief      
+@param[in]  
+@param[out] 
+@return     
+************/
+bool C_roboticManipulator::IS_endOfPhase() 
+{
+	if(phaseTic_sum >= phase_act->phaseInterval.QuadPart)
+		return(true);
+	else
+		return(false);
 }
 
 /****************************************************************************
@@ -340,7 +363,7 @@ C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 
 	// tic time interval - should be the smallest possible - HAL timer length
 	PWMtic_interval.QuadPart = 0;
-	RtGetClockTimerPeriod(CLOCK_X, &PWMtic_interval);	// time to wait between individual PWMtics
+	RtGetClockTimerPeriod(CLOCK_TIC_INTERVAL, &PWMtic_interval);	// time to wait between individual PWMtics
 
 	// init phases - set the default one on the beginning
 	PUSHFRONT_InitialPhases();

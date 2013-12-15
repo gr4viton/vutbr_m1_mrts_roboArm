@@ -49,7 +49,9 @@
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // setup defines and macros
-#define CLOCK_X							CLOCK_2
+#define CLOCK_TIC_INTERVAL	CLOCK_2
+#define CLOCK_LOG_ACTUAL		CLOCK_2
+#define CLOCK_MEASUREMENT	CLOCK_1
 #define RUNNING_ON_1CPU
 //____________________________________________________
 // debug
@@ -250,6 +252,7 @@ HANDLE* CREATE_threads(void);
 // exiting functions
 void		CLOSE_handleAndExitThread(HANDLE handle, DWORD error_sum);
 void		TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, DWORD error_sum);
+DWORD	EXIT_threadPWM(DWORD error_sum, C_roboticManipulator** a_ROB);
 
 // logmsg
 void		RTFCNDCL LogMessageThread(void *a_struct);

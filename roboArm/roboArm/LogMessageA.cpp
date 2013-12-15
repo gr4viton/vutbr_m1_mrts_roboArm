@@ -202,7 +202,7 @@ unsigned int C_LogMessageA::PushMessage(char* inMsg, int iSeverity)
 	
 	//____________________________________________________
 	// Clock time -> file time -> system time
-	if ( RtGetClockTime(CLOCK_X, &ClockTime) == FALSE )
+	if ( RtGetClockTime(CLOCK_LOG_ACTUAL, &ClockTime) == FALSE )
 	{
 		RtPrintf("\nLogMessage() Error: RtGetClockTime\n");
 		return ERROR_COULD_NOT_GET_CLOCKTIME;
