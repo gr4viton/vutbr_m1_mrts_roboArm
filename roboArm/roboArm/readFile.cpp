@@ -102,7 +102,7 @@ DWORD PARSE_controlString(C_roboticManipulator* a_manip)
 	int i_serv = 0;
 	int angle = 0;
 	LARGE_INTEGER largeInteger;
-	for(DWORD i; pStr[i] != '\0'; ){
+	for(DWORD i=0; pStr[i] != '\0'; ){
 		switch(pStr[i])
 		{
 			case('<'):
@@ -134,7 +134,7 @@ DWORD PARSE_controlString(C_roboticManipulator* a_manip)
 				break;
 		}
 	}
-
+	return(FLAWLESS_EXECUTION);
 }
 
 #else // RUNNING_ON_RTX64 - if defined
