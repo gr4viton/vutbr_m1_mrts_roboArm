@@ -355,12 +355,18 @@ void TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, DWORD error_su
 {
 	char textMsg[MAX_MESSAGE_LENGTH];
 	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Starting to terminate all threads with error_sum %lu\n", error_sum);
-	logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
+		logMsg.PushMessage(textMsg, LOG_SEVERITY_EXITING_PROCESS);
 
-	for(int iTh = 0; iTh<iTh_max; iTh++){
-		if(FALSE == TerminateThread(hTh[iTh], EXITCODE_TERMINATED_BY_MAIN)){
-			error_sum += ERROR_COULD_NOT_TERMINATE_THREAD;
+	for(int iTh = 0; iTh<iTh_max; iTh++)
+	{
+		if(FALSE == TerminateThread(hTh[iTh], EXITCODE_TERMINATED_BY_MAIN))
+		{
+			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Thread[%i] cannot be terminated\n", iTh);
+				logMsg.PushMessage(textMsg, LOG_SEVERITY_EXITING_PROCESS);
+			error_sum += ERROR_COULD_NOT_TERMINATE_THREAD<<iTh;
 		}
-		CLOSE_handleAndExitThread(hTh[iTh],error_sum);
+		CLOSE_handleAndReturn(hTh[iTh], error_sum);
 	}
+
+	EXIT_process(ERROR_COULD_NOT_TERMINATE_THREAD_OFFSET	 + error_sum);
 }

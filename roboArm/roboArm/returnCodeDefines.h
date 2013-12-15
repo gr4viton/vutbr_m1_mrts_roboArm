@@ -27,18 +27,22 @@
 // ExitProcess return value constants - ERRORS & etc
 #define FLAWLESS_EXECUTION							0
 
-#define ERROR_CMESSAGE_TOO_LONG						1
-#define ERROR_CREATEFILE_FAIL						2
-#define ERROR_SETFILEPOINTER_FAIL					4
-#define ERROR_READFILE_FAIL							8
-#define ERROR_WRITEFILE_FAIL							16
-#define ERROR_CLOSEHANDLE_FAIL						32
-#define ERROR_FILE_PATH_STRING_TOO_LONG				64
 
-#define ERROR_COULD_NOT_TERMINATE_THREAD				128
-#define ERROR_COULD_NOT_RESUME_THREAD				256
-#define ERROR_COULD_NOT_CHANGE_PRIORITY				512
-#define ERROR_COULD_NOT_CREATE_THREAD				1024
+#define ERROR_CMESSAGE_TOO_LONG						(1<<4)
+#define ERROR_CREATEFILE_FAIL						(1<<5)
+#define ERROR_SETFILEPOINTER_FAIL					(1<<6)
+#define ERROR_READFILE_FAIL							(1<<7)
+#define ERROR_WRITEFILE_FAIL							(1<<8)
+#define ERROR_CLOSEHANDLE_FAIL						(1<<9)
+#define ERROR_FILE_PATH_STRING_TOO_LONG				(1<<10)
+
+#define ERROR_COULD_NOT_RESUME_THREAD				(1<<11)
+#define ERROR_COULD_NOT_CHANGE_PRIORITY				(1<<12)
+#define ERROR_COULD_NOT_CREATE_THREAD				(1<<13)
+
+// TERMINATE all threads
+#define ERROR_COULD_NOT_TERMINATE_THREAD				(1)
+#define ERROR_COULD_NOT_TERMINATE_THREAD_OFFSET		(1<<14)
 
 // ____________________________________________________
 // C_roboticManipulator

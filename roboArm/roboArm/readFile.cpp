@@ -46,9 +46,8 @@ DWORD GET_stringLength(char *a_string, DWORD a_max_lenght, DWORD* a_error_sum)
 			on Success	= FLAWLESS_EXECUTION
 			on Error		= error_sum of ERRORS defined in returnCodeDefines.h
 ************/
-DWORD READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_filePath){
-	
-	
+DWORD READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_filePath)
+{
 	//if(*a_filePath == 0 && a_manip->IS_in_bounds(1)) return(100000);
 	/*
 	// char array for printing messages

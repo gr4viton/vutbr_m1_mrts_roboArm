@@ -55,7 +55,7 @@ DWORD MEAN_adc(UCHAR channel, UCHAR gain, int c)
 void EXIT_process(DWORD error_sum){
 	char textMsg[MAX_MESSAGE_LENGTH];
 	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Exiting process with error_sum %lu\n", error_sum);
-	logMsg.PushMessage(textMsg, LOG_SEVERITY_EXITING_PROCESS);
+		logMsg.PushMessage(textMsg, LOG_SEVERITY_EXITING_PROCESS);
 	ExitProcess(error_sum);
 }
 
