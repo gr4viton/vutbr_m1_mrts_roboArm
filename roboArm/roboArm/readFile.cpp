@@ -37,7 +37,10 @@ DWORD GET_stringLength(char *a_string, DWORD a_max_lenght, DWORD* a_error_sum)
 	return(inStrLen);
 }
 
-#ifdef RUNNING_ON_RTX64
+
+
+
+//#ifdef RUNNING_ON_RTX64
 /****************************************************************************
 @function   READ_patialConfigurationFromFile
 @brief      	parsing out the parameters for individual phases from the string [str]
@@ -233,7 +236,6 @@ DWORD PARSE_controlString(C_roboticManipulator* a_manip){
 	return(FLAWLESS_EXECUTION);
 }
 
-#endif // RUNNING_ON_RTX64
 
 /****************************************************************************
 @function   
