@@ -50,16 +50,12 @@ void RTFCNDCL PWMthread(void *a_ROB)
 {
 	char textMsg[MAX_MESSAGE_LENGTH]; // char array for printing messages
 	// robotic manipulator and servo pointers
-	int i_serv = 0;
-	C_roboticManipulator* ROB = (C_roboticManipulator*)a_ROB; 
-	C_servoMotor* serv = NULL;
+	C_roboticManipulator* ROB = (C_roboticManipulator*)a_ROB;
 
 
 	//____________________________________________________
 	// time measurement
-	LARGE_INTEGER tim1; tim1.QuadPart = 0;
-	LARGE_INTEGER tim2; tim2.QuadPart = 0;
-	RtGetClockTime(CLOCK_MEASUREMENT,&tim1);
+	RtGetClockTime(CLOCK_MEASUREMENT,&(ROB->tim_startPWMperiod));
 
 	//____________________________________________________
 	// PWM tics creation
@@ -73,88 +69,72 @@ void RTFCNDCL PWMthread(void *a_ROB)
 	
 	//LARGE_INTEGER PWMtic_interval;	// how long does one PWMtic take
 	//RtGetClockTimerPeriod(CLOCK_X, &PWMtic_interval);	// time to wait between individual PWMtics
+//	int i_serv = 0; 
+	//C_servoMotor* serv = NULL;
 
 	
 	printf("RtGetClockTimerPeriod = %I64d [100ns]\n", ROB->PWMtic_interval);
-
-
-	// here there will be some mutexed variable for control of this thread termination ??
-	bool generateTics = true;
-	bool allPhasesEnded = false;
-	DWORD error_sum = 0;
+	
+	
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// main PWMthread loop
+	DWORD error_sum = 0;
+	bool generateTics = true;
+	bool allPhasesEnded = false;
+
 	ROB->RESET_DOport();
 
 	ROB->PWMperiod_sum_max = 0;
-	LARGE_INTEGER lastIntervalOne;
-	lastIntervalOne.QuadPart = 0;
-
-	ROB->PWMperiod_sum = 0; // counter of periods
-#ifdef DEBUG
-	LONGLONG PWMperiod_sum_last = 0;
-#endif
+	ROB->PWMperiod_sum = 0; 
+	
 	while(!allPhasesEnded)
 	{
 		//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		// LOAD this phase
 		error_sum = ROB->LOAD_actualPhase();
 		if(error_sum != FLAWLESS_EXECUTION) ExitThread(EXIT_threadPWM(error_sum, &ROB));
-
+		
+#ifdef DEBUGGING_WITHOUT_HW
+		logMsg.PushMessage("DEBUGING_WITHOUT_HW - not writing to any register!", LOG_SEVERITY_PWM_PHASE);
+#endif
 		//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		// tics loop 
 		while(generateTics)	
 		{
 			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "PWMtic_sum=%I64d/%I64d\n", ROB->PWMtic_sum, ROB->PWMperiod_interval);
 				logMsg.PushMessage(textMsg, LOG_SEVERITY_PWM_TIC);
-			//____________________________________________________
-			// calculate newDO port...
+
+			// calculate newDO port 
 			ROB->CALC_DOport_thisPeriodNewValue();
-			//____________________________________________________
+
 			// write new DO port value from this period
 			ROB->WRITE_DOport_thisPeriodNewValue();
-			// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 			// PWMtic - waiting
 			RtSleepFt(&(ROB->PWMtic_interval));
 			
 			// increment tic sums
 			ROB->PWMtic_sum += ROB->PWMtic_interval.QuadPart;
 			ROB->phaseTic_sum += ROB->PWMtic_interval.QuadPart;
-			//____________________________________________________
-			// End of phase = EXIT PERIOD-PWM LOOP 
+
+			// End of phase = exit generateTics loop
 			if( ROB->IS_endOfPhase() ) break;
 			// ____________________________________________________
-			// end of each period = PWM END
+			// end of each period = reset PWMtic_sum etc.
 			if( ROB->IS_endOfPeriod() ) 
 			{
-			if(PWMtic_sum.QuadPart >= ROB->PWMperiod_interval.QuadPart)
-			{
 				ROB->FINISH_period();
-
-				RtGetClockTime(CLOCK_MEASUREMENT, &tim2);
-				tim2.QuadPart = tim2.QuadPart-tim1.QuadPart;
-				//printf("PWMperiod_interval = %I64d [100ns] = %I64d [1s]  \n", tim2.QuadPart, tim2.QuadPart / NS100_1S);
-				RtGetClockTime(CLOCK_MEASUREMENT, &tim1);
 			}
-		} //PWMtic loop == PHASE END
+		} //generateTics loop
 			
 		//____________________________________________________
 		// iteration to next phase
-		if(ROB->SET_NextPhase() == ERROR_CANNOT_SET_NEXTPHASE)
-		{ // end of all phases
+		if(ROB->SET_NextPhase() != FLAWLESS_EXECUTION)
+		{ // end of all phases 
 			logMsg.PushMessage("All phases are done!\n", LOG_SEVERITY_PWM_PHASE);
 			allPhasesEnded = true;
 			break;
 		}
-		else
-		{ // next phase
-			
-			ROB->PWMtic_sum = 0;
-			ROB->phaseTic_sum = 0;
-#ifdef DEBUGGING_WITHOUT_HW
-			logMsg.PushMessage("DEBUGING_WITHOUT_HW - not writing to any register!", LOG_SEVERITY_PWM_PHASE);
-#endif
-		} 
 	} // end - allPhasesEnded - phase loop END
 
 	ExitThread(EXIT_threadPWM(FLAWLESS_EXECUTION, &ROB));

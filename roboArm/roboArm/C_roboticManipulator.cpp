@@ -104,7 +104,7 @@ void C_roboticManipulator::CALC_DOport_thisPeriodNewValue()
 	// ask each servo if this PWMtic the interval zero has passed = time [to write 1]
 	for(int i_serv=0; i_serv<SUM_SERVOMOTORS; i_serv++)
 	{ // iterate through all servos
-		if(PWMtic_sum >= serv[i_serv].intervalZero.QuadPart)
+		if( IS_timeToWriteOne(i_serv) )
 		{ // time for writing 1 has come
 					
 			// serv[i_serv], ROB, 
@@ -184,14 +184,21 @@ void C_roboticManipulator::CALC_DOport_thisPeriodNewValue()
 ************/
 void C_roboticManipulator::FINISH_period()
 {
-	PWMperiod_sum++;				
-	RESET_DOport();
 	PWMtic_sum = 0;
+	PWMperiod_sum++;	
+	RESET_DOport();	
 
+	//finish period measurement
+	RtGetClockTime(CLOCK_MEASUREMENT, &tim_endPWMperiod);
+	tim_endPWMperiod.QuadPart = tim_endPWMperiod.QuadPart - tim_startPWMperiod.QuadPart;
+	RtGetClockTime(CLOCK_MEASUREMENT, &tim_startPWMperiod);
+	// log
+	char textMsg[MAX_MESSAGE_LENGTH]; // char array for printing messages
 	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "period ended - phase[%i/%i] - PWMperiod_interval = %I64d [100ns] = %I64d [1s]\n", 
-		ROB->phase_act->i_phase, ROB->phase_act->i_phase_max,
-		tim2.QuadPart, tim2.QuadPart / NS100_1S);
-	logMsg.PushMessage(textMsg, LOG_SEVERITY_PWM_PERIOD);
+		phase_act->i_phase, phase_act->i_phase_max,
+		tim_endPWMperiod.QuadPart, tim_endPWMperiod.QuadPart / NS100_1S
+		);
+		logMsg.PushMessage(textMsg, LOG_SEVERITY_PWM_PERIOD);
 }
 
 /****************************************************************************
@@ -208,7 +215,7 @@ DWORD C_roboticManipulator::SET_NextPhase()
 	phase_act++;
 	if(phase_act == phases.end())
 	{
-		return(ERROR_CANNOT_SET_NEXTPHASE);
+		return(NEXT_PHASE_IS_VOID);
 	}
 	else
 	{
@@ -232,36 +239,40 @@ DWORD C_roboticManipulator::SET_NextPhase()
 @return     error_sum
 ************/
 DWORD C_roboticManipulator::LOAD_actualPhase(void)
-{	
-	if(phase_act == phases.end())
-	{ 
-		return(ERROR_CANNOT_LOAD_THIS_PHASE);
-	}
-	// the iterator is not past-the-end element in the list container
-	char textMsg[MAX_MESSAGE_LENGTH]; // char array for printing messages
-		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Load phase[%i/%i] values\n", phase_act->i_phase, phase_act->i_phase_max);
-		logMsg.PushMessage(textMsg, LOG_SEVERITY_PWM_PHASE);
-	
-	LARGE_INTEGER intervalZero;		// tics for holding one on defined pin
-	intervalZero.QuadPart = 0;
-	for(int i_serv=0 ; i_serv < SUM_SERVOMOTORS ; i_serv++)
-	{
-		// count the [zero interval] from [pwm period - one interval]
-		//intervalZero.QuadPart = PWMperiod_interval->QuadPart - 1750 * NS100_1US;
-		intervalZero.QuadPart = PWMperiod_interval.QuadPart - phase_act->serv_intervalOne[i_serv].QuadPart;
-		// write it to actual
-		serv[i_serv].SET_intervalZero( intervalZero );
-		serv[i_serv].fixedPositioning = phase_act->serv_fixedPositioning[i_serv];
-	}
-	//____________________________________________________
-	// get sum of periods in this phase
-	PWMperiod_sum_max = phase_act->phaseInterval.QuadPart / PWMperiod_interval.QuadPart ;
+{		
+	PWMtic_sum = 0;
+	phaseTic_sum = 0;
 
-	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Actual phase[%i/%i] interval = %I64d[ms]\n", 
-		phase_act->i_phase, phase_act->i_phase_max, 
-		phase_act->phaseInterval.QuadPart / NS100_1MS );
-	logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
+	if(phase_act == phases.end())
+	{ // end of all phases 
+		return(ERROR_THIS_PHASE_IS_VOID);
+	}
+	else
+	{ // the iterator is not past-the-end element in the list container
+		char textMsg[MAX_MESSAGE_LENGTH]; // char array for printing messages
+			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Load phase[%i/%i] values\n", phase_act->i_phase, phase_act->i_phase_max);
+			logMsg.PushMessage(textMsg, LOG_SEVERITY_PWM_PHASE);
 	
+		LARGE_INTEGER intervalZero;		// tics for holding one on defined pin
+		intervalZero.QuadPart = 0;
+		for(int i_serv=0 ; i_serv < SUM_SERVOMOTORS ; i_serv++)
+		{
+			// count the [zero interval] from [pwm period - one interval]
+			//intervalZero.QuadPart = PWMperiod_interval->QuadPart - 1750 * NS100_1US;
+			intervalZero.QuadPart = PWMperiod_interval.QuadPart - phase_act->serv_intervalOne[i_serv].QuadPart;
+			// write it to actual
+			serv[i_serv].SET_intervalZero( intervalZero );
+			serv[i_serv].fixedPositioning = phase_act->serv_fixedPositioning[i_serv];
+		}
+		//____________________________________________________
+		// get sum of periods in this phase
+		PWMperiod_sum_max = phase_act->phaseInterval.QuadPart / PWMperiod_interval.QuadPart ;
+
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Actual phase[%i/%i] interval = %I64d[ms]\n", 
+			phase_act->i_phase, phase_act->i_phase_max, 
+			phase_act->phaseInterval.QuadPart / NS100_1MS );
+		logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
+	}
 	return(FLAWLESS_EXECUTION);
 }
 
@@ -275,10 +286,31 @@ DWORD C_roboticManipulator::LOAD_actualPhase(void)
 ************/
 bool C_roboticManipulator::IS_endOfPhase() 
 {
-	if(phaseTic_sum >= phase_act->phaseInterval.QuadPart)
-		return(true);
-	else
-		return(false);
+	return(phaseTic_sum >= phase_act->phaseInterval.QuadPart);
+}
+/****************************************************************************
+@function   IS_endOfPeriod
+@class		C_roboticManipulator
+@brief      
+@param[in]  
+@param[out] 
+@return     
+************/
+bool C_roboticManipulator::IS_endOfPeriod() 		
+{
+	return(PWMtic_sum >= PWMperiod_interval.QuadPart);
+}
+
+/****************************************************************************
+@function   
+@brief      
+@param[in]  
+@param[out] 
+@return     
+************/
+bool C_roboticManipulator::IS_timeToWriteOne(int a_i_serv)
+{
+	return(PWMtic_sum >= serv[a_i_serv].intervalZero.QuadPart);
 }
 
 /****************************************************************************
@@ -360,6 +392,9 @@ C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 #ifdef DEBUG
 	PWMperiod_sum_last = 0;		// only for DEBUG breakpointing after every new period
 #endif
+	
+	tim_startPWMperiod.QuadPart = 0;
+	tim_endPWMperiod.QuadPart = 0;
 
 	// tic time interval - should be the smallest possible - HAL timer length
 	PWMtic_interval.QuadPart = 0;

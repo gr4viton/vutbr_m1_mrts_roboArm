@@ -30,18 +30,22 @@ private:
 	DWORD angle_min;
 	DWORD angle_max; 
 public:
+	LONGLONG			phaseTic_sum;		// counting phase time
+
 	LARGE_INTEGER	PWMtic_interval;		// how long does one PWMtic take
-	LONGLONG			PWMtic_sum;			// iterating variable
+	LONGLONG			PWMtic_sum;			// incrementing variable by tic_interval
 
 	LARGE_INTEGER	PWMperiod_interval;	// how long does one period of PWM take - how often to rewrite DO port
-	LONGLONG			PWMperiod_sum;		// counter of periods for act phase
+	LONGLONG			PWMperiod_sum;		// counter of periods for act phase 
 	LONGLONG			PWMperiod_sum_max;	// how many PWM periods are in act phase interval
 #ifdef DEBUG
 	LONGLONG			PWMperiod_sum_last;	// only for DEBUG breakpointing after every new period
 #endif
 
-	LONGLONG phaseTic_sum;	// counting phase time
-	
+	LARGE_INTEGER	tim_startPWMperiod; 
+	LARGE_INTEGER	tim_endPWMperiod; 
+
+
 	std::list<C_spatialConfiguration> phases;
 
 	std::list<C_spatialConfiguration>::iterator phase_act; 
@@ -66,6 +70,8 @@ public:		DWORD SET_NextPhase();
 			
 public:		void FINISH_period();
 public:		bool	 IS_endOfPhase();
+public:		bool IS_endOfPeriod();
+public:		bool IS_timeToWriteOne(int a_i_serv);
 			
 public:		void CALC_DOport_thisPeriodNewValue();
 public:		void SET_DOport_thisPeriodNewValue(UCHAR a_port_bit);

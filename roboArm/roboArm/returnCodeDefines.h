@@ -20,23 +20,13 @@
 // process error code
 // PERROR_
 
-// ____________________________________________________
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // error_sum
-#define FLAWLESS_EXECUTION						0
-#define DESTRUCT_EVERYTHING						96001
-#define ERR_SERVO_INDEX_OUT_OF_BOUNDS			96002
-#define ERR_C_SERVOMOTOR_SETTIMERREL_ERROR		96003
-#define ERR_C_SERVOMOTOR_TIMER_INVALID_HANDLE	96004
-#define ERR_INIT_CANNOT_LOAD_LIBRARY				96005
-#define ERR_CONSTRUCOR_ERROR_OFFSET				96006
-#define ERROR_CANNOT_SET_NEXTPHASE				96007
-#define ERROR_CANNOT_LOAD_THIS_PHASE				96008
-
-#define EXITCODE_TERMINATED_BY_MAIN				96999
 
 //____________________________________________________
 // ExitProcess return value constants - ERRORS & etc
-#define SUCCESSFUL_END								0
+#define FLAWLESS_EXECUTION							0
+
 #define ERROR_CMESSAGE_TOO_LONG						1
 #define ERROR_CREATEFILE_FAIL						2
 #define ERROR_SETFILEPOINTER_FAIL					4
@@ -49,6 +39,19 @@
 #define ERROR_COULD_NOT_RESUME_THREAD				256
 #define ERROR_COULD_NOT_CHANGE_PRIORITY				512
 #define ERROR_COULD_NOT_CREATE_THREAD				1024
+
+// ____________________________________________________
+// C_roboticManipulator
+#define DESTRUCT_EVERYTHING							96001
+#define ERR_SERVO_INDEX_OUT_OF_BOUNDS				96002
+#define ERR_C_SERVOMOTOR_SETTIMERREL_ERROR			96003
+#define ERR_C_SERVOMOTOR_TIMER_INVALID_HANDLE		96004
+#define ERR_INIT_CANNOT_LOAD_LIBRARY					96005
+#define ERR_CONSTRUCOR_ERROR_OFFSET					96006
+#define ERROR_THIS_PHASE_IS_VOID						96007
+
+#define NEXT_PHASE_IS_VOID							96008
+#define EXITCODE_TERMINATED_BY_MAIN					96999
 //____________________________________________________
 // INIT
 #define ERROR_COULD_NOT_LOAD_DAC_DLL_RTDLL_LIBRARY  97000
