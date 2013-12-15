@@ -35,9 +35,12 @@ DWORD C_roboticManipulator::INSERT_testPhases(void)
 		for(int i_serv=i_serv_min; i_serv<SUM_SERVOMOTORS; i_serv++)
 		{
 			new_phase.serv_fixedPositioning[i_serv] = false;
+			new_phase.serv_intervalOne_changed[i_serv] = true;
+
 			addVal = serv[i_serv].intervalOne_max.QuadPart 
 				- serv[i_serv].intervalOne_min.QuadPart;
 			addVal = LONGLONG( double(addVal) / double(i_phase_max) );
+
 			new_phase.serv_intervalOne[i_serv].QuadPart = 
 				serv[i_serv].intervalOne_min.QuadPart 
 				+ LONGLONG(i_phase) * addVal;
@@ -335,6 +338,7 @@ DWORD C_roboticManipulator::PUSH_InitialPhases(void)
 	{
 		new_phase.serv_fixedPositioning[i_serv] = false;
 		new_phase.serv_intervalOne[i_serv].QuadPart = serv[i_serv].ADC_min;
+		new_phase.serv_intervalOne_changed[i_serv] = true;
 	}
 	
 	PUSHBACK_newPhase(&new_phase); 
@@ -354,7 +358,6 @@ DWORD C_roboticManipulator::PUSH_InitialPhases(void)
 ************/
 void C_roboticManipulator::PUSHBACK_newPhase(C_spatialConfiguration* a_phase){
 	phases.push_back(C_spatialConfiguration());
-	
 	
 	//get pointers to last and previous-to-last phases in list phases
 	phase_act = phases.end(); phase_act--;
