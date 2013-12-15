@@ -121,6 +121,9 @@
 #define TH_LOG_PRIORITY				RT_PRIORITY_MAX - 6
 #define TH_PWM_PRIORITY				RT_PRIORITY_MAX - 7
 
+#define USE_DEFAULT_STACK_SIZE		0
+#define NORMAL_THREAD_STACK_SIZE		USE_DEFAULT_STACK_SIZE
+
 //____________________________________________________
 // class servoMotor macros
 #define SUM_SERVOMOTORS					6
@@ -258,6 +261,9 @@ int		char2num(char ch);
 //____________________________________________________
 // threadFunctions.cpp
 DWORD CREATE_threads(C_roboticManipulator* ROB, HANDLE *hTh, DWORD* thread_id);
+DWORD CREATE_thread(int iTh, HANDLE& a_threadHandle, DWORD* a_threadID, 
+					int wanted_priority, LPTHREAD_START_ROUTINE a_threadRoutine, 
+					void* a_threadParam);
 
 // exiting functions
 void		CLOSE_handleAndExitThread(HANDLE handle, DWORD error_sum);

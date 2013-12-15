@@ -147,13 +147,17 @@ void _cdecl main(int  argc, char **argv)
 	//printf("&(hTh[0]) = %i; &(hTh) = %i; hTh[0] = %i; hTh = %i;\n",  &(hTh[0]), &(hTh), hTh[0], hTh);
 
 	logMsg.LoggingStart(); // Before log thread started, LoggingStart() must be called
-	error_sum = CREATE_thread(iTh, &(hTh[iTh]), &(thID[iTh]), TH_LOG_PRIORITY, &LogMessageThread, &ROB);
+	error_sum = CREATE_thread(iTh, 
+		hTh[iTh], &(thID[iTh]), TH_LOG_PRIORITY, 
+		(LPTHREAD_START_ROUTINE)LogMessageThread, NULL);
 	//printf thread ?? thread id?
 	if(error_sum != FLAWLESS_EXECUTION) EXIT_process(error_sum);
 		logMsg.PushMessage("Logging started.\n", LOG_SEVERITY_VALUE_HIGHEST);
 	
 	iTh++;
-	error_sum = CREATE_thread(iTh, &(hTh[iTh]), &(thID[iTh]), TH_PWM_PRIORITY, &PWMthread ,&ROB);
+	error_sum = CREATE_thread(iTh, 
+		hTh[iTh], &(thID[iTh]), TH_PWM_PRIORITY, 
+		(LPTHREAD_START_ROUTINE)PWMthread, &ROB);
 	if(error_sum != FLAWLESS_EXECUTION) EXIT_process(error_sum);
 	//CREATE_threads(&ROB, hTh, thID);
 	

@@ -2,35 +2,35 @@
 
 
 /****************************************************************************
-@function   
-@brief      
-@param[in]  
-@param[out] 
-@return     
+@function   CREATE_thread
+@brief      this function creates thread with inputted parameters 
+			and gives created thread handle and threadID
+@param[in]  int iTh | index of a thread - to write in logs
+			int wanted_priority | wanted thread priority
+			LPTHREAD_START_ROUTINE a_threadRoutine | pointer to thread routine
+			void* a_threadParam | input parameter for the thread function
+@param[out] 	HANDLE& a_threadHandle | handle to created thread
+			DWORD* a_threadID | created thread id
+@return     DWORD error_sum
 ************/
 DWORD CREATE_thread(int iTh, HANDLE& a_threadHandle, DWORD* a_threadID, 
 	int wanted_priority, LPTHREAD_START_ROUTINE a_threadRoutine, void* a_threadParam)
 {
-	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	// thread creation
-	
 	//____________________________________________________
 	// priorities - changed in switch case
 	int thread_priority = RT_PRIORITY_MIN;
 	
-	//____________________________________________________
 	char textMsg[MAX_MESSAGE_LENGTH];	// char array for log messages
-
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// create & priority & unsuspend 
 	//____________________________________________________
 	// thread handle creation 
-	a_threadHandle = RtCreateThread(NULL, 0, 
+	a_threadHandle = CreateThread(NULL, NORMAL_THREAD_STACK_SIZE, 
 		(LPTHREAD_START_ROUTINE) a_threadRoutine, 
-		(VOID*)a_threadParam, CREATE_SUSPENDED, a_threadID);
+		(VOID*) a_threadParam, CREATE_SUSPENDED, a_threadID);
 	
 	if(a_threadHandle == NULL){
-		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "ERROR:\tCannot create thread[%i].\n",iTh);
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "ERROR:\tCannot create thread[%i].\n", iTh);
 			logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
 		return(ERROR_COULD_NOT_CREATE_THREAD);
 	}
@@ -39,7 +39,7 @@ DWORD CREATE_thread(int iTh, HANDLE& a_threadHandle, DWORD* a_threadID,
 
 	// ____________________________________________________
 	// set thread priority to wanted_priority
-	bool ret_val = RtSetThreadPriority(a_threadHandle, wanted_priority);
+	BOOL ret_val = RtSetThreadPriority(a_threadHandle, wanted_priority);
 	thread_priority = RtGetThreadPriority(a_threadHandle);
 
 	if( !ret_val || (thread_priority != wanted_priority) )
