@@ -34,7 +34,11 @@ DWORD CREATE_thread(int iTh, HANDLE& a_threadHandle, DWORD* a_threadID,
 			logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
 		return(ERROR_COULD_NOT_CREATE_THREAD);
 	}
-	RtPrintf("Thread[%i] created and suspended with priority %i.\n", iTh, RtGetThreadPriority(a_threadHandle) );
+	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, 
+		"Thread[%i] created and suspended with priority %i.\n", 
+		iTh, RtGetThreadPriority(a_threadHandle) 
+		);
+	logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
 
 	// ____________________________________________________
 	// set thread priority to wanted_priority
@@ -107,7 +111,8 @@ void RTFCNDCL PWMthread(void *a_ROB)
 	C_roboticManipulator* ROB = (C_roboticManipulator*)a_ROB;
 
 	// smallest tic interval
-	printf("RtGetClockTimerPeriod = %I64d [100ns]\n", ROB->PWMtic_interval);
+	sprintf_s(textMsg,MAX_MESSAGE_LENGTH, "RtGetClockTimerPeriod = %I64d [100ns]\n", ROB->PWMtic_interval);
+		logMsg.PushMessage(textMsg, LOG_SEVERITY_PWM_PHASE);
 	
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// main PWMthread loop init
@@ -247,7 +252,7 @@ void CLOSE_handleAndExitThread(HANDLE handle, DWORD error_sum)
 void TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, DWORD error_sum)
 {
 	char textMsg[MAX_MESSAGE_LENGTH];
-	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Starting to terminate all threads with error_sum %lu\n", error_sum);
+	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Starting to terminate all threads; error_sum %lu\n", error_sum);
 		logMsg.PushMessage(textMsg, LOG_SEVERITY_EXITING_PROCESS);
 
 	for(int iTh = 0; iTh<iTh_max; iTh++)
@@ -258,8 +263,16 @@ void TERMINATE_allThreadsAndExitProcess(HANDLE *hTh, int iTh_max, DWORD error_su
 				logMsg.PushMessage(textMsg, LOG_SEVERITY_EXITING_PROCESS);
 			error_sum += ERROR_COULD_NOT_TERMINATE_THREAD<<iTh;
 		}
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Try to close thread[%i]\n", iTh);
+				logMsg.PushMessage(textMsg, LOG_SEVERITY_EXITING_PROCESS);
 		CLOSE_handleAndReturn(hTh[iTh], error_sum);
 	}
-
-	EXIT_process(ERROR_COULD_NOT_TERMINATE_THREAD_OFFSET	 + error_sum);
+	if(error_sum != FLAWLESS_EXECUTION)
+	{
+		EXIT_process(ERROR_COULD_NOT_TERMINATE_THREAD_OFFSET	 + error_sum);
+	}
+	else
+	{
+		EXIT_process(FLAWLESS_EXECUTION);
+	}
 }
