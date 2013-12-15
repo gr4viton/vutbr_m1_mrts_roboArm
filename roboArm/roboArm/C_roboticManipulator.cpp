@@ -205,21 +205,28 @@ bool C_roboticManipulator::IS_endOfPeriod()
 /****************************************************************************
 @function   IS_timeToWriteOne
 @class		C_roboticManipulator
+@param[in]	int a_i_serv | on which servo from the array serv we count
 @return     bool | [true] if the PWMtic_sum is greater this servo intervalZero
 ************/
 bool C_roboticManipulator::IS_timeToWriteOne(int a_i_serv)
 {
 	return(PWMtic_sum >= serv[a_i_serv].intervalZero.QuadPart);
 }
+
 /****************************************************************************
 @function   IS_reallyTimeToWriteOne
 @class		C_roboticManipulator
 @brief      
-@param[in]  
-@param[out] 
-@return     
+@param[in]	int a_i_serv | on which servo from the array serv we count
+@return     bool 
+			| if fixedPositioning - always [true]
+			| if not fixedPositioning = ramp
+				| if the number of tics is greater 
+				than counted tic treshold [true]
+			| else [false]
+
 ************/
-bool C_roboticManipulator::IS_reallyTimeToWriteOne(int a_i_serv)
+bool C_roboticManipulator::IS_reallyTimeToWriteOne(int i_serv)
 {
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// not ramp - square position change
