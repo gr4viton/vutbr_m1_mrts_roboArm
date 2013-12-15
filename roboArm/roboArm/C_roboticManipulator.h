@@ -82,7 +82,7 @@ public:		void WRITE_DOport_thisPeriodNewValue();
 public:		void WRITE_portUchar(PUCHAR a_port_address, UCHAR a_port_data);
 
 
-public:		int CONVERT_angle2intervalOne(int a_angle, int a_i_serv, LARGE_INTEGER* a_intervalZero);
+public:		DWORD CONVERT_angle2intervalOne(int a_angle, int a_i_serv, LARGE_INTEGER* a_intervalOne);
 
 public:		DWORD INSERT_testPhases(void);
 };

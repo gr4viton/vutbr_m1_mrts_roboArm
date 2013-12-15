@@ -127,6 +127,7 @@ DWORD	GET_stringLength(char *a_string, DWORD a_max_lenght, DWORD* error_sum);
 DWORD	READ_spatialConfigurationFromFile(C_roboticManipulator* a_ROB, char* a_filePath);
 
 // read file
+DWORD	CREATE_fileHandle(HANDLE* a_hFile, char* a_filePath);
 DWORD	READ_file(char* a_filePath);
 DWORD	MOVE_pointer(HANDLE a_hFile, LONG a_distance2move, DWORD* a_file_current_byte, DWORD a_moveMethod = FILE_CURRENT);
 DWORD	CLOSE_handleAndReturn(HANDLE a_handle, DWORD error_sum, bool a_logError = true);

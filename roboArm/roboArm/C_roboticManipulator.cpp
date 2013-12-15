@@ -303,7 +303,7 @@ bool C_roboticManipulator::IS_reallyTimeToWriteOne(int i_serv)
 @param[out] (LARGE_INTEGER*) a_intervalOne
 @return     error_sum
 ************/
-int C_roboticManipulator::CONVERT_angle2intervalOne(int a_angle, int a_i_serv, LARGE_INTEGER* a_intervalOne)
+DWORD C_roboticManipulator::CONVERT_angle2intervalOne(int a_angle, int a_i_serv, LARGE_INTEGER* a_intervalOne)
 {
 	float relative = 0 ; // from f0.0 to f1.0
 	relative = (a_angle - angle_min)/((float)(angle_max - angle_min));

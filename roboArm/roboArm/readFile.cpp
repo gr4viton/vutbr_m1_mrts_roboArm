@@ -37,10 +37,9 @@ DWORD GET_stringLength(char *a_string, DWORD a_max_lenght, DWORD* a_error_sum)
 	return(inStrLen);
 }
 
+//DWORD READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_filePath)
 
 
-
-//#ifdef RUNNING_ON_RTX64
 /****************************************************************************
 @function   READ_patialConfigurationFromFile
 @brief      	parsing out the parameters for individual phases from the string [str]
@@ -50,7 +49,7 @@ DWORD GET_stringLength(char *a_string, DWORD a_max_lenght, DWORD* a_error_sum)
 			on Success	= FLAWLESS_EXECUTION
 			on Error		= error_sum of ERRORS defined in returnCodeDefines.h
 ************/
-DWORD READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_filePath)
+DWORD READ_spatialConfigurationFromFile(C_roboticManipulator* a_ROB, char* a_filePath)
 {
 	// char array for printing messages
 	char textMsg[MAX_MESSAGE_LENGTH];
@@ -65,22 +64,81 @@ DWORD READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_f
 		logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
 		return(error_sum);
 	}
+	logMsg.PushMessage("READ_file completed", LOG_SEVERITY_NORMAL);
 	//____________________________________________________
 	// parse control string into individual phases
-	error_sum = PARSE_controlString(&(*a_manip));
+	error_sum = PARSE_controlString(&(*a_ROB));
 	if(error_sum != FLAWLESS_EXECUTION)
 	{
 		delete[] G_controlString;
-		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "READ_file failed with error_sum %lu\n", error_sum);
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "PARSE_controlString failed with error_sum %lu\n", error_sum);
 		logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
 		return(error_sum);
 	}
-	
+	logMsg.PushMessage("PARSE_controlString completed", LOG_SEVERITY_NORMAL);
 	delete[] G_controlString;
 	//return(a_ROB->CONVERT_angle2intervalOne(i);*/
 	return(FLAWLESS_EXECUTION);
 }
 
+#ifndef RUNNING_ON_RTX64 // if NOT defined
+/****************************************************************************
+@function   PARSE_controlString
+@brief      parse control string into individual phases
+			stored in linear list in [ROB] instance of C_roboticManipulator
+@param[in]  
+@param[out] 
+@return     
+************/
+DWORD PARSE_controlString(C_roboticManipulator* a_manip){
+	// char array for printing messages
+	char textMsg[MAX_MESSAGE_LENGTH];
+
+	C_roboticManipulator* ROB = (C_roboticManipulator*)a_manip;
+	LONGLONG phaseInterval = 0;
+
+	C_spatialConfiguration newPhase;
+	//newPhase.phaseInterval.QuadPart = phaseInterval;	
+
+	char* pStr = G_controlString;
+	char delimiter[] = ";";
+	int i_serv = 0;
+	int angle = 0;
+	LARGE_INTEGER intervalOne;
+	for(DWORD i; pStr[i] != '\0'; ){
+		switch(pStr[i])
+		{
+			case('<'):
+				i_serv = char2num(pStr[i-1]);
+				newPhase.serv_fixedPositioning[i_serv] = false;
+			case('='):
+				newPhase.serv_fixedPositioning[i_serv] = true;
+				angle = char2num(pStr[i+1])*1000 
+					+ char2num(pStr[i+2])*100 
+					+ char2num(pStr[i+3])*10 
+					+ char2num(pStr[i+4]); 
+				ROB->CONVERT_angle2intervalOne(angle, i_serv, &intervalOne);
+				newPhase.serv_intervalOne[i_serv].QuadPart = 
+				break;
+			case('W'):
+
+				break;
+		}
+		i++;
+		//newPhase = C_spatialConfiguration();
+	}
+
+	//first phase
+//	ROB->phases.push_back(C_spatialConfiguration());
+	int i_serv = 0;
+	int int_value = 0;
+	int int_from_char = 0;
+	LARGE_INTEGER LI_value ; LI_value.QuadPart = 0;
+	std::size_t found_position = 0; // index of found control chars
+	char control_chars_string[] = "W=>";
+	char found_control_char = '\0';
+}
+#else // RUNNING_ON_RTX64 - if defined
 /****************************************************************************
 @function   PARSE_controlString
 @brief      parse control string into individual phases
@@ -235,28 +293,29 @@ DWORD PARSE_controlString(C_roboticManipulator* a_manip){
 	ROB = NULL;
 	return(FLAWLESS_EXECUTION);
 }
+#endif // RUNNING_ON_RTX64 - if NOT defined
 
 
 /****************************************************************************
-@function   
-@brief      
-@param[in]  
-@param[out] 
-@return     error_sum
+@function   CREATE_fileHandle
+@brief      creates a handle to a file and gives it out
+@param[in]  char* a_filePath | path to the opened file
+@param[out] HANDLE* hFile | pointer to the file handle
+@return     DWORD error_sum
 ************/
-DWORD CREATE_file(HANDLE* a_hFile, LPCSTR a_filePath)
+DWORD CREATE_fileHandle(HANDLE* a_hFile, char* a_filePath)
 {
 	char textMsg[MAX_MESSAGE_LENGTH];// char array for printing messages
 	*a_hFile = CreateFile(a_filePath, GENERIC_READ, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (*a_hFile == INVALID_HANDLE_VALUE) 
-	{ // Failed CreateFile
+	{ 
+		// Failed CreateFile
 		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Function CreateFile failed with 0x%04x - INVALID_HANDLE_VALUE\n", GetLastError());
 		logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
 		return(ERROR_CREATEFILE_FAIL);
 	}
 	return(FLAWLESS_EXECUTION);
 }
-
 
 /****************************************************************************
 @function   READ_file
@@ -266,105 +325,74 @@ DWORD CREATE_file(HANDLE* a_hFile, LPCSTR a_filePath)
 @return     	on Success	= FLAWLESS_EXECUTION
 			on Error		= error_sum of ERRORS defined in returnCodeDefines.h
 ***************/
-DWORD READ_file(char* a_filePath){
+DWORD READ_file(char* a_filePath)
+{
 	// char array for printing messages
 	char textMsg[MAX_MESSAGE_LENGTH];
 	DWORD error_sum = 0;
 	HANDLE hFile = NULL;
+
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// CreateFile - for read handle 
-#ifdef DEBUG_PRINT_READ_FUNCTIONS
-	//RtPrintf("Try to CreateFile.\n");
-	logMsg.PushMessage("Try to CreateFile.", SEVERITY_MAX - 4);
-#endif
-	// CONST CHAR * = LPCSTR 
-	//char file_path[] = "D:\\EDUC\\m1\\R_MRTS\\float.txt";
+	logMsg.PushMessage("Try to CreateFile.", LOG_SEVERITY_READING_FILE);
 
-	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!!!<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-	//rewrite to function
-	//hFile = CREATE_file(hFile..
-	hFile = CreateFile(a_filePath, GENERIC_READ, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-	if (hFile == INVALID_HANDLE_VALUE) { // Failed CreateFile
-		//LogMessage()
-		// ifdef
-		//RtPrintf("Function CreateFile failed with 0x%04x - INVALID_HANDLE_VALUE\n", GetLastError());
-		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Function CreateFile failed with 0x%04x - INVALID_HANDLE_VALUE\n", GetLastError());
-		logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
-		return(ERROR_CREATEFILE_FAIL);
-	}
-	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!!!<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-#ifdef DEBUG_PRINT_READ_FUNCTIONS
-	//RtPrintf("CreateFile completed successfully.\n");
-	logMsg.PushMessage("CreateFile completed successfully.", SEVERITY_MAX - 4);
-#endif
+	error_sum = CREATE_fileHandle(&hFile, a_filePath);
+	if(error_sum != FLAWLESS_EXECUTION) return(error_sum);
+	
+	logMsg.PushMessage("CreateFile completed successfully.", LOG_SEVERITY_READING_FILE);
 	
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// SetFilePointer
 	DWORD file_end_byte = 0;
-#ifdef DEBUG_PRINT_READ_FUNCTIONS
-	RtPrintf("Try to SetFilePointer to FILE_END:\n");
-	logMsg.PushMessage("Try to SetFilePointer to FILE_END:", SEVERITY_MAX - 4);
-#endif
+	logMsg.PushMessage("Try to SetFilePointer to FILE_END:", LOG_SEVERITY_READING_FILE);
 	error_sum = MOVE_pointer(hFile, 0, &file_end_byte, FILE_END);
 	if(error_sum != FLAWLESS_EXECUTION)	return(CLOSE_handleAndReturn(hFile, error_sum));
 	
 	DWORD file_begin_byte = 0;
-#ifdef DEBUG_PRINT_READ_FUNCTIONS
-	RtPrintf("Try to SetFilePointer to FILE_BEGIN:\n");
-	logMsg.PushMessage("Try to SetFilePointer to FILE_BEGIN:", SEVERITY_MAX - 4);
-#endif
+	logMsg.PushMessage("Try to SetFilePointer to FILE_BEGIN:", LOG_SEVERITY_READING_FILE);
 	error_sum = MOVE_pointer(hFile, 0, &file_begin_byte, FILE_BEGIN);
 	if(error_sum != FLAWLESS_EXECUTION)	return(CLOSE_handleAndReturn(hFile, error_sum));
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// ReadFile
 
-	//DWORD file_current_byte = file_begin_byte;
-	//unsigned long max = 0;
-	//max - 1;
-
 	//DWORD bytes2get = CONTROL_FILE_MAX_CHARS;
 	DWORD bytes2get = file_end_byte;
+	sprintf_s(textMsg, MAX_MESSAGE_LENGTH,
+		"Try to allocate char array memory for reading the file [%lu bytes]\n", bytes2get+1);
+		logMsg.PushMessage(textMsg, LOG_SEVERITY_READING_FILE);
+
 	try	
 	{
 		G_controlString = new char[file_end_byte+1];
 	}
 	catch (std::exception & e) 
 	{
-		printf("Allocation of char array in READ_file failed with exception:\n%s\n", e.what());
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH,
+			"Allocation of char array in READ_file failed with exception:\n%s\n", e.what());
+		logMsg.PushMessage(textMsg, LOG_SEVERITY_ERROR);
 		return(CLOSE_handleAndReturn(hFile, ERROR_BAD_DYNAMIC_ALLOCATION));
 	}
 
-#ifdef DEBUG_PRINT_READ_FUNCTIONS
-//	RtPrintf("Try to READ_chunk [%lu bytes] from file.\n",bytes2get);
-	//RtPrintf("Try to ReadFile. Read whole file [%lu bytes] from [%s], \n", bytes2get, a_filePath);
 	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Try to ReadFile. Read whole file [%lu bytes] from [%s], \n", bytes2get, a_filePath);
-	logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
-#endif
+	logMsg.PushMessage(textMsg, LOG_SEVERITY_READING_FILE);
 	DWORD bytes_got;
-	// BOOL ReadFile(HANDLE hFile, LPVOID lpBuffer, DWORD nbytes2get, LPDWORD lpbytes_got, LPOVERLAPPED lpOverlapped);
 	if (	 FALSE == ReadFile( hFile, (LPVOID) (G_controlString), bytes2get, &bytes_got, NULL) ) 
-	{ // Failed to ReadFile
-		//RtPrintf("ERROR:\tFunction ReadFile failed with 0x%04x - returned FALSE\n", GetLastError());
+	{ 
+		// Failed to ReadFile
 		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "ERROR:\tFunction ReadFile failed with 0x%04x - returned FALSE\n", GetLastError());
-		logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
+		logMsg.PushMessage(textMsg, LOG_SEVERITY_ERROR);
 		return(CLOSE_handleAndReturn(hFile, ERROR_READFILE_FAIL));
 	}
 	else if( bytes_got == 0){
 		// reading beyond EOF
-#ifdef DEBUG_PRINT_READ_FUNCTIONS
-		RtPrintf("Reading ended = EOF\n");
-		logMsg.PushMessage("Reading ended = EOF", SEVERITY_MAX - 4);
-#endif
+		logMsg.PushMessage("Reading ended = EOF", LOG_SEVERITY_READING_FILE);
 	}
-#ifdef DEBUG_PRINT_READ_FUNCTIONS
-	//RtPrintf("bytes_got = %lu\n", bytes_got);	
 	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "bytes_got = %lu\n", bytes_got);	
-	logMsg.PushMessage(textMsg, SEVERITY_MAX - 4);
-#endif
+	logMsg.PushMessage(textMsg, LOG_SEVERITY_READING_FILE);
+
 	G_controlString[bytes_got] = '\0';
-	//printf("[FILE_START]\n%s\n[FILE_END]",G_controlString);
+
 	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "[FILE_START]\n%s\n[FILE_END]",G_controlString);
 	logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
 
@@ -457,7 +485,7 @@ DWORD MOVE_pointer(HANDLE a_hFile, LONG a_distance2move, DWORD* a_file_current_b
 			|if the char is not a digit -> return ERROR_IS_NOT_NUMBER
 			|else return the integer represetation 
 ************/
-int char2num(char ch){
+int char2num(const char ch){
 	int digit = (int)ch - (int)('0');	
 	if(digit<0 || digit>9)
 		return(ERROR_IS_NOT_NUMBER);
