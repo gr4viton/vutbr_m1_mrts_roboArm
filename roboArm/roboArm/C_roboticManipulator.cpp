@@ -359,7 +359,18 @@ int C_roboticManipulator::CONVERT_angle2intervalOne(int a_angle, int a_i_serv, L
 ************/
 DWORD C_roboticManipulator::PUSHFRONT_InitialPhases(void)
 {
-	C_spatialConfiguration* new_phase = new C_spatialConfiguration();
+	C_spatialConfiguration* new_phase;
+	try	
+	{
+		new_phase = new C_spatialConfiguration();
+	}
+	catch (std::exception & e) 
+	{
+		char textMsg[MAX_MESSAGE_LENGTH];
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "PUSH initial phases, dynamic allocation failed with exception:\n%s\n", e.what());
+		logMsg.PushMessage(textMsg, LOG_SEVERITY_ERROR);
+		return(ERROR_BAD_DYNAMIC_ALLOCATION);
+	}
 
 	// initial phase interval
 	new_phase->phaseInterval.QuadPart = DEFAULT_INITIAL_PHASE_INTERVAL;
@@ -370,7 +381,8 @@ DWORD C_roboticManipulator::PUSHFRONT_InitialPhases(void)
 		new_phase->serv_intervalOne[i_serv].QuadPart = serv[i_serv].ADC_min;
 	}
 	
-	phases.PUSH_frontNewPhase(new_phase); 
+	PUSH_frontNewPhase(new_phase); 
+	delete new_phase;
 	return(FLAWLESS_EXECUTION);
  }
 
@@ -460,6 +472,7 @@ void C_roboticManipulator::PUSH_frontNewPhase(C_spatialConfiguration* a_phase){
 ************/
 C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 {
+	DWORD error_sum;
 	// set interval and counters to zeros
 	phaseTic_sum = 0;
 	PWMtic_sum = 0;
@@ -477,7 +490,8 @@ C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 	RtGetClockTimerPeriod(CLOCK_TIC_INTERVAL, &PWMtic_interval);	// time to wait between individual PWMtics
 
 	// init phases - set the default one on the beginning
-	PUSHFRONT_InitialPhases();
+	error_sum = PUSHFRONT_InitialPhases();
+	if(error_sum != FLAWLESS_EXECUTION) return(error_sum);
 	phase_act = phases.begin();
 	
 	// init addresses 

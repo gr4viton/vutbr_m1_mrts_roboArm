@@ -332,10 +332,12 @@ DWORD READ_file(char* a_filePath){
 
 	//DWORD bytes2get = FILE_MAX_CHARS;
 	DWORD bytes2get = file_end_byte;
-	try	{
+	try	
+	{
 		G_controlString = new char[file_end_byte+1];
 	}
-	catch (std::exception & e) {
+	catch (std::exception & e) 
+	{
 		printf("Allocation of char array in READ_file failed with exception:\n%s\n", e.what());
 		return(CLOSE_handleAndReturn(hFile, ERROR_BAD_DYNAMIC_ALLOCATION));
 	}
