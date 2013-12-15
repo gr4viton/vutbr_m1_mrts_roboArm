@@ -8,7 +8,7 @@
 @param[out] hTh thread handlers array, thExitCode exit code array, thread_id ids
 @return
 ***************/
-DWORD CREATE_threads(C_roboticManipulator ROB, HANDLE *a_hTh, DWORD thread_id)
+DWORD CREATE_threads(C_roboticManipulator ROB, HANDLE *a_hTh, DWORD* a_thread_id)
 {
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// thread creation
@@ -42,7 +42,7 @@ DWORD CREATE_threads(C_roboticManipulator ROB, HANDLE *a_hTh, DWORD thread_id)
 				// create thread
 				a_hTh[iTh] = RtCreateThread(NULL, 0, 
 					(LPTHREAD_START_ROUTINE) LogMessageThread, 
-					NULL, CREATE_SUSPENDED, &thread_id);
+					NULL, CREATE_SUSPENDED, &(a_thread_id[0]));
 				break;
 			//____________________________________________________
 			case(TH_PWM_I): // PWM controllign thread
@@ -50,7 +50,7 @@ DWORD CREATE_threads(C_roboticManipulator ROB, HANDLE *a_hTh, DWORD thread_id)
 				// create thread
 				a_hTh[iTh] = RtCreateThread(NULL, 0, 
 					(LPTHREAD_START_ROUTINE) PWMthread, 
-					(VOID*)&ROB, CREATE_SUSPENDED, &thread_id);
+					(VOID*)&ROB, CREATE_SUSPENDED, &(a_thread_id[1]));
 				break;
 
 		}

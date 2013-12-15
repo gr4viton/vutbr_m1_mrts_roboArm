@@ -142,7 +142,8 @@ void _cdecl main(int  argc, char **argv)
 	HANDLE		hTh[NUM_OF_THREADS];			// array of handles to the threads
 
 	int iTh = 0;							// handler iterator
-	DWORD thread_id = 0;					// thread id input param
+	DWORD thread_id[NUM_OF_THREADS];		// thread id input param
+	hTh[0] = (HANDLE)123456789;
 	printf("&(hTh[0]) = %i; &(hTh) = %i; hTh[0] = %i; hTh = %i;\n",  &(hTh[0]), &(hTh), hTh[0], hTh);
 
 	CREATE_threads(ROB, hTh, thread_id);

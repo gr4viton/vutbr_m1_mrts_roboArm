@@ -97,8 +97,9 @@
 
 //____________________________________________________
 // WHICH SEVERITIES TO PRINT
-#define SEVERITY_LEVEL						LOG_SEVERITY_PWM_PHASE
-//#define SEVERITY_LEVEL						LOG_SEVERITY_PWM_PERIOD
+//#define SEVERITY_LEVEL						LOG_SEVERITY_PWM_PHASE
+#define SEVERITY_LEVEL						LOG_SEVERITY_PWM_PERIOD
+//#define SEVERITY_LEVEL						LOG_SEVERITY_PWM_TIC
 
 //____________________________________________________
 // file path
@@ -256,7 +257,7 @@ int		char2num(char ch);
 		
 //____________________________________________________
 // threadFunctions.cpp
-DWORD CREATE_threads(C_roboticManipulator ROB, HANDLE *hTh, DWORD thread_id);
+DWORD CREATE_threads(C_roboticManipulator ROB, HANDLE *hTh, DWORD* thread_id);
 
 // exiting functions
 void		CLOSE_handleAndExitThread(HANDLE handle, DWORD error_sum);
