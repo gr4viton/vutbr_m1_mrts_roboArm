@@ -68,6 +68,7 @@ public:		DWORD GET_servoMotor(int a_servo_i, C_servoMotor** servoMotor);
 // phasing
 public:		DWORD LOAD_actualPhase(void);
 public:		DWORD SET_NextPhase();
+public:		void PUSH_frontNewPhase(C_spatialConfiguration* a_phase); 
 			
 public:		void FINISH_period();
 public:		bool	 IS_endOfPhase();

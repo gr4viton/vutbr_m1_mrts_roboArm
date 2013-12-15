@@ -359,20 +359,98 @@ int C_roboticManipulator::CONVERT_angle2intervalOne(int a_angle, int a_i_serv, L
 ************/
 DWORD C_roboticManipulator::PUSHFRONT_InitialPhases(void)
 {
-	phases.push_front(C_spatialConfiguration()); 
+	C_spatialConfiguration* new_phase = new C_spatialConfiguration();
 
 	// initial phase interval
-	phases.begin()->phaseInterval.QuadPart = DEFAULT_INITIAL_PHASE_INTERVAL;
+	new_phase->phaseInterval.QuadPart = DEFAULT_INITIAL_PHASE_INTERVAL;
 	
 	// set initial phase servos position
 	for(int i_serv=0; i_serv<SUM_SERVOMOTORS; i_serv++)
 	{
-		phases.begin()->serv_intervalOne[i_serv].QuadPart = 
-			serv[i_serv].ADC_min
-			- phases.begin()->serv_intervalOne[i_serv].QuadPart;
+		new_phase->serv_intervalOne[i_serv].QuadPart = serv[i_serv].ADC_min;
 	}
+	
+	phases.PUSH_frontNewPhase(new_phase); 
 	return(FLAWLESS_EXECUTION);
  }
+
+/****************************************************************************
+@function   PUSH_frontNewPhase
+@class      C_roboticManipulator
+@brief      copy-constructor alike, 
+			if [a_phase.intervalOne_change[x]==false] make sure 
+				that the intervalOne value is copied from previous phase
+			also count differences of intervalOne between a_phase and previous phase
+@param[in]  
+@param[out] 
+@return     
+************/
+void C_roboticManipulator::PUSH_frontNewPhase(C_spatialConfiguration* a_phase){
+	phases.push_back(C_spatialConfiguration());
+	
+	//get pointers to last and previous-to-last phases in list phases
+	phase_act = phases.end(); phase_act--;
+	if(phase_act->i_phase_max > 1)
+	{// not the first phase 
+		phase_prev = phase_act; phase_prev--;
+	}
+
+	// copy phase interval
+	phase_act->phaseInterval.QuadPart = a_phase->phaseInterval.QuadPart;
+
+	// servos variables
+	for(int i_serv=0; i_serv<SUM_SERVOMOTORS; i_serv++)
+	{
+		phase_act->serv_fixedPositioning[i_serv] = a_phase->serv_fixedPositioning[i_serv];
+
+		//phases.back().serv_intervalOne_changed =;
+		if(a_phase->serv_intervalOne_changed[i_serv] == true)
+		{ // intervalOne changed after calling constructor --> a_phase has a new value
+			phase_act->serv_intervalOne[i_serv].QuadPart = a_phase->serv_intervalOne[i_serv].QuadPart;
+			
+			// this is first phase || interval was not defined after constructor [intervalOne_change==false]
+			phase_act->serv_intervalOne_difference[i_serv].QuadPart = 0;
+
+			// ramp - linear positioning
+			if(a_phase->serv_fixedPositioning[i_serv] == false)
+			{ 
+				// not the first phase 
+				if(phase_act->i_phase_max > 1)
+				{
+					// count the difference of intervalOne between last and previous-to-last phases
+					// growing
+					if( phase_act->serv_intervalOne[i_serv].QuadPart 
+						> phase_prev->serv_intervalOne[i_serv].QuadPart
+						)
+					{ 
+						phase_act->serv_intervalOne_growing[i_serv] = true;
+						phase_act->serv_intervalOne_difference[i_serv].QuadPart 
+							= phase_act->serv_intervalOne[i_serv].QuadPart 
+							- phase_prev->serv_intervalOne[i_serv].QuadPart;
+					}
+					// not - growing	
+					else
+					{ 
+						phase_act->serv_intervalOne_growing[i_serv] = false;
+						phase_act->serv_intervalOne_difference[i_serv].QuadPart 
+							= phase_prev->serv_intervalOne[i_serv].QuadPart 
+							- phase_act->serv_intervalOne[i_serv].QuadPart;
+					}
+				} // end - not the first phase
+			} // end - ramp - linear positioning
+		}
+		else
+		{ // intervalOne was not defined after constructor --> copy a previous phase value
+			// not the first phase 
+			if(phase_act->i_phase_max > 1)
+			{
+				// copy not changed intervalOnes of a_phase from previous phase to actual phase
+				phase_act->serv_intervalOne[i_serv] = phase_prev->serv_intervalOne[i_serv];
+			} // end - not the first phase
+		}
+	}
+	
+}
 
 /****************************************************************************
 @function   C_roboticManipulator
