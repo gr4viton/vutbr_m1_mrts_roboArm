@@ -180,7 +180,7 @@ void _cdecl main(int  argc, char **argv)
 				// create thread
 				hTh[iTh] = RtCreateThread(NULL, 0, 
 					(LPTHREAD_START_ROUTINE) LogMessageThread, 
-					NULL, CREATE_SUSPENDED, &(a_thread_id[0]));
+					NULL, CREATE_SUSPENDED, &(thread_id[0]));
 				break;
 			//____________________________________________________
 			case(TH_PWM_I): // PWM controllign thread
@@ -188,7 +188,7 @@ void _cdecl main(int  argc, char **argv)
 				// create thread
 				hTh[iTh] = RtCreateThread(NULL, 0, 
 					(LPTHREAD_START_ROUTINE) PWMthread, 
-					(VOID*)&ROB, CREATE_SUSPENDED, &(a_thread_id[1]));
+					(VOID*)&ROB, CREATE_SUSPENDED, &(thread_id[1]));
 				break;
 
 		}
