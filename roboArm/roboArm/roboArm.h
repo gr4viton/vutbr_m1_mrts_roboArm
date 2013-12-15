@@ -54,7 +54,7 @@
 //____________________________________________________
 // debug
 //#define DEBUG
-//#define DEBUGGING_WITHOUT_HW
+#define DEBUGGING_WITHOUT_HW
 #define HIDE_TEST_CODES
 // not needed #define DEBUG_PRINT_READ_FUNCTIONS
 
@@ -280,7 +280,7 @@ Control pin of servo S[1-6] is on address bit DO_High_Byte 1 << x
 
 	
 indexes of servmotors HW from the biggest bottom one [1-6]
-channel |	servo		|	FDBACK[b]	|	AI[b]   
+channel |	servo		|	ADC_feedBack[b]	|	AI[b]   
 --------+---------------+-----------+--------
 	0	|	3(maly)		|	3			|	0
 	1	|	1(velky)		|	1			|	1

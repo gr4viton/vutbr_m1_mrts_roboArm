@@ -209,7 +209,7 @@ DWORD PARSE_controlString(C_roboticManipulator* a_manip){
 					//____________________________________________________
 					// int_value = (int) angle
 					ROB->CONVERT_angle2intervalOne(int_value, i_serv, &LI_value);
-//					ROB->phases.back().SET_servIntervalOne(i_serv,	&LI_value);
+//					ROB->phases.back().SET_serv_intervalOne(i_serv,	&LI_value);
 					}
 					else
 					{ // token is empty

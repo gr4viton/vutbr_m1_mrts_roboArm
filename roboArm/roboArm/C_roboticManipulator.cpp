@@ -36,7 +36,7 @@ void C_roboticManipulator::DEBUG_fillPhases(void){
 	{ // phases
 		for(i_serv = i_serv_min; i_serv<SUM_SERVOMOTORS; i_serv++)
 		{
-			actPhase->SET_servIntervalOne(i_serv, &intervalOne);
+			actPhase->SET_serv_intervalOne(i_serv, &intervalOne);
 		}
 		intervalOne.QuadPart += addVal * NS100_1US;
 		actPhase->phaseInterval.QuadPart = 800*NS100_1MS;
@@ -54,7 +54,7 @@ void C_roboticManipulator::DEBUG_fillPhases(void){
 	{ // phases
 		for(i_serv = i_serv_min; i_serv<SUM_SERVOMOTORS; i_serv++)
 		{
-			actPhase->SET_servIntervalOne(i_serv, &intervalOne);
+			actPhase->SET_serv_intervalOne(i_serv, &intervalOne);
 		}
 		intervalOne.QuadPart += addVal * NS100_1US;
 		actPhase->phaseInterval.QuadPart = 800*NS100_1MS;
@@ -70,12 +70,12 @@ void C_roboticManipulator::DEBUG_fillPhases(void){
 	LONGLONG milliS = 4000;
 
 	intervalOne.QuadPart = 500;
-	actPhase->SET_servIntervalOne(i_serv, &intervalOne);
+	actPhase->SET_serv_intervalOne(i_serv, &intervalOne);
 	actPhase->phaseInterval.QuadPart = milliS*NS100_1MS;
 		phases.push_back(C_spatialConfiguration());
 
 	intervalOne.QuadPart = 2500;
-	actPhase->SET_servIntervalOne(i_serv, &intervalOne);
+	actPhase->SET_serv_intervalOne(i_serv, &intervalOne);
 	actPhase->phaseInterval.QuadPart = milliS*NS100_1MS;
 		phases.push_back(C_spatialConfiguration());
 	i_serv++;
@@ -87,7 +87,7 @@ void C_roboticManipulator::DEBUG_fillPhases(void){
 @function   CONVERT_angle2intervalOne
 @class		C_roboticManipulator
 @brief      converts the value of angle of bounds [angle_min, angle_max]
-			into bounds of servo [a_serv] intervals [min_val, max_val]
+			into bounds of servo [a_serv] intervals [ADC_min, ADC_max]
 				can be rewriten to be faster with external pre-counted variables
 @param[in]  
 @param[out] (LARGE_INTEGER*) a_intervalOne
@@ -114,7 +114,7 @@ int C_roboticManipulator::CONVERT_angle2intervalOne(int a_angle, int a_i_serv, L
 #endif
 	}
 	a_intervalOne->QuadPart = (DWORD)( 
-		serv[a_i_serv].min_val + relative * (serv[a_i_serv].max_val - serv[a_i_serv].min_val)
+		serv[a_i_serv].ADC_min + relative * (serv[a_i_serv].ADC_max - serv[a_i_serv].ADC_min)
 		);
 	return(FLAWLESS_EXECUTION);
 }
@@ -134,6 +134,12 @@ DWORD C_roboticManipulator::PUSHFRONT_InitialPhases(void)
 	phases.push_front(C_spatialConfiguration()); 
 	// initial phase interval
 	phases.begin()->phaseInterval.QuadPart = DEFAULT_INITIAL_PHASE_INTERVAL;
+	for(int i_serv=0; i_serv<SUM_SERVOMOTORS; i_serv++)
+	{
+		phases.begin()->serv_intervalOne[i_serv].QuadPart = 
+			serv[i_serv].ADC_min
+			- phases.begin()->serv_intervalOne[i_serv].QuadPart;
+	}
 	// set initial position
 	return(FLAWLESS_EXECUTION);
  }
@@ -147,77 +153,54 @@ DWORD C_roboticManipulator::PUSHFRONT_InitialPhases(void)
 ************/
 C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 {
-	error_sum = FLAWLESS_EXECUTION;
-
-	// init phases
+	// init phases - set the default one on the beginning
 	PUSHFRONT_InitialPhases();
-	// init addresses and write zeros to register
+	
+	// init addresses 
 	DOport_ByteAddress = (PUCHAR)(baseAddress + DO_High_Byte);
+
+	// write zeros to register
 	DOport_lastPeriodValue = 1; // to work-around WRITE_portUchar not writing the addres if it is the same
 	WRITE_portUchar(DOport_ByteAddress, 0);
 	DOport_lastPeriodValue = 0; 
 	
-	PWM_period.QuadPart = DEFAULT_PWM_PERIOD; 
+	// the min, max of angle from control-file 
 	angle_min = 0;
 	angle_max = 1800;
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	//set constants for individual servos
-	int i=0;
 	int ret_i;
-	int min_intervalZero = 500;
-	int max_intervalZero = 2500;
-	LARGE_INTEGER val_intervalZero;
-	val_intervalZero.QuadPart = PWM_period.QuadPart; // for not writing the one at all on start
+	LONGLONG min_intervalZero = 500;
+	LONGLONG max_intervalZero = 2500;
+
+	// debug values -> would be values from empirical measurement for each servo
+	DWORD ADC_min = 1700;
+	DWORD ADC_max = 2300;
 
 	//____________________________________________________
-	// servo0
-	ret_i = serv[i].SET_constants( i, S1, true, min_intervalZero, max_intervalZero, 5 );
-	if(ret_i != i){ 
-		error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
-	} 
-	serv[i].SET_intervalZero(val_intervalZero);
-	i++;
+	// SET constants of servos
+	int i=0;		// servo[0]
+	ret_i = serv[i].SET_constants( i, S1, min_intervalZero, max_intervalZero, true, ADC_min, ADC_max,5 );
+	if(ret_i != i){ 	error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;	} 	
+	i++;			// servo[1]
+	ret_i = serv[i].SET_constants( i, S2, min_intervalZero, max_intervalZero, true, ADC_min, ADC_max,5 );
+	if(ret_i != i){ 	error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return; } 
+	i++; 		// servo[2]
+	ret_i = serv[i].SET_constants( i, S3, min_intervalZero, max_intervalZero, true, ADC_min, ADC_max,5 );
+	if(ret_i != i){ 	error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;	} 
+	i++;			// servo[3]
+	ret_i = serv[i].SET_constants( i, S4, min_intervalZero, max_intervalZero );
+	if(ret_i != i){ 	error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;	} 
+	i++;			// servo[4]
+	ret_i = serv[i].SET_constants( i, S5, min_intervalZero, max_intervalZero );
+	if(ret_i != i){ 	error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;	} 
+	i++;			// servo[5]
+	ret_i = serv[i].SET_constants( i, S6, min_intervalZero, max_intervalZero );
+	if(ret_i != i){ 	error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;	} 
 	//____________________________________________________
-	// servo1
-	ret_i = serv[i].SET_constants( i, S2, true, min_intervalZero, max_intervalZero, 5 );
-	if(ret_i != i){ 
-		error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
-	} 
-	serv[i].SET_intervalZero(val_intervalZero);
-	i++;
-	//____________________________________________________
-	// servo2
-	ret_i = serv[i].SET_constants( i, S3, true, min_intervalZero, max_intervalZero, 5 );
-	if(ret_i != i){ 
-		error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
-	} 
-	serv[i].SET_intervalZero(val_intervalZero);
-	i++;
-	//____________________________________________________
-	// servo3
-	ret_i = serv[i].SET_constants( i, S4, false, min_intervalZero, max_intervalZero, 5 );
-	if(ret_i != i){ 
-		error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
-	} 
-	serv[i].SET_intervalZero(val_intervalZero);
-	i++;
-	//____________________________________________________
-	// servo4
-	ret_i = serv[i].SET_constants( i, S5, false, min_intervalZero, max_intervalZero, 5 );
-	if(ret_i != i){ 
-		error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
-	} 
-	serv[i].SET_intervalZero(val_intervalZero);
-	i++;
-	//____________________________________________________
-	// servo5
-	ret_i = serv[i].SET_constants( i, S6, false, min_intervalZero, max_intervalZero, 5 );
-	if(ret_i != i){ 
-		error_sum = ERR_CONSTRUCOR_ERROR_OFFSET; 	return;
-	} 
-	serv[i].SET_intervalZero(val_intervalZero);
-	i++;
+	// end
+	error_sum = FLAWLESS_EXECUTION;
 	return;
 }
 
@@ -229,7 +212,7 @@ C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 @param[out]
 @return
 ***************/
-int C_roboticManipulator::IS_in_bounds(int servo_i){
+DWORD C_roboticManipulator::IS_in_bounds(int servo_i){
 	if(servo_i<0 || servo_i>=SUM_SERVOMOTORS) return(ERR_SERVO_INDEX_OUT_OF_BOUNDS);
 	else return(FLAWLESS_EXECUTION);
 }

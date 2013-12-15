@@ -317,7 +317,7 @@ void _cdecl main(int  argc, char **argv)
 	// Reading Data 
 	while(num)
 	{
-		RtPrintf("FDBACK[1,2,3] = %5u;\t\t%5u;\t\t%5u;\n",
+		RtPrintf("ADC_feedBack[1,2,3] = %5u;\t\t%5u;\t\t%5u;\n",
 			MEAN_adc(0,0,num),
 			MEAN_adc(1,0,num),
 			MEAN_adc(2,0,num)

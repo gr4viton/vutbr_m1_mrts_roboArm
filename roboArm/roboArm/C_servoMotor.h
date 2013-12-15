@@ -22,23 +22,21 @@ class C_servoMotor
 //____________________________________________________
 // member variables
 public:	
-	int servo_index;
+	int servo_index; // maximal SUM_SERVOMOTORS
+	bool fixedPositioning;	// if fixed positioning is true -> no linear change of position in PWM
 	//____________________________________________________
-	// feedback
-	DWORD min_val;
-	DWORD max_val; 
-	DWORD mean_vals; // compute mean from sum of feedback measurements 
-	bool FDBACK;
-	//____________________________________________________
-	// timers
-	HANDLE hTimer; // handle of a timer which is connected to this servoMotor
-	int periodic_input; // parameter of timer periodic execution function
+	// Analog to Digital Conversion
+	bool ADC_feedBack;
+	DWORD ADC_actual;		// periodicly read AD value 
+	DWORD ADC_min;			// minimal read-out from ADC
+	DWORD ADC_max;			// maximal read-out from ADC
+	DWORD ADC_meanCount;		// compute mean from sum of feedback measurements 
 	//____________________________________________________
 	// intervals
+	LARGE_INTEGER intervalOne_min;
+	LARGE_INTEGER intervalOne_max;
+	LARGE_INTEGER intervalOne_actual;
 	LARGE_INTEGER intervalZero; // will depend on periodic time interval and duty cycle
-	DWORD actualADvalue;		// periodicly read AD value 
-	// LARGE_INTEGER duty_cycle
-	
 	//____________________________________________________
 	// addresses
 	UCHAR servoMotorDigit; // in case it is different from servo_index
@@ -51,10 +49,14 @@ public: ~C_servoMotor(void);
 //public:	int SET_dutyCycleIntervals(LARGE_INTEGER a_interval_one, LARGE_INTEGER a_intervalZero);
 public: void SET_intervalZero(LARGE_INTEGER a_intervalZero);
 
-public:	int SET_constants(int a_servo_index,
-		UCHAR servoMotorDigit, bool a_FDBACK = false,
-		DWORD a_min_val = 0, DWORD a_max_val = 255, DWORD a_mean_vals = 5
-		);
+public:	int SET_constants(
+	int a_servo_index,	UCHAR a_servoMotorDigit,
+	LONGLONG a_intervalOne_min, LONGLONG a_intervalOne_max,
+	bool a_ADC_feedBack = false,
+	DWORD a_ADC_min = 0, DWORD a_ADC_max = 255, DWORD a_ADC_meanCount = 5
+	);
+		
+public: DWORD GET_ADC_actual();
 //____________________________________________________
 // other member function definitions
 		/*

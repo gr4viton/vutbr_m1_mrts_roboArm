@@ -27,14 +27,15 @@ private:
 	UCHAR DOport_lastPeriodValue; // value of DOport from last period
 	UCHAR DOport_thisPeriodNewValue; // new DOport value before writing it to register -> more servos at the same angle
 	LARGE_INTEGER PWM_period;
-	int angle_min;
-	int angle_max;
+	
+	DWORD angle_min;
+	DWORD angle_max; 
 public:
 	std::list<C_spatialConfiguration> phases;
 
 //____________________________________________________
 // declaration of external defined member functions 
-public:		int IS_in_bounds(int servo_i);	
+public:		DWORD IS_in_bounds(int servo_i);	
 public:		C_roboticManipulator(DWORD &error_sum);
 //public:		int SET_dutyCycleIntervals(int servo_i, LARGE_INTEGER a_interval_one, LARGE_INTEGER a_intervalZero);
 public:		DWORD C_roboticManipulator::PUSHFRONT_InitialPhases(void);

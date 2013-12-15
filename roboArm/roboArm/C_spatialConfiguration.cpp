@@ -25,30 +25,36 @@ C_spatialConfiguration::C_spatialConfiguration(void)
 	phaseInterval.QuadPart = 1000;
 	for(int i=0; i<SUM_SERVOMOTORS; i++)
 	{
-		servIntervalOneChanged[i] = false;
-		servIntervalOne[i].QuadPart = 0;
+		serv_fixedPositioning[i] = false;
+		serv_intervalOneChanged[i] = false;
+		serv_intervalOne[i].QuadPart = 0;
 	}
 	i_phase = i_phase_max + 1;
 	i_phase_max++;
-	bNoRamp = false;
+	/*
+	i_phase = 0;
+	i_phase = ++i_phase_max;*/
 }
 
 /****************************************************************************
 @function   C_spatialConfiguration
 @class		C_spatialConfiguration
 @brief      constructor - input parameters values => member variables
-@param[in]  
+@param[in]  LARGE_INTEGER* a_phaseInterval | time of this new phase
+			LARGE_INTEGER* a_serv_intervalOne | intervalOne for each thread of this new phase
+			bool a_serv_fixedPositioning = false | defaultly linear positioning - ramp
 @param[out] 
 @return     
 ************/
-C_spatialConfiguration::C_spatialConfiguration(LARGE_INTEGER* a_phaseInterval, LARGE_INTEGER* a_servIntervalOne){
+C_spatialConfiguration::C_spatialConfiguration(
+	LARGE_INTEGER* a_phaseInterval, LARGE_INTEGER* a_serv_intervalOne, bool a_serv_fixedPositioning){
 	phaseInterval.QuadPart = a_phaseInterval->QuadPart;
 	for(int i=0; i<SUM_SERVOMOTORS; i++)
 	{
-		servIntervalOneChanged[i] = true;
-		servIntervalOne[i].QuadPart = a_servIntervalOne[i].QuadPart;
+		serv_intervalOneChanged[i] = true;
+		serv_intervalOne[i].QuadPart = a_serv_intervalOne[i].QuadPart;
 	}
-	bNoRamp = false;
+	a_serv_fixedPositioning = false;
 }
 
 /****************************************************************************
@@ -60,21 +66,21 @@ C_spatialConfiguration::C_spatialConfiguration(LARGE_INTEGER* a_phaseInterval, L
 @return     
 ************/
 C_spatialConfiguration::~C_spatialConfiguration(void){
-	//nope delete[] servIntervalOne;
+	//nope delete[] serv_intervalOne;
 }
 
 /****************************************************************************
-@function   SET_servIntervalOne
+@function   SET_serv_intervalOne
 @class		C_spatialConfiguration
 @brief      
 @param[in]  
 @param[out] 
 @return     
 ************/
-void C_spatialConfiguration::SET_servIntervalOne(int a_i_serv, LARGE_INTEGER *a_servIntervalOne)
+void C_spatialConfiguration::SET_serv_intervalOne(int a_i_serv, LARGE_INTEGER *a_serv_intervalOne)
 {
-	servIntervalOne[a_i_serv].QuadPart = a_servIntervalOne->QuadPart;
-	servIntervalOneChanged[a_i_serv] = true;
+	serv_intervalOne[a_i_serv].QuadPart = a_serv_intervalOne->QuadPart;
+	serv_intervalOneChanged[a_i_serv] = true;
 }
 
 

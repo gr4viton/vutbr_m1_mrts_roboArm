@@ -17,7 +17,7 @@
 @param[in]		
 ***************/
 C_servoMotor::C_servoMotor(void)
-	:min_val(0),max_val(255),mean_vals(1),servo_index(-1) //, ...
+	:ADC_min(0),ADC_max(255),ADC_meanCount(1),servo_index(-1) //, ...
 {return;}
 
 /****************************************************************************
@@ -28,21 +28,24 @@ C_servoMotor::C_servoMotor(void)
 @param[in]		
 ***************/
 int C_servoMotor::SET_constants(
-	int a_servo_index,
-	UCHAR a_servoMotorDigit,
-	bool a_FDBACK,
-	DWORD a_min_val, DWORD a_max_val, DWORD a_mean_vals
+	int a_servo_index,	UCHAR a_servoMotorDigit,
+	LONGLONG a_intervalOne_min, LONGLONG a_intervalOne_max,
+	bool a_ADC_feedBack,
+	DWORD a_ADC_min, DWORD a_ADC_max, DWORD a_ADC_meanCount
 	)
 {
-	// warning: should not change constants -> it resets intervals
+	
 	intervalZero.QuadPart = 0;
-	actualADvalue = 0;
-	// stop the PWM function and timers!!
+	intervalOne_min.QuadPart = a_intervalOne_min;
+	intervalOne_max.QuadPart = a_intervalOne_max;
 
-	FDBACK = a_FDBACK;
-	min_val = a_min_val;
-	max_val = a_max_val;
-	mean_vals = a_mean_vals;
+	ADC_feedBack = a_ADC_feedBack;	
+	ADC_actual = 0;
+	ADC_min = a_ADC_min;
+	ADC_max = a_ADC_max;
+	ADC_meanCount = a_ADC_meanCount;
+	
+
 	servo_index = a_servo_index;
 	servoMotorDigit = a_servoMotorDigit;
 	return(servo_index);
@@ -73,22 +76,25 @@ void C_servoMotor::SET_intervalZero(LARGE_INTEGER a_intervalZero)
 ***************/
 C_servoMotor::~C_servoMotor(void)
 {
-	if(!RtDeleteTimer(hTimer))
-	{
-		//log
-		return;
-	}
-	if(!RtCloseHandle(hTimer))
-	{
-		//log
-		return;
-	}
-	// log
+	char textMsg[MAX_MESSAGE_LENGTH];
+	sprintf_s(textMsg,"class instance of ServoMechanism[%i], is destructed\n", servo_index);
+	logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
 }
 
-// ____________________________________________________
-// GET_ADC..
-
+/****************************************************************************
+@function   GET_ADC_actual
+@class		C_servoMotor
+@brief      copies the last measured values from ADC to the ADC_actual
+@param[in]  
+@param[out] 
+@return     error_sum
+************/
+DWORD C_servoMotor::GET_ADC_actual()
+{
+	// not implemented yet
+	ADC_actual = 0;
+	return(FLAWLESS_EXECUTION);
+}
 
 
 
