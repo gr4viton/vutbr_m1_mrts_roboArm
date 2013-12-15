@@ -139,18 +139,18 @@ void _cdecl main(int  argc, char **argv)
 	// thread creation
 	const int iTh_max = NUM_OF_THREADS; 
 
-	HANDLE		hTh[iTh_max];			// array of handles to the threads
-	DWORD		thExitCode[iTh_max];		// exit code from thread
+	HANDLE		hTh[NUM_OF_THREADS];			// array of handles to the threads
 
 	int iTh = 0;							// handler iterator
 	DWORD thread_id = 0;					// thread id input param
 
-	CREATE_threads(ROB, hTh, thExitCode, thread_id);
+	CREATE_threads(ROB, hTh, thread_id);
 
 	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// main thread-controlling super-loop
 
 	int still_active_threads;
+	DWORD thExitCode[NUM_OF_THREADS];		// exit code from thread
 
 	//____________________________________________________
 	// waiting for the termination of all threads but the Logging one [TH_LOG_I = 0]

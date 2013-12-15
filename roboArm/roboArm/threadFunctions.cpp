@@ -8,12 +8,13 @@
 @param[out] hTh thread handlers array, thExitCode exit code array, thread_id ids
 @return
 ***************/
-DWORD CREATE_threads(C_roboticManipulator ROB, HANDLE *hTh, DWORD *thExitCode, DWORD thread_id)
+DWORD CREATE_threads(C_roboticManipulator ROB, HANDLE **a_hTh, DWORD thread_id)
 {
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// thread creation
 	int iTh = 0;							// handler iterator
 	const int iTh_max = NUM_OF_THREADS; 
+	HANDLE *hTh = *a_hTh;
 
 	//____________________________________________________
 	// priorities - changed in switch case
