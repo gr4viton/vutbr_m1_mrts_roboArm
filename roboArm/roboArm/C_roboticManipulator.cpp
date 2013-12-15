@@ -20,7 +20,7 @@ DWORD C_roboticManipulator::INSERT_testPhases(void)
 {
 	// add some phases
 	LONGLONG addVal = 0;
-	LONGLONG phaseInterval = 100 * NS100_1MS;
+	LONGLONG phaseInterval = 800 * NS100_1MS;
 	int i_phase_max = 11;
 	int i_serv_min = 5;
 	C_spatialConfiguration new_phase;
@@ -233,7 +233,7 @@ bool C_roboticManipulator::IS_reallyTimeToWriteOne(int i_serv)
 {
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// not ramp - square position change
-	if(phase_act->serv_fixedPositioning)
+	if(phase_act->serv_fixedPositioning[i_serv] == true)
 	{ 
 		return(true);
 	}
