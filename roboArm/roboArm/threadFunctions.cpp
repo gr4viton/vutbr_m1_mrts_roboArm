@@ -53,28 +53,7 @@ void RTFCNDCL PWMthread(void *a_ROB)
 	C_roboticManipulator* ROB = (C_roboticManipulator*)a_ROB;
 
 
-	//____________________________________________________
-	// time measurement
-	RtGetClockTime(CLOCK_MEASUREMENT,&(ROB->tim_startPWMperiod));
-
-	//____________________________________________________
-	// PWM tics creation
-	//LARGE_INTEGER PWMperiod_interval;// one period of PWM - how often to rewrite DO port
-	//LARGE_INTEGER PWMtic_sum;		// iterating variable
-	//LARGE_INTEGER phaseTic_sum;		// counting phase time
-	
-	//PWMtic_sum.QuadPart = 0;
-	//phaseTic_sum.QuadPart = 0;
-	//ROB->PWMperiod_interval.QuadPart = DEFAULT_PWM_PERIOD; //-- in constructor
-	
-	//LARGE_INTEGER PWMtic_interval;	// how long does one PWMtic take
-	//RtGetClockTimerPeriod(CLOCK_X, &PWMtic_interval);	// time to wait between individual PWMtics
-//	int i_serv = 0; 
-	//C_servoMotor* serv = NULL;
-
-	
 	printf("RtGetClockTimerPeriod = %I64d [100ns]\n", ROB->PWMtic_interval);
-	
 	
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// main PWMthread loop
@@ -87,6 +66,10 @@ void RTFCNDCL PWMthread(void *a_ROB)
 	ROB->PWMperiod_sum_max = 0;
 	ROB->PWMperiod_sum = 0; 
 	
+	//____________________________________________________
+	// time measurement
+	RtGetClockTime(CLOCK_MEASUREMENT, &(ROB->tim_startPWMperiod));
+		
 	while(!allPhasesEnded)
 	{
 		//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

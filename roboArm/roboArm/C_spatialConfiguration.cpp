@@ -26,7 +26,7 @@ C_spatialConfiguration::C_spatialConfiguration(void)
 	for(int i=0; i<SUM_SERVOMOTORS; i++)
 	{
 		serv_fixedPositioning[i] = false;
-		serv_intervalOneChanged[i] = false;
+		serv_intervalOne_changed[i] = false;
 		serv_intervalOne[i].QuadPart = 0;
 	}
 	i_phase = i_phase_max + 1;
@@ -51,7 +51,7 @@ C_spatialConfiguration::C_spatialConfiguration(
 	phaseInterval.QuadPart = a_phaseInterval->QuadPart;
 	for(int i=0; i<SUM_SERVOMOTORS; i++)
 	{
-		serv_intervalOneChanged[i] = true;
+		serv_intervalOne_changed[i] = true;
 		serv_intervalOne[i].QuadPart = a_serv_intervalOne[i].QuadPart;
 	}
 	a_serv_fixedPositioning = false;
@@ -80,7 +80,7 @@ C_spatialConfiguration::~C_spatialConfiguration(void){
 void C_spatialConfiguration::SET_serv_intervalOne(int a_i_serv, LARGE_INTEGER *a_serv_intervalOne)
 {
 	serv_intervalOne[a_i_serv].QuadPart = a_serv_intervalOne->QuadPart;
-	serv_intervalOneChanged[a_i_serv] = true;
+	serv_intervalOne_changed[a_i_serv] = true;
 }
 
 

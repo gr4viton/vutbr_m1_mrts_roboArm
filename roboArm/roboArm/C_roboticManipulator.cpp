@@ -106,14 +106,14 @@ void C_roboticManipulator::CALC_DOport_thisPeriodNewValue()
 	{ // iterate through all servos
 		if( IS_timeToWriteOne(i_serv) )
 		{ // time for writing 1 has come
-					
-			// serv[i_serv], ROB, 
+
 			if(phase_act->serv_fixedPositioning)
+			//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 			{ // not ramp - square position change
-				// write one to this servo bit
 				SET_DOport_thisPeriodNewValue(serv[i_serv].servoMotorDigit);
 			}
 			else
+			//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 			{ // ramp - linear position change
 				LARGE_INTEGER intervalOneDif;
 				// Get last and actual interval one (angle) differention
@@ -279,10 +279,9 @@ DWORD C_roboticManipulator::LOAD_actualPhase(void)
 /****************************************************************************
 @function   IS_endOfPhase
 @class		C_roboticManipulator
-@brief      
-@param[in]  
-@param[out] 
-@return     
+@return     bool
+			| [true] if the phaseTic_sum is greater than this phase interval
+			| [false] else
 ************/
 bool C_roboticManipulator::IS_endOfPhase() 
 {
@@ -292,9 +291,9 @@ bool C_roboticManipulator::IS_endOfPhase()
 @function   IS_endOfPeriod
 @class		C_roboticManipulator
 @brief      
-@param[in]  
-@param[out] 
-@return     
+@return     bool 
+			| [true] if the PWMtic_sum is greater than period interval
+			| [false] else
 ************/
 bool C_roboticManipulator::IS_endOfPeriod() 		
 {
@@ -302,11 +301,11 @@ bool C_roboticManipulator::IS_endOfPeriod()
 }
 
 /****************************************************************************
-@function   
+@function   IS_timeToWriteOne
 @brief      
-@param[in]  
-@param[out] 
-@return     
+@return     bool
+			| [true] if the PWMtic_sum is greater this servo intervalZero
+			| [false] else
 ************/
 bool C_roboticManipulator::IS_timeToWriteOne(int a_i_serv)
 {
@@ -360,17 +359,18 @@ int C_roboticManipulator::CONVERT_angle2intervalOne(int a_angle, int a_i_serv, L
 ************/
 DWORD C_roboticManipulator::PUSHFRONT_InitialPhases(void)
 {
-	//std::list<C_spatialConfiguration> tmp;
 	phases.push_front(C_spatialConfiguration()); 
+
 	// initial phase interval
 	phases.begin()->phaseInterval.QuadPart = DEFAULT_INITIAL_PHASE_INTERVAL;
+	
+	// set initial phase servos position
 	for(int i_serv=0; i_serv<SUM_SERVOMOTORS; i_serv++)
 	{
 		phases.begin()->serv_intervalOne[i_serv].QuadPart = 
 			serv[i_serv].ADC_min
 			- phases.begin()->serv_intervalOne[i_serv].QuadPart;
 	}
-	// set initial position
 	return(FLAWLESS_EXECUTION);
  }
 
@@ -378,13 +378,11 @@ DWORD C_roboticManipulator::PUSHFRONT_InitialPhases(void)
 @function   C_roboticManipulator
 @class		C_roboticManipulator
 @brief      constructor
-@param[in]  
-@param[out] 
-@return     
+@param[out] DWORD& error_sum
 ************/
 C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 {
-	// zeros
+	// set interval and counters to zeros
 	phaseTic_sum = 0;
 	PWMtic_sum = 0;
 	PWMperiod_sum = 0;
@@ -395,9 +393,9 @@ C_roboticManipulator::C_roboticManipulator(DWORD &error_sum)
 	
 	tim_startPWMperiod.QuadPart = 0;
 	tim_endPWMperiod.QuadPart = 0;
+	PWMtic_interval.QuadPart = 0;
 
 	// tic time interval - should be the smallest possible - HAL timer length
-	PWMtic_interval.QuadPart = 0;
 	RtGetClockTimerPeriod(CLOCK_TIC_INTERVAL, &PWMtic_interval);	// time to wait between individual PWMtics
 
 	// init phases - set the default one on the beginning
@@ -511,14 +509,14 @@ void C_roboticManipulator::WRITE_portUchar(PUCHAR a_port_address, UCHAR a_port_d
 		char textMsg[MAX_MESSAGE_LENGTH]; // char array for printing messages
 		DOport_lastPeriodValue = a_port_data; // actualize - last from the view of the next period
 		DOport_thisPeriodNewValue = DOport_lastPeriodValue; // actualize - this from the view of the next period
+
 #ifndef DEBUGGING_WITHOUT_HW // if NOT defined
-		
 		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "WRITE > address= 0x%02x | data= 0x%02x\n", a_port_address, a_port_data);
 		RtWritePortUchar(a_port_address, a_port_data);
-#else
-		
-		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "DEBUG > address= 0x%02x | data= 0x%02x\n", a_port_address, a_port_data);
+#else	
 		// not writing anywhere
+		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "DEBUG > address= 0x%02x | data= 0x%02x\n", a_port_address, a_port_data);
+	
 #endif
 		logMsg.PushMessage(textMsg, LOG_SEVERITY_PWM_PERIOD);
 	}
@@ -530,7 +528,6 @@ void C_roboticManipulator::WRITE_portUchar(PUCHAR a_port_address, UCHAR a_port_d
 @brief		Writes zeros into DO port
 @param[in]	
 @param[out]	
-@return		
 ***************/
 void C_roboticManipulator::RESET_DOport()
 {	

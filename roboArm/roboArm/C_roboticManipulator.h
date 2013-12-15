@@ -23,12 +23,13 @@ class C_roboticManipulator
 // member variables
 private:
 	C_servoMotor serv[SUM_SERVOMOTORS];	
-	PUCHAR DOport_ByteAddress; // address of DO port in register to whom are servoMotors connected to
-	UCHAR DOport_lastPeriodValue; // value of DOport from last period
-	UCHAR DOport_thisPeriodNewValue; // new DOport value before writing it to register -> more servos at the same angle
+	PUCHAR	DOport_ByteAddress; // address of DO port in register to whom are servoMotors connected to
+	UCHAR	DOport_lastPeriodValue; // value of DOport from last period
+	UCHAR	DOport_thisPeriodNewValue; // new DOport value before writing it to register -> more servos at the same angle
 	
-	DWORD angle_min;
-	DWORD angle_max; 
+	// as defined in text file
+	DWORD	angle_min;
+	DWORD	angle_max; 
 public:
 	LONGLONG			phaseTic_sum;		// counting phase time
 

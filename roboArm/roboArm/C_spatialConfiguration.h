@@ -29,11 +29,11 @@ public:
 
 	bool	 serv_fixedPositioning[SUM_SERVOMOTORS];			// if fixed positioning is true -> no linear change of position in PWM
 	LARGE_INTEGER serv_intervalOne[SUM_SERVOMOTORS];		// intervalZeros for each servo in this phase
-	LARGE_INTEGER serv_intervalOneDiff[SUM_SERVOMOTORS];		// difference of interval one from previous phase - counted on loading
+	LARGE_INTEGER serv_intervalOne_difference[SUM_SERVOMOTORS];		// difference of interval one from previous phase - counted on loading
 	
-	bool serv_intervalOneGrowing[SUM_SERVOMOTORS];		// =true if the intervalOne from previous phase is smaller than in this phase
+	bool serv_intervalOne_growing[SUM_SERVOMOTORS];		// =true if the intervalOne from previous phase is smaller than in this phase
 														// - it is created because LARGE_INTEGER is unsigned
-	bool serv_intervalOneChanged[SUM_SERVOMOTORS];		// =true if intervaOne has changed after constructor 
+	bool serv_intervalOne_changed[SUM_SERVOMOTORS];		// =true if intervaOne has changed after constructor 
 														// - previous phase serv_intervalOne[x] is loaded to this phase on loading
 //____________________________________________________
 // declaration of external defined member functions 

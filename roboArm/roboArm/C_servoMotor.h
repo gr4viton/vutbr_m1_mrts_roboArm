@@ -33,10 +33,15 @@ public:
 	DWORD ADC_meanCount;		// compute mean from sum of feedback measurements 
 	//____________________________________________________
 	// intervals
-	LARGE_INTEGER intervalOne_min;
-	LARGE_INTEGER intervalOne_max;
-	LARGE_INTEGER intervalOne_actual;
-	LARGE_INTEGER intervalZero; // will depend on periodic time interval and duty cycle
+	LARGE_INTEGER	intervalZero; // will depend on periodic time interval and duty cycle
+
+	LARGE_INTEGER	intervalOne_min;			// for how long should the one be written for servo minimal angle position
+	LARGE_INTEGER	intervalOne_max;			// for how long should the one be written for servo maximal angle position
+	LARGE_INTEGER	intervalOne_actual;		// for how long is the one written in current phase
+	
+	LARGE_INTEGER	intervalOne_difference; // diference of intervalOne from previous phase
+	bool				intervalOne_growing;		// [true] if the pervious phase difference is smaller
+
 	//____________________________________________________
 	// addresses
 	UCHAR servoMotorDigit; // in case it is different from servo_index
