@@ -90,21 +90,18 @@ DWORD READ_spatialConfigurationFromFile(C_roboticManipulator* a_ROB, char* a_fil
 @param[out] 
 @return     
 ************/
-DWORD PARSE_controlString(C_roboticManipulator* a_manip){
-	// char array for printing messages
-	char textMsg[MAX_MESSAGE_LENGTH];
+DWORD PARSE_controlString(C_roboticManipulator* a_manip)
+{
+	//char textMsg[MAX_MESSAGE_LENGTH];// char array for printing messages
 
 	C_roboticManipulator* ROB = (C_roboticManipulator*)a_manip;
-	LONGLONG phaseInterval = 0;
-
 	C_spatialConfiguration newPhase;
 	//newPhase.phaseInterval.QuadPart = phaseInterval;	
 
 	char* pStr = G_controlString;
-	char delimiter[] = ";";
 	int i_serv = 0;
 	int angle = 0;
-	LARGE_INTEGER intervalOne;
+	LARGE_INTEGER largeInteger;
 	for(DWORD i; pStr[i] != '\0'; ){
 		switch(pStr[i])
 		{
@@ -117,27 +114,29 @@ DWORD PARSE_controlString(C_roboticManipulator* a_manip){
 					+ char2num(pStr[i+2])*100 
 					+ char2num(pStr[i+3])*10 
 					+ char2num(pStr[i+4]); 
-				ROB->CONVERT_angle2intervalOne(angle, i_serv, &intervalOne);
-				newPhase.serv_intervalOne[i_serv].QuadPart = 
+				ROB->CONVERT_angle2intervalOne(angle, i_serv, &largeInteger);
+				newPhase.serv_intervalOne[i_serv].QuadPart = largeInteger.QuadPart;
+				newPhase.serv_intervalOne_changed[i_serv] = true;
+				i = i+5;
 				break;
 			case('W'):
-
+				largeInteger.QuadPart = char2num(pStr[++i]);
+				int j = 1;
+				for(; (char2num(pStr[i+j]) != ERROR_IS_NOT_NUMBER); j++)
+				{
+					largeInteger.QuadPart *= 10;
+					largeInteger.QuadPart += char2num(pStr[i+j]);
+				}	
+				i += j+1;
+				newPhase.phaseInterval.QuadPart = largeInteger.QuadPart;
+				ROB->PUSHBACK_newPhase(&newPhase);
+				newPhase = C_spatialConfiguration();
 				break;
 		}
-		i++;
-		//newPhase = C_spatialConfiguration();
 	}
 
-	//first phase
-//	ROB->phases.push_back(C_spatialConfiguration());
-	int i_serv = 0;
-	int int_value = 0;
-	int int_from_char = 0;
-	LARGE_INTEGER LI_value ; LI_value.QuadPart = 0;
-	std::size_t found_position = 0; // index of found control chars
-	char control_chars_string[] = "W=>";
-	char found_control_char = '\0';
 }
+
 #else // RUNNING_ON_RTX64 - if defined
 /****************************************************************************
 @function   PARSE_controlString
