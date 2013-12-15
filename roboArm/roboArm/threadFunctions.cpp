@@ -40,7 +40,7 @@ DWORD CREATE_threads(C_roboticManipulator ROB, HANDLE *a_hTh, DWORD thread_id)
 				logMsg.LoggingStart();	// Before log thread started, LoggingStart() must be called
 				wanted_priority = TH_LOG_PRIORITY;
 				// create thread
-				(*a_hTh)[iTh] = RtCreateThread(NULL, 0, 
+				a_hTh[iTh] = RtCreateThread(NULL, 0, 
 					(LPTHREAD_START_ROUTINE) LogMessageThread, 
 					NULL, CREATE_SUSPENDED, &thread_id);
 				break;
@@ -48,7 +48,7 @@ DWORD CREATE_threads(C_roboticManipulator ROB, HANDLE *a_hTh, DWORD thread_id)
 			case(TH_PWM_I): // PWM controllign thread
 				wanted_priority = TH_PWM_PRIORITY;
 				// create thread
-				(*a_hTh)[iTh] = RtCreateThread(NULL, 0, 
+				a_hTh[iTh] = RtCreateThread(NULL, 0, 
 					(LPTHREAD_START_ROUTINE) PWMthread, 
 					(VOID*)&ROB, CREATE_SUSPENDED, &thread_id);
 				break;
@@ -57,17 +57,17 @@ DWORD CREATE_threads(C_roboticManipulator ROB, HANDLE *a_hTh, DWORD thread_id)
 
 		//____________________________________________________
 		// the other rutines are same for all types of threads 
-		if((*a_hTh)[iTh] == NULL){
+		if(a_hTh[iTh] == NULL){
 			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "ERROR:\tCannot create thread[%i].\n",iTh);
 			logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
-			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_CREATE_THREAD);
+			TERMINATE_allThreadsAndExitProcess(a_hTh, iTh_max, ERROR_COULD_NOT_CREATE_THREAD);
 		}
-		RtPrintf("Thread[%i] created and suspended with priority %i.\n", iTh, RtGetThreadPriority(hTh[iTh]) );
+		RtPrintf("Thread[%i] created and suspended with priority %i.\n", iTh, RtGetThreadPriority(a_hTh[iTh]) );
 
 		// ____________________________________________________
 		// RtSetThreadPriority - set thread priority to wanted_priority
-		if( RtSetThreadPriority( hTh[iTh], wanted_priority) ){
-			thread_priority = RtGetThreadPriority(hTh[iTh]);
+		if( RtSetThreadPriority( a_hTh[iTh], wanted_priority) ){
+			thread_priority = RtGetThreadPriority(a_hTh[iTh]);
 			if( thread_priority == wanted_priority ){
 				sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Priority of thread[%i] sucessfully set to %i\n", iTh, wanted_priority );
 				logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
@@ -76,18 +76,18 @@ DWORD CREATE_threads(C_roboticManipulator ROB, HANDLE *a_hTh, DWORD thread_id)
 				sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "ERROR:\tCannot set thread[%i] priority to %i! It currently has priority %i.\n", 
 					iTh, wanted_priority , thread_priority);
 				logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
-				TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_CHANGE_PRIORITY);
+				TERMINATE_allThreadsAndExitProcess(a_hTh, iTh_max, ERROR_COULD_NOT_CHANGE_PRIORITY);
 			}
 		}
 		else{
 			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "ERROR:\tCannot set thread[%i] priority to %i! It currently has priority %i.\n", 
-				iTh, wanted_priority , GetThreadPriority(hTh[iTh]) );
-			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_CHANGE_PRIORITY);
+				iTh, wanted_priority , GetThreadPriority(a_hTh[iTh]) );
+			TERMINATE_allThreadsAndExitProcess(a_hTh, iTh_max, ERROR_COULD_NOT_CHANGE_PRIORITY);
 		}
 
 		//____________________________________________________
 		// RtResumeThread - unsuspend 
-		if( RtResumeThread(hTh[iTh]) != 0xFFFFFFFF ){
+		if( RtResumeThread(a_hTh[iTh]) != 0xFFFFFFFF ){
 			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Succesfully resumed thread[%i].\n", iTh);
 			logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
 			if(iTh == 0)
@@ -98,7 +98,7 @@ DWORD CREATE_threads(C_roboticManipulator ROB, HANDLE *a_hTh, DWORD thread_id)
 		else{
 			sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Could not resume thread[%i].\n", iTh);
 			logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);
-			TERMINATE_allThreadsAndExitProcess(hTh, iTh_max, ERROR_COULD_NOT_RESUME_THREAD);
+			TERMINATE_allThreadsAndExitProcess(a_hTh, iTh_max, ERROR_COULD_NOT_RESUME_THREAD);
 		}
 	}
 	return(FLAWLESS_EXECUTION);
