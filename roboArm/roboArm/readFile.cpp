@@ -102,6 +102,7 @@ DWORD PARSE_controlString(C_roboticManipulator* a_manip)
 	char* pStr = G_controlString;
 	int i_serv = 0;
 	int angle = 0;
+	bool alreadyChanged = false;
 	LARGE_INTEGER largeInteger;
 	for(DWORD i=0; pStr[i] != '\0'; ){
 		switch(pStr[i])
@@ -110,8 +111,13 @@ DWORD PARSE_controlString(C_roboticManipulator* a_manip)
 			case('>'):
 				i_serv = char2num(pStr[i-1]);
 				newPhase.serv_fixedPositioning[i_serv] = false;
+				alreadyChanged = true;
 			case('='):
-				newPhase.serv_fixedPositioning[i_serv] = true;
+				if(alreadyChanged == false)
+				{
+					newPhase.serv_fixedPositioning[i_serv] = true;
+				}
+				alreadyChanged = false;
 				angle = char2num(pStr[i+1])*1000 
 					+ char2num(pStr[i+2])*100 
 					+ char2num(pStr[i+3])*10 
