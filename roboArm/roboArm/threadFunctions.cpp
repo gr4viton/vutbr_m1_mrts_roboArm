@@ -116,7 +116,7 @@ void RTFCNDCL TIM_PWMfunction(void *a_manip)
 	// here there will be some mutexed variable for control of this thread termination ??
 	bool generateTics = true;
 	bool allPhasesEnded = false;
-	DWORD error_sum = 0;
+//	DWORD error_sum = 0;
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// main thread loop
 	ROB->RESET_DOport();

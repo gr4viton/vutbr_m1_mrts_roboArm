@@ -54,9 +54,11 @@
 //____________________________________________________
 // debug
 //#define DEBUG
-#define DEBUGGING_WITHOUT_HW
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!!!<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+// if DEBUGGING_WITHOUT_HW is defined -> no register writing is performed -> only pushmsg the byte on
+//#define DEBUGGING_WITHOUT_HW
+
 #define HIDE_TEST_CODES
-// not needed #define DEBUG_PRINT_READ_FUNCTIONS
 
 #define SHOW_LOG_ON_SCREEN
 

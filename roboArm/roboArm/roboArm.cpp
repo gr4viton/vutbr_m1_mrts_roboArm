@@ -156,8 +156,6 @@ void _cdecl main(int  argc, char **argv)
 	//____________________________________________________
 	char textMsg[MAX_MESSAGE_LENGTH];	// char array for log messages
 
-
-
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// will be in separate function CREATE THREAD?
 	// create & priority & unsuspend all needed threads
@@ -234,14 +232,12 @@ void _cdecl main(int  argc, char **argv)
 		}
 	}
 
-
 //____________________________________________________
 // will be in main
 	// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// main thread-controlling super-loop
 
 	int still_active_threads;
-
 
 	//____________________________________________________
 	// waiting for the termination of all threads but the Logging one [TH_LOG_I = 0]
@@ -271,12 +267,10 @@ void _cdecl main(int  argc, char **argv)
 #endif
 	}while(still_active_threads);
 	
-	
 	for(iTh = 1; iTh<iTh_max; iTh++){
 		sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "Thread[%i] terminated with exit code %lu\n", iTh, thExitCode[iTh]);
 		logMsg.PushMessage(textMsg, LOG_SEVERITY_NORMAL);		
 	}			
-
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	// End of logging -> ends thread hTh[TH_LOG_I],  TH_LOG_I = 0
