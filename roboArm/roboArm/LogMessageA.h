@@ -32,11 +32,6 @@
 #define MAX_MESSAGE_LENGTH		512
 
 
-#define LOG_FILE_PATH			"D:\\LogMessage.txt"
-//#define LOG_FILE_PATH			"C:\\LogMessage.txt"
-#define LOGMSG_LINE_END			"\n"
-
-
 //____________________________________________________
 // CONSTANTS - do not modify
 #define HMUTEX_SHARED_NAME				TEXT("C_LogMessageA_hMutex.Name")

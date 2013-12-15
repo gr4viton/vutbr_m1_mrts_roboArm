@@ -48,7 +48,10 @@ DWORD GET_stringLength(char *a_string, DWORD a_max_lenght, DWORD* a_error_sum)
 ************/
 DWORD READ_spatialConfigurationFromFile(C_roboticManipulator* a_manip, char* a_filePath)
 {
-#ifdef RUNNING_ON_RTX64
+#ifndef RUNNING_ON_RTX64 // if NOT defined
+	// program never goes to this section as the calling of this function is 
+	if(a_manip && a_filePath) return(FLAWLESS_EXECUTION);
+#else
 	// char array for printing messages
 	char textMsg[MAX_MESSAGE_LENGTH];
 	DWORD error_sum = 0;
@@ -325,7 +328,7 @@ DWORD READ_file(char* a_filePath){
 	//unsigned long max = 0;
 	//max - 1;
 
-	//DWORD bytes2get = FILE_MAX_CHARS;
+	//DWORD bytes2get = CONTROL_FILE_MAX_CHARS;
 	DWORD bytes2get = file_end_byte;
 	try	
 	{

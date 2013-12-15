@@ -6,8 +6,8 @@
 @brief    file containing definition of return codes from threads and functions
 ***************/
 
-#ifndef C_RETURNCODEDEFINES_H
-#define C_RETURNCODEDEFINES_H
+#ifndef RETURNCODEDEFINES_H
+#define RETURNCODEDEFINES_H
 
 // divide into three sections
 
