@@ -106,9 +106,11 @@ void C_roboticManipulator::FINISH_period()
 	RtGetClockTime(CLOCK_MEASUREMENT, &tim_startPWMperiod);
 	// log
 	char textMsg[MAX_MESSAGE_LENGTH]; // char array for printing messages
+	//LARGE_INTEGER LI_PWMperiod_sum; LI_PWMperiod_sum.QuadPart = PWMperiod_sum;
+	//LARGE_INTEGER LI_PWMperiod_sum_max; LI_PWMperiod_sum_max.QuadPart = PWMperiod_sum_max;
 	sprintf_s(textMsg, MAX_MESSAGE_LENGTH, "period ended - phase[%i/%i] - PWMsum[%I64d/%I64d] - PWMperiod_interval[%I64d] [100ns] = %I64d [1ms]\n", 
-		PWMperiod_sum, PWMperiod_sum_max,
 		phase_act->i_phase, phase_act->i_phase_max,
+		PWMperiod_sum, PWMperiod_sum_max,
 		tim_endPWMperiod.QuadPart, tim_endPWMperiod.QuadPart / NS100_1MS
 		);
 		logMsg.PushMessage(textMsg, LOG_SEVERITY_PWM_PERIOD);
@@ -197,7 +199,7 @@ DWORD C_roboticManipulator::LOAD_actualPhase(void)
 ************/
 bool C_roboticManipulator::IS_endOfPhase() 
 {
-	return(phaseTic_sum >= phase_act->phaseInterval.QuadPart);
+	return(phaseTic_sum > phase_act->phaseInterval.QuadPart);
 }
 /****************************************************************************
 @function   IS_endOfPeriod
@@ -206,7 +208,7 @@ bool C_roboticManipulator::IS_endOfPhase()
 ************/
 bool C_roboticManipulator::IS_endOfPeriod() 		
 {
-	return(PWMtic_sum >= PWMperiod_interval.QuadPart);
+	return(PWMtic_sum > PWMperiod_interval.QuadPart);
 }
 
 /****************************************************************************
